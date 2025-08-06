@@ -1,0 +1,75 @@
+@startuml Sequence_Diagram
+
+!theme plain
+title Electronic Department System - Student Grade Creation Sequence
+note top : Developer: Herman Likyanov
+
+actor Teacher as teacher
+participant "Grade Controller" as controller
+participant "Grade Service" as service
+participant "Unit of Work" as uow
+participant "Grade Repository" as gradeRepo
+participant "Student Repository" as studentRepo
+participant "Subject Repository" as subjectRepo
+participant "H2 Database" as db
+
+teacher -> controller : POST /api/grades
+activate controller
+
+controller -> service : createGrade(gradeDto)
+activate service
+
+service -> uow : getStudentRepository()
+activate uow
+uow -> studentRepo : findByStudentNumber(number)
+activate studentRepo
+studentRepo -> db : SELECT FROM students
+activate db
+db --> studentRepo : Student entity
+deactivate db
+studentRepo --> uow : Student
+deactivate studentRepo
+uow --> service : Student
+deactivate uow
+
+service -> uow : getSubjectRepository()
+activate uow
+uow -> subjectRepo : findBySubjectCode(code)
+activate subjectRepo
+subjectRepo -> db : SELECT FROM subjects
+activate db
+db --> subjectRepo : Subject entity
+deactivate db
+subjectRepo --> uow : Subject
+deactivate subjectRepo
+uow --> service : Subject
+deactivate uow
+
+service -> service : validateGradeData()
+service -> service : createGradeEntity()
+
+service -> uow : getGradeRepository()
+activate uow
+uow -> gradeRepo : save(grade)
+activate gradeRepo
+gradeRepo -> db : INSERT INTO grades
+activate db
+db --> gradeRepo : Grade with ID
+deactivate db
+gradeRepo --> uow : Saved Grade
+deactivate gradeRepo
+uow --> service : Saved Grade
+deactivate uow
+
+service -> service : convertToDto()
+service --> controller : GradeDto
+deactivate service
+
+controller --> teacher : HTTP 201 Created + GradeDto
+deactivate controller
+
+note right of service : "Business logic:\n- Validation\n- Entity creation\n- Data transformation"
+
+note right of uow : "Transaction management:\n- Repository coordination\n- Rollback on error"
+
+@enduml

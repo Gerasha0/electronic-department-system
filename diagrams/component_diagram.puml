@@ -1,0 +1,72 @@
+@startuml Component_Diagram
+
+!theme plain
+title Electronic Department System - Component Diagram
+note top : Developer: Herman Likyanov
+
+package "Web Layer" {
+    [REST Controllers] as controllers
+    [Security Filter] as security
+    [CORS Configuration] as cors
+}
+
+package "Business Logic Layer" {
+    [User Service] as userService
+    [Student Service] as studentService  
+    [Teacher Service] as teacherService
+    [Subject Service] as subjectService
+    [Grade Service] as gradeService
+}
+
+package "Data Access Layer" {
+    [Unit of Work] as uow
+    [User Repository] as userRepo
+    [Student Repository] as studentRepo
+    [Teacher Repository] as teacherRepo
+    [Subject Repository] as subjectRepo
+    [Grade Repository] as gradeRepo
+}
+
+package "Database" {
+    database "H2 Database" as h2db
+}
+
+package "External Systems" {
+    [Swagger UI] as swagger
+    [H2 Console] as h2console
+}
+
+' Connections
+controllers --> security
+controllers --> userService
+controllers --> studentService
+controllers --> teacherService
+controllers --> subjectService
+controllers --> gradeService
+
+userService --> uow
+studentService --> uow
+teacherService --> uow
+subjectService --> uow
+gradeService --> uow
+
+uow --> userRepo
+uow --> studentRepo
+uow --> teacherRepo
+uow --> subjectRepo
+uow --> gradeRepo
+
+userRepo --> h2db
+studentRepo --> h2db
+teacherRepo --> h2db
+subjectRepo --> h2db
+gradeRepo --> h2db
+
+swagger --> controllers
+h2console --> h2db
+
+note right of uow : "Manages transactions\nand repository lifecycle"
+note left of h2db : "In-memory database\nwith auto-initialization"
+note bottom of security : "JWT authentication\nRole-based authorization"
+
+@enduml
