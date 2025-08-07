@@ -87,7 +87,7 @@ public class PublicController {
         SystemStatusDto status = new SystemStatusDto();
         status.setStatus("RUNNING");
         status.setTimestamp(java.time.LocalDateTime.now().toString());
-        status.setVersion("0.2.0");
+        status.setVersion("0.3.0");
         return ResponseEntity.ok(status);
     }
     
