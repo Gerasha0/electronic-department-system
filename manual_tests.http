@@ -1,0 +1,113 @@
+### Тестирование API системы электронного деканата
+### BASE_URL = http://localhost:8080
+
+### 1. Публичные эндпоинты (без аутентификации)
+GET http://localhost:8080/api/public/health
+Accept: application/json
+
+###
+GET http://localhost:8080/api/public/status
+Accept: application/json
+
+### 2. Аутентификация - Логин как админ
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### 3. Аутентификация - Логин как преподаватель
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "teacher1",
+  "password": "teacher123"
+}
+
+### 4. Аутентификация - Логин как студент
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "student1",
+  "password": "student123"
+}
+
+### 5. Аутентификация - Неверные данные
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "invalid",
+  "password": "invalid"
+}
+
+### 6. Получить текущего пользователя (требует аутентификации)
+GET http://localhost:8080/api/auth/current-user
+Accept: application/json
+
+### 7. Логаут
+POST http://localhost:8080/api/auth/logout
+
+### 8. Получить всех пользователей (только админ)
+GET http://localhost:8080/api/users
+Accept: application/json
+
+### 9. Создать пользователя (только админ)
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123",
+  "email": "test@university.ua",
+  "firstName": "Тест",
+  "lastName": "Користувач",
+  "role": "STUDENT"
+}
+
+### 10. Получить пользователя по ID
+GET http://localhost:8080/api/users/1
+Accept: application/json
+
+### 11. Обновить пользователя
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "email": "admin.new@university.ua",
+  "firstName": "Супер",
+  "lastName": "Админ",
+  "role": "ADMIN"
+}
+
+### 12. Получить оценки (требует роль преподавателя или выше)
+GET http://localhost:8080/api/grades
+Accept: application/json
+
+### 13. Создать оценку (только преподаватель)
+POST http://localhost:8080/api/grades
+Content-Type: application/json
+
+{
+  "studentId": 1,
+  "subjectId": 1,
+  "teacherId": 1,
+  "gradeValue": 90,
+  "gradeType": "CURRENT",
+  "gradeDate": "2025-01-07T10:00:00",
+  "isFinal": false,
+  "comments": "Хороша робота"
+}
+
+### 14. Получить оценки студента
+GET http://localhost:8080/api/grades/student/1
+Accept: application/json
+
+### 15. Actuator endpoints (мониторинг)
+GET http://localhost:8080/actuator/health
+Accept: application/json

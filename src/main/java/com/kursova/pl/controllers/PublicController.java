@@ -75,6 +75,22 @@ public class PublicController {
         return ResponseEntity.ok(subjects);
     }
     
+    @GetMapping("/health")
+    @Operation(summary = "Health check", description = "Simple health check endpoint")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK - Electronic Department System is running");
+    }
+    
+    @GetMapping("/status")
+    @Operation(summary = "System status", description = "Get system status information")
+    public ResponseEntity<SystemStatusDto> getStatus() {
+        SystemStatusDto status = new SystemStatusDto();
+        status.setStatus("RUNNING");
+        status.setTimestamp(java.time.LocalDateTime.now().toString());
+        status.setVersion("0.2.0");
+        return ResponseEntity.ok(status);
+    }
+    
     @GetMapping("/department-info")
     @Operation(summary = "Get department information", description = "Retrieves general department information")
     public ResponseEntity<DepartmentInfoDto> getDepartmentInfo() {
@@ -127,6 +143,40 @@ public class PublicController {
         
         public void setTotalSubjects(Integer totalSubjects) {
             this.totalSubjects = totalSubjects;
+        }
+    }
+    
+    /**
+     * DTO for system status
+     */
+    public static class SystemStatusDto {
+        private String status;
+        private String timestamp;
+        private String version;
+        
+        // Getters and Setters
+        public String getStatus() {
+            return status;
+        }
+        
+        public void setStatus(String status) {
+            this.status = status;
+        }
+        
+        public String getTimestamp() {
+            return timestamp;
+        }
+        
+        public void setTimestamp(String timestamp) {
+            this.timestamp = timestamp;
+        }
+        
+        public String getVersion() {
+            return version;
+        }
+        
+        public void setVersion(String version) {
+            this.version = version;
         }
     }
 }
