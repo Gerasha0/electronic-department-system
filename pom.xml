@@ -13,7 +13,7 @@
 
   <groupId>com.kursova</groupId>
   <artifactId>electronic-department</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
 
   <name>Electronic Department System</name>
@@ -28,6 +28,12 @@
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
     <!-- Spring Boot Starters -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
