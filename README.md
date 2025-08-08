@@ -6,7 +6,7 @@ Electronic Department System - это комплексная система уп
 
 ## 👨‍💻 Автор
 
-**Herman Likyanov** - разработчик и архитектор системы
+**Herman Lukyanov** - разработчик и архитектор системы
 
 ---
 
@@ -165,7 +165,7 @@ mvn spring-boot:run
 ## 📞 Поддержка
 
 Для вопросов и предложений обращайтесь к разработчику:
-**Herman Likyanov**
+**Herman Lukyanov**
 
 ---
 
