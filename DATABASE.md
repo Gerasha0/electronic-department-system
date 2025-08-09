@@ -1,6 +1,6 @@
 # Database Setup Guide 🗄️
 
-**Разработчик: Herman Likyanov**
+**Разработчик: Herman Lukyanov**
 
 ## Обзор базы данных
 
@@ -308,6 +308,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=test
 
 ---
 
-**Автор конфигурации базы данных: Herman Likyanov**
+**Автор конфигурации базы данных: Herman Lukyanov**
 
 Для дополнительных вопросов по настройке базы данных обращайтесь к документации Spring Boot и Hibernate.

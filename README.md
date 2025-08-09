@@ -6,7 +6,7 @@ Electronic Department System - это комплексная система уп
 
 ## 👨‍💻 Автор
 
-**Herman Likyanov** - разработчик и архитектор системы
+**Herman Lukyanov** - разработчик и архитектор системы
 
 ---
 
@@ -147,6 +147,11 @@ mvn spring-boot:run
 ## 📖 Документация
 
 - **🧪 Testing Guide**: [TESTING_GUIDE.md](TESTING_GUIDE.md) - подробное руководство по тестированию
+- **📊 UML Diagrams**: [diagrams/](diagrams/) - архитектурные диаграммы системы
+  - [Component Diagram](diagrams/component_diagram.puml) - компоненты системы
+  - [Sequence Diagram](diagrams/sequence_diagram.puml) - процесс создания оценки
+  - [Architecture Diagram](diagrams/simple_architecture.puml) - упрощенная архитектура
+  - [API Structure](diagrams/api_structure.puml) - структура REST API
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **OpenAPI JSON**: http://localhost:8080/api-docs
 - **Database README**: [DATABASE.md](DATABASE.md)
@@ -165,7 +170,7 @@ mvn spring-boot:run
 ## 📞 Поддержка
 
 Для вопросов и предложений обращайтесь к разработчику:
-**Herman Likyanov**
+**Herman Lukyanov**
 
 ---
 
