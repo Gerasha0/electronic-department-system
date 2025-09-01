@@ -3,8 +3,8 @@ package com.kursova.bll.services.impl;
 import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.dto.UserDto;
-import com.kursova.bll.mappers.StudentMapper;
 import com.kursova.bll.mappers.TeacherMapper;
+import com.kursova.bll.services.StudentService;
 import com.kursova.bll.services.TeacherService;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Teacher;
@@ -28,13 +28,13 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final UnitOfWork unitOfWork;
     private final TeacherMapper teacherMapper;
-    private final StudentMapper studentMapper;
+    private final StudentService studentService;
 
     @Autowired
-    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, StudentMapper studentMapper) {
+    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, StudentService studentService) {
         this.unitOfWork = unitOfWork;
         this.teacherMapper = teacherMapper;
-        this.studentMapper = studentMapper;
+        this.studentService = studentService;
     }
 
     // Implementation of BaseService methods
@@ -252,7 +252,7 @@ public class TeacherServiceImpl implements TeacherService {
         // Find students who have grades from this teacher or study subjects taught by this teacher
         List<Student> students = unitOfWork.getStudentRepository().findStudentsByTeacherId(teacherId);
         return students.stream()
-                .map(studentMapper::toDto)
+                .map(student -> studentService.findById(student.getId()))
                 .collect(Collectors.toList());
     }
 }

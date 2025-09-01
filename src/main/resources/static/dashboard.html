@@ -187,8 +187,14 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="student-search" placeholder="🔍 Пошук студентів...">
-                    <button id="search-students" class="btn btn-primary">🔍 Пошук</button>
+                    <select id="student-filter-subject">
+                        <option value="">Всі дисципліни</option>
+                    </select>
+                    <input type="text" id="student-search" placeholder="🔍 Пошук студентів..." class="search-input">
+                    <select id="student-filter-group">
+                        <option value="">Всі групи</option>
+                    </select>
+                    <button id="filter-students" class="btn btn-primary">🔍 Фільтрувати</button>
                 </div>
             </div>
 

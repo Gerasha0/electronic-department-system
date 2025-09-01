@@ -74,7 +74,7 @@ class Dashboard {
             'students-nav': ['ADMIN', 'MANAGER', 'TEACHER'],          // ADMIN, MANAGER, TEACHER
             'groups-nav': ['ADMIN', 'MANAGER', 'TEACHER'],            // ADMIN, MANAGER, TEACHER (read-only for TEACHER)
             'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT', 'GUEST'], // All authenticated users
-            'grades-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT']  // All authenticated users except GUEST
+            'grades-nav': ['ADMIN', 'MANAGER', 'STUDENT']             // All authenticated users except GUEST and TEACHER
         };
 
         // Hide/show navigation based on role
@@ -281,12 +281,14 @@ class Dashboard {
                 break;
             case 'grades':
                 await this.loadGradesData();
+                this.setupGradesFilters();
                 break;
             case 'teachers':
                 await this.loadTeachersData();
                 break;
             case 'students':
                 await this.loadStudentsData();
+                await this.loadStudentFilters();
                 break;
             case 'groups':
                 await this.loadGroupsData();
@@ -537,6 +539,15 @@ class Dashboard {
         this.renderGradesTable(filteredGrades);
     }
 
+    setupGradesFilters() {
+        // Hide student search for STUDENT role since they only see their own grades
+        const studentSearchInput = document.getElementById('grade-search-student');
+        if (studentSearchInput) {
+            const isStudent = this.currentUser?.role === 'STUDENT';
+            studentSearchInput.style.display = isStudent ? 'none' : 'block';
+        }
+    }
+
     async loadTeachersData() {
         const tbody = document.getElementById('teachers-tbody');
         if (!tbody) return;
@@ -654,6 +665,98 @@ class Dashboard {
             </tr>
         `;
         }).join('');
+    }
+
+    async loadStudentFilters() {
+        // Load subjects for filter (only for teachers - their subjects, for others - all)
+        try {
+            let subjectResponse;
+            if (this.currentUser?.role === 'TEACHER' && this.currentUser.teacherId) {
+                subjectResponse = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
+            } else {
+                subjectResponse = await apiClient.getPublicSubjects();
+            }
+
+            const subjectSelect = document.getElementById('student-filter-subject');
+            if (subjectSelect && subjectResponse?.success) {
+                const subjects = subjectResponse.data || [];
+                subjectSelect.innerHTML = '<option value="">Всі дисципліни</option>' +
+                    subjects.map(subject => 
+                        `<option value="${subject.id}">${subject.subjectName || 'Без назви'}</option>`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error loading subjects filter:', error);
+        }
+
+        // Load groups for filter
+        try {
+            const groupResponse = await apiClient.getActiveGroups();
+            const groupSelect = document.getElementById('student-filter-group');
+            if (groupSelect && groupResponse?.success) {
+                const groups = groupResponse.data || [];
+                groupSelect.innerHTML = '<option value="">Всі групи</option>' +
+                    groups.map(group => 
+                        `<option value="${group.id}">${group.groupName || 'Без назви'}</option>`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error loading groups filter:', error);
+        }
+
+        // Add event listeners for filters
+        const filterButton = document.getElementById('filter-students');
+        if (filterButton) {
+            filterButton.addEventListener('click', () => this.filterStudents());
+        }
+
+        const searchInput = document.getElementById('student-search');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.filterStudents();
+                }
+            });
+        }
+    }
+
+    async filterStudents() {
+        const subjectFilter = document.getElementById('student-filter-subject')?.value || '';
+        const groupFilter = document.getElementById('student-filter-group')?.value || '';
+        const searchTerm = document.getElementById('student-search')?.value?.toLowerCase() || '';
+
+        const tbody = document.getElementById('students-tbody');
+        if (!tbody) return;
+
+        // Get all student rows
+        const rows = tbody.querySelectorAll('tr');
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 6) return; // Skip if not enough cells
+
+            const studentName = cells[0]?.textContent?.toLowerCase() || '';
+            const studentEmail = cells[1]?.textContent?.toLowerCase() || '';
+            const studentGroup = cells[2]?.textContent || '';
+            
+            // Apply filters
+            let showRow = true;
+
+            // Search filter (name or email)
+            if (searchTerm && !studentName.includes(searchTerm) && !studentEmail.includes(searchTerm)) {
+                showRow = false;
+            }
+
+            // Group filter
+            if (groupFilter && !studentGroup.includes(groupFilter)) {
+                showRow = false;
+            }
+
+            // Subject filter is already handled by loadStudentsData for teachers
+            // For others, we would need additional API endpoint to filter by subject
+
+            row.style.display = showRow ? '' : 'none';
+        });
     }
 
     // === GROUPS MANAGEMENT ===

@@ -457,7 +457,8 @@ table tbody tr:last-child td {
     max-width: 1200px;
     max-height: 90vh;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto; /* Added vertical scroll */
+    overflow-x: hidden;
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
     animation: slideUp 0.3s ease;
@@ -501,6 +502,12 @@ table tbody tr:last-child td {
 /* Fix modal stacking order */
 #modal {
     z-index: 2000; /* Higher than student grades modal */
+}
+
+#modal .modal-content {
+    max-height: 95vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #studentGradesModal {
