@@ -22,14 +22,14 @@ import java.util.List;
 @RequestMapping("/api/users")
 @Tag(name = "User Management", description = "Operations for managing users")
 public class UserController {
-    
+
     private final UserService userService;
-    
+
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
-    
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Create new user", description = "Creates a new user with the provided information")
@@ -37,7 +37,7 @@ public class UserController {
         UserDto createdUser = userService.create(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-    
+
     @PostMapping("/with-password")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Create new user with password", description = "Creates a new user with password")
@@ -47,7 +47,7 @@ public class UserController {
         UserDto createdUser = userService.createWithPassword(userDto, password);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-    
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get user by ID", description = "Retrieves user information by ID")
@@ -56,7 +56,7 @@ public class UserController {
         UserDto user = userService.findById(id);
         return ResponseEntity.ok(user);
     }
-    
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get all users", description = "Retrieves all users")
@@ -64,7 +64,7 @@ public class UserController {
         List<UserDto> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
-    
+
     @GetMapping("/by-username/{username}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get user by username", description = "Retrieves user by username")
@@ -73,7 +73,7 @@ public class UserController {
         UserDto user = userService.findByUsername(username);
         return ResponseEntity.ok(user);
     }
-    
+
     @GetMapping("/by-role/{role}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get users by role", description = "Retrieves users by role")
@@ -82,7 +82,7 @@ public class UserController {
         List<UserDto> users = userService.findByRole(role);
         return ResponseEntity.ok(users);
     }
-    
+
     @GetMapping("/active/by-role/{role}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get active users by role", description = "Retrieves active users by role")
@@ -91,7 +91,7 @@ public class UserController {
         List<UserDto> users = userService.findActiveByRole(role);
         return ResponseEntity.ok(users);
     }
-    
+
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get active users", description = "Retrieves all active users")
@@ -99,7 +99,7 @@ public class UserController {
         List<UserDto> users = userService.findActiveUsers();
         return ResponseEntity.ok(users);
     }
-    
+
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Search users by name", description = "Searches users by name")
@@ -108,7 +108,7 @@ public class UserController {
         List<UserDto> users = userService.searchByName(name);
         return ResponseEntity.ok(users);
     }
-    
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Update user", description = "Updates user information")
@@ -118,7 +118,7 @@ public class UserController {
         UserDto updatedUser = userService.update(id, userDto);
         return ResponseEntity.ok(updatedUser);
     }
-    
+
     @PutMapping("/{id}/password")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.id")
     @Operation(summary = "Update user password", description = "Updates user password")
@@ -129,7 +129,7 @@ public class UserController {
         userService.updatePassword(id, oldPassword, newPassword);
         return ResponseEntity.ok().build();
     }
-    
+
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Activate user", description = "Activates user account")
@@ -138,7 +138,7 @@ public class UserController {
         UserDto activatedUser = userService.activateUser(id);
         return ResponseEntity.ok(activatedUser);
     }
-    
+
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Deactivate user", description = "Deactivates user account")
@@ -147,7 +147,7 @@ public class UserController {
         UserDto deactivatedUser = userService.deactivateUser(id);
         return ResponseEntity.ok(deactivatedUser);
     }
-    
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete user", description = "Deletes user account")
@@ -156,7 +156,7 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/{id}/exists")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Check if user exists", description = "Checks if user exists by ID")
@@ -165,7 +165,7 @@ public class UserController {
         boolean exists = userService.existsById(id);
         return ResponseEntity.ok(exists);
     }
-    
+
     @GetMapping("/username/{username}/exists")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Check if username exists", description = "Checks if username exists")
@@ -174,7 +174,7 @@ public class UserController {
         boolean exists = userService.existsByUsername(username);
         return ResponseEntity.ok(exists);
     }
-    
+
     @GetMapping("/email/{email}/exists")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Check if email exists", description = "Checks if email exists")

@@ -14,38 +14,38 @@ import java.util.Optional;
  */
 @Repository
 public interface SubjectRepository extends BaseRepository<Subject, Long> {
-    
+
     /**
      * Find subject by code
      */
     Optional<Subject> findBySubjectCode(String subjectCode);
-    
+
     /**
      * Find active subjects
      */
     List<Subject> findByIsActiveTrueOrderBySubjectNameAsc();
-    
+
     /**
      * Find subjects by assessment type
      */
     List<Subject> findByAssessmentTypeAndIsActiveTrueOrderBySubjectNameAsc(AssessmentType assessmentType);
-    
+
     /**
      * Find subjects by semester
      */
     List<Subject> findBySemesterAndIsActiveTrueOrderBySubjectNameAsc(Integer semester);
-    
+
     /**
      * Find subjects by credits
      */
     List<Subject> findByCreditsAndIsActiveTrueOrderBySubjectNameAsc(Integer credits);
-    
+
     /**
      * Find subjects taught by teacher
      */
     @Query("SELECT DISTINCT s FROM Subject s JOIN s.teachers t WHERE t.id = :teacherId AND s.isActive = true")
     List<Subject> findByTeacherId(@Param("teacherId") Long teacherId);
-    
+
     /**
      * Search subjects by name
      */
@@ -53,12 +53,12 @@ public interface SubjectRepository extends BaseRepository<Subject, Long> {
            "LOWER(s.subjectName) LIKE LOWER(CONCAT('%', :name, '%')) " +
            "AND s.isActive = true ORDER BY s.subjectName")
     List<Subject> searchByName(@Param("name") String name);
-    
+
     /**
      * Check if subject code exists
      */
     boolean existsBySubjectCode(String subjectCode);
-    
+
     /**
      * Find subjects with grades for student
      */

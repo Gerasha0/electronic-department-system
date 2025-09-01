@@ -25,7 +25,7 @@ import com.kursova.dal.entities.Grade;
 @RequestMapping("/api/grades")
 @Tag(name = "Grade Management", description = "Operations for managing student grades")
 public class GradeController {
-    
+
     private final GradeService gradeService;
     private final UnitOfWork unitOfWork;
 
@@ -33,7 +33,7 @@ public class GradeController {
         this.gradeService = gradeService;
         this.unitOfWork = unitOfWork;
     }
-    
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Create new grade", description = "Creates a new grade for a student")
@@ -68,7 +68,7 @@ public class GradeController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
     }
     }
-    
+
     @PostMapping("/by-user-ids")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Create grade by user ids", description = "Creates a new grade given userId (not studentId), teacherId, subjectId and value")
@@ -91,7 +91,7 @@ public class GradeController {
                 );
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
             }
-            
+
             Long studentId = studentOpt.get().getId();
             GradeDto result = gradeService.createGradeWithValidation(studentId, teacherId, subjectId, gradeValue, gradeType, comments);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -106,7 +106,7 @@ public class GradeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
         }
     }
-    
+
     @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get grade by ID", description = "Retrieves grade information by ID")
@@ -115,7 +115,7 @@ public class GradeController {
         GradeDto grade = gradeService.findById(id);
         return ResponseEntity.ok(grade);
     }
-    
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get all grades", description = "Retrieves all grades (admin/manager/teacher)")
@@ -123,7 +123,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findAll();
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
     @Operation(summary = "Get grades by student", description = "Retrieves all grades for a specific student")
@@ -132,7 +132,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findByStudentId(studentId);
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/teacher/{teacherId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #teacherId == authentication.principal.teacherId")
     @Operation(summary = "Get grades by teacher", description = "Retrieves all grades assigned by a specific teacher")
@@ -141,7 +141,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findByTeacherId(teacherId);
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/subject/{subjectId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get grades by subject", description = "Retrieves all grades for a specific subject")
@@ -150,7 +150,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findBySubjectId(subjectId);
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/student/{studentId}/subject/{subjectId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
     @Operation(summary = "Get grades by student and subject", description = "Retrieves grades for a specific student in a specific subject")
@@ -160,7 +160,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findByStudentAndSubject(studentId, subjectId);
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/student/{studentId}/final")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
     @Operation(summary = "Get final grades by student", description = "Retrieves final grades for a specific student")
@@ -169,7 +169,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findFinalGradesByStudent(studentId);
         return ResponseEntity.ok(grades);
     }
-    
+
     @GetMapping("/type/{gradeType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get grades by type", description = "Retrieves grades by grade type")
@@ -178,7 +178,7 @@ public class GradeController {
         List<GradeDto> grades = gradeService.findByGradeType(gradeType);
         return ResponseEntity.ok(grades);
     }
-    
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Update grade", description = "Updates grade information")
@@ -188,7 +188,7 @@ public class GradeController {
         GradeDto updatedGrade = gradeService.update(id, gradeDto);
         return ResponseEntity.ok(updatedGrade);
     }
-    
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Delete grade", description = "Deletes a grade")
@@ -197,7 +197,7 @@ public class GradeController {
         gradeService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/student/{studentId}/average")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
     @Operation(summary = "Get student average grade", description = "Calculates overall average grade for a student")
@@ -206,7 +206,7 @@ public class GradeController {
         Double averageGrade = gradeService.getOverallAverageGradeForStudent(studentId);
         return ResponseEntity.ok(averageGrade);
     }
-    
+
     @GetMapping("/student/{studentId}/subject/{subjectId}/average")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
     @Operation(summary = "Get student subject average", description = "Calculates average grade for a student in a specific subject")

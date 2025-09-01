@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 public class SubjectServiceImpl implements SubjectService {
-    
+
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
     private final SubjectMapper subjectMapper;
     private final TeacherMapper teacherMapper;
-    
-    public SubjectServiceImpl(SubjectRepository subjectRepository, 
+
+    public SubjectServiceImpl(SubjectRepository subjectRepository,
                              TeacherRepository teacherRepository,
                              SubjectMapper subjectMapper,
                              TeacherMapper teacherMapper) {
@@ -37,7 +37,7 @@ public class SubjectServiceImpl implements SubjectService {
         this.subjectMapper = subjectMapper;
         this.teacherMapper = teacherMapper;
     }
-    
+
     // Helper method to add teachers to SubjectDto
     private SubjectDto enrichWithTeachers(Subject subject) {
         SubjectDto dto = subjectMapper.toDto(subject);
@@ -49,27 +49,27 @@ public class SubjectServiceImpl implements SubjectService {
         }
         return dto;
     }
-    
+
     @Override
     @Transactional
     public SubjectDto create(SubjectDto dto) {
         if (dto.getSubjectCode() != null && subjectRepository.existsBySubjectCode(dto.getSubjectCode())) {
             throw new RuntimeException("Subject code already exists: " + dto.getSubjectCode());
         }
-        
+
         Subject subject = subjectMapper.toEntity(dto);
         subject.setIsActive(true);
         Subject savedSubject = subjectRepository.save(subject);
         return subjectMapper.toDto(savedSubject);
     }
-    
+
     @Override
     public SubjectDto findById(Long id) {
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + id));
         return enrichWithTeachers(subject);
     }
-    
+
     @Override
     public List<SubjectDto> findAll() {
         return subjectRepository.findAll()
@@ -77,20 +77,20 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional
     public SubjectDto update(Long id, SubjectDto dto) {
         Subject existingSubject = subjectRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + id));
-        
+
         // Check subject code uniqueness (if changed)
-        if (dto.getSubjectCode() != null && 
+        if (dto.getSubjectCode() != null &&
             !dto.getSubjectCode().equals(existingSubject.getSubjectCode()) &&
             subjectRepository.existsBySubjectCode(dto.getSubjectCode())) {
             throw new RuntimeException("Subject code already exists: " + dto.getSubjectCode());
         }
-        
+
         // Update fields
         if (dto.getSubjectName() != null) {
             existingSubject.setSubjectName(dto.getSubjectName());
@@ -122,11 +122,11 @@ public class SubjectServiceImpl implements SubjectService {
         if (dto.getAssessmentType() != null) {
             existingSubject.setAssessmentType(dto.getAssessmentType());
         }
-        
+
         Subject savedSubject = subjectRepository.save(existingSubject);
         return subjectMapper.toDto(savedSubject);
     }
-    
+
     @Override
     @Transactional
     public void delete(Long id) {
@@ -135,19 +135,19 @@ public class SubjectServiceImpl implements SubjectService {
         }
         subjectRepository.deleteById(id);
     }
-    
+
     @Override
     public boolean existsById(Long id) {
         return subjectRepository.existsById(id);
     }
-    
+
     @Override
     public SubjectDto findBySubjectCode(String subjectCode) {
         Subject subject = subjectRepository.findBySubjectCode(subjectCode)
             .orElseThrow(() -> new RuntimeException("Subject not found with code: " + subjectCode));
         return subjectMapper.toDto(subject);
     }
-    
+
     @Override
     public List<SubjectDto> findActiveSubjects() {
         return subjectRepository.findByIsActiveTrueOrderBySubjectNameAsc()
@@ -155,7 +155,7 @@ public class SubjectServiceImpl implements SubjectService {
             .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<SubjectDto> searchByName(String name) {
         return subjectRepository.searchByName(name)
@@ -163,7 +163,7 @@ public class SubjectServiceImpl implements SubjectService {
             .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<SubjectDto> findByAssessmentType(AssessmentType assessmentType) {
         return subjectRepository.findByAssessmentTypeAndIsActiveTrueOrderBySubjectNameAsc(assessmentType)
@@ -171,7 +171,7 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<SubjectDto> findBySemester(Integer semester) {
         return subjectRepository.findBySemesterAndIsActiveTrueOrderBySubjectNameAsc(semester)
@@ -179,7 +179,7 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<SubjectDto> findByCredits(Integer credits) {
         return subjectRepository.findByCreditsAndIsActiveTrueOrderBySubjectNameAsc(credits)
@@ -187,7 +187,7 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<SubjectDto> findByTeacherId(Long teacherId) {
         return subjectRepository.findByTeacherId(teacherId)
@@ -195,12 +195,12 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     public boolean existsBySubjectCode(String subjectCode) {
         return subjectRepository.existsBySubjectCode(subjectCode);
     }
-    
+
     @Override
     public List<SubjectDto> findSubjectsWithGradesForStudent(Long studentId) {
         return subjectRepository.findSubjectsWithGradesForStudent(studentId)
@@ -208,54 +208,54 @@ public class SubjectServiceImpl implements SubjectService {
             .map(subjectMapper::toDto)
             .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional
     public void assignTeacher(Long subjectId, Long teacherId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
-        
+
         Teacher teacher = teacherRepository.findById(teacherId)
             .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
-        
+
         if (!teacher.getIsActive()) {
             throw new RuntimeException("Cannot assign inactive teacher to subject");
         }
-        
+
         subject.getTeachers().add(teacher);
         subjectRepository.save(subject);
     }
-    
+
     @Override
     @Transactional
     public void removeTeacher(Long subjectId, Long teacherId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
-        
+
         Teacher teacher = teacherRepository.findById(teacherId)
             .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
-        
+
         subject.getTeachers().remove(teacher);
         subjectRepository.save(subject);
     }
-    
+
     @Override
     @Transactional
     public SubjectDto activateSubject(Long subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
-        
+
         subject.setIsActive(true);
         Subject savedSubject = subjectRepository.save(subject);
         return subjectMapper.toDto(savedSubject);
     }
-    
+
     @Override
     @Transactional
     public SubjectDto deactivateSubject(Long subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
-        
+
         subject.setIsActive(false);
         Subject savedSubject = subjectRepository.save(subject);
         return subjectMapper.toDto(savedSubject);

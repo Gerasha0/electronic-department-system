@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ActiveProfiles("test")
 class AppTest {
-    
+
     /**
      * Basic Spring Boot context load test
      * Verifies that the application context starts up correctly
@@ -23,7 +23,7 @@ class AppTest {
         // Test passes if Spring context loads without exceptions
         assertTrue(true);
     }
-    
+
     /**
      * Application health check test
      * Verifies basic application functionality

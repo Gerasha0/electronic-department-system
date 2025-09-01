@@ -15,9 +15,9 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring", uses = {DateTimeMapper.class})
 public interface GradeMapper {
-    
+
     GradeMapper INSTANCE = Mappers.getMapper(GradeMapper.class);
-    
+
     @Mapping(target = "gradeDate", source = "gradeDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
@@ -31,7 +31,7 @@ public interface GradeMapper {
     @Mapping(target = "subjectName", source = "subject.subjectName")
     @Mapping(target = "subjectCode", source = "subject.subjectCode")
     GradeDto toDto(Grade entity);
-    
+
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "gradeDate", ignore = true)
@@ -39,11 +39,11 @@ public interface GradeMapper {
     @Mapping(target = "teacher", ignore = true)
     @Mapping(target = "subject", ignore = true)
     Grade toEntity(GradeDto dto);
-    
+
     List<GradeDto> toDtoList(List<Grade> entities);
-    
+
     List<Grade> toEntityList(List<GradeDto> dtos);
-    
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "student", ignore = true)
     @Mapping(target = "teacher", ignore = true)
@@ -52,7 +52,7 @@ public interface GradeMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "gradeDate", ignore = true)
     void updateEntityFromDto(GradeDto dto, @MappingTarget Grade entity);
-    
+
     // Simple mapping without nested objects for lists
     @Named("gradeToDtoSimple")
     @Mapping(target = "gradeDate", source = "gradeDate", dateFormat = "yyyy-MM-dd HH:mm:ss")

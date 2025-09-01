@@ -14,42 +14,42 @@ import java.util.Optional;
  */
 @Repository
 public interface StudentGroupRepository extends BaseRepository<StudentGroup, Long> {
-    
+
     /**
      * Find group by name
      */
     Optional<StudentGroup> findByGroupName(String groupName);
-    
+
     /**
      * Find active groups
      */
     List<StudentGroup> findByIsActiveTrueOrderByGroupNameAsc();
-    
+
     /**
      * Find groups by course year
      */
     List<StudentGroup> findByCourseYearAndIsActiveTrueOrderByGroupNameAsc(Integer courseYear);
-    
+
     /**
      * Find groups by study form
      */
     List<StudentGroup> findByStudyFormAndIsActiveTrueOrderByGroupNameAsc(StudyForm studyForm);
-    
+
     /**
      * Find groups by start year
      */
     List<StudentGroup> findByStartYearAndIsActiveTrueOrderByGroupNameAsc(Integer startYear);
-    
+
     /**
      * Find groups by specialization
      */
     List<StudentGroup> findBySpecializationContainingIgnoreCaseAndIsActiveTrueOrderByGroupNameAsc(String specialization);
-    
+
     /**
      * Check if group name exists
      */
     boolean existsByGroupName(String groupName);
-    
+
     /**
      * Search groups by name
      */
@@ -57,7 +57,7 @@ public interface StudentGroupRepository extends BaseRepository<StudentGroup, Lon
            "LOWER(g.groupName) LIKE LOWER(CONCAT('%', :name, '%')) " +
            "AND g.isActive = true ORDER BY g.groupName")
     List<StudentGroup> searchByName(@Param("name") String name);
-    
+
     /**
      * Find groups with available slots
      */

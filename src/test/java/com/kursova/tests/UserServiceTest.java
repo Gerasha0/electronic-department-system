@@ -142,7 +142,7 @@ class UserServiceTest {
         // Arrange
         List<User> users = Arrays.asList(testUser);
         List<UserDto> userDtos = Arrays.asList(testUserDto);
-        
+
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
         when(userRepository.findByRole(UserRole.STUDENT)).thenReturn(users);
         when(userMapper.toDtoList(users)).thenReturn(userDtos);
@@ -282,7 +282,7 @@ class UserServiceTest {
         activatedUser.setId(1L);
         activatedUser.setUsername("testuser");
         activatedUser.setIsActive(true);
-        
+
         UserDto activatedUserDto = new UserDto();
         activatedUserDto.setId(1L);
         activatedUserDto.setUsername("testuser");
@@ -309,7 +309,7 @@ class UserServiceTest {
         deactivatedUser.setId(1L);
         deactivatedUser.setUsername("testuser");
         deactivatedUser.setIsActive(false);
-        
+
         UserDto deactivatedUserDto = new UserDto();
         deactivatedUserDto.setId(1L);
         deactivatedUserDto.setUsername("testuser");

@@ -24,12 +24,12 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, com.kursova.config.jwt.JwtUtils jwtUtils) throws Exception {
         http
@@ -46,25 +46,25 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui.html").permitAll()
                 // Allow root, explicit HTML pages and static resources
                 .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/static/**", "/favicon.ico", "/*.css", "/*.js", "/*.html").permitAll()
-                
+
                 // Admin only endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
+
                 // Manager endpoints
                 .requestMatchers("/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
-                
+
                 // Teacher endpoints
                 .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
-                
+
                 // Grade endpoints
                 .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
-                
+
                 // User endpoints
                 .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
-                
+
                 // Student endpoints
                 .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT")
-                
+
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
@@ -80,7 +80,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -88,7 +88,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

@@ -8,13 +8,13 @@ public enum StudyForm {
     PART_TIME("Заочна"),
     EVENING("Вечірня"),
     DISTANCE("Дистанційна");
-    
+
     private final String displayName;
-    
+
     StudyForm(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }

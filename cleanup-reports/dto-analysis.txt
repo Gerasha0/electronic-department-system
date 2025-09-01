@@ -1,0 +1,7 @@
+DTO classes analysis:
+UserDto: 139 lines, 22 methods
+SubjectDto: 219 lines, 35 methods
+TeacherDto: 181 lines, 31 methods
+GradeDto: 230 lines, 40 methods
+StudentDto: 185 lines, 31 methods
+StudentGroupDto: 170 lines, 29 methods

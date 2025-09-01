@@ -10,13 +10,13 @@ public enum GradeType {
     FINAL("Підсумкова"),
     RETAKE("Перездача"),
     MAKEUP("Відпрацювання");
-    
+
     private final String displayName;
-    
+
     GradeType(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }

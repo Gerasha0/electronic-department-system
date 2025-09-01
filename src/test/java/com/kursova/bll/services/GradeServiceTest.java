@@ -121,7 +121,7 @@ class GradeServiceTest {
     void findByStudentId_ShouldReturnGrades_WhenStudentHasGrades() {
         // Arrange
         List<Grade> grades = Arrays.asList(testGrade);
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdOrderByGradeDateDesc(1L)).thenReturn(grades);
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);
@@ -142,7 +142,7 @@ class GradeServiceTest {
     void findByTeacherId_ShouldReturnGrades_WhenTeacherHasGrades() {
         // Arrange
         List<Grade> grades = Arrays.asList(testGrade);
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByTeacherIdOrderByGradeDateDesc(1L)).thenReturn(grades);
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);
@@ -234,7 +234,7 @@ class GradeServiceTest {
     void findByStudentAndSubject_ShouldReturnGrades_WhenGradesExist() {
         // Arrange
         List<Grade> grades = Arrays.asList(testGrade);
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdAndSubjectIdOrderByGradeDateDesc(1L, 1L)).thenReturn(grades);
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);
@@ -256,7 +256,7 @@ class GradeServiceTest {
     void getAverageGradeForStudentInSubject_ShouldReturnAverage_WhenGradesExist() {
         // Arrange
         Double expectedAverage = 85.5;
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.getAverageGradeForStudentInSubject(1L, 1L)).thenReturn(expectedAverage);
 
@@ -273,7 +273,7 @@ class GradeServiceTest {
     void getOverallAverageGradeForStudent_ShouldReturnAverage_WhenGradesExist() {
         // Arrange
         Double expectedAverage = 82.7;
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.getOverallAverageGradeForStudent(1L)).thenReturn(expectedAverage);
 
@@ -292,7 +292,7 @@ class GradeServiceTest {
         testGrade.setIsFinal(true);
         testGradeDto.setIsFinal(true);
         List<Grade> finalGrades = Arrays.asList(testGrade);
-        
+
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdAndIsFinalTrueOrderBySubjectSubjectNameAsc(1L)).thenReturn(finalGrades);
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);

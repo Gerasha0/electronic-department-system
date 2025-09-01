@@ -14,44 +14,44 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends BaseRepository<User, Long> {
-    
+
     /**
      * Find user by username
      */
     Optional<User> findByUsername(String username);
-    
+
     /**
      * Find user by email
      */
     Optional<User> findByEmail(String email);
-    
+
     /**
      * Find users by role
      */
     List<User> findByRole(UserRole role);
-    
+
     /**
      * Find active users by role
      */
     List<User> findByRoleAndIsActiveTrue(UserRole role);
-    
+
     /**
      * Check if username exists
      */
     boolean existsByUsername(String username);
-    
+
     /**
      * Check if email exists
      */
     boolean existsByEmail(String email);
-    
+
     /**
      * Find users by name containing (case insensitive)
      */
     @Query("SELECT u FROM User u WHERE " +
            "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<User> findByFullNameContainingIgnoreCase(@Param("name") String name);
-    
+
     /**
      * Find active users
      */

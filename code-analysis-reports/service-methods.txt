@@ -1,0 +1,99 @@
+🛠️ Service methods:
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:34:    public GradeServiceImpl(UnitOfWork unitOfWork, GradeMapper gradeMapper) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:43:    public List<GradeDto> findAll() {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:52:    public List<GradeDto> getAllGrades() {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:58:    public GradeDto findById(Long id) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:66:    public GradeDto create(GradeDto gradeDto) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:104:    public GradeDto save(GradeDto gradeDto) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:109:    public GradeDto update(Long id, GradeDto gradeDto) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:125:    public void delete(Long id) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:132:    public void deleteById(Long id) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:138:    public boolean existsById(Long id) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:142:    public long count() {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:150:    public List<GradeDto> findByStudentId(Long studentId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:159:    public List<GradeDto> findByTeacherId(Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:168:    public List<GradeDto> findBySubjectId(Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:177:    public List<GradeDto> findByStudentAndSubject(Long studentId, Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:186:    public GradeDto findByStudentSubjectAndType(Long studentId, Long subjectId, GradeType gradeType) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:195:    public List<GradeDto> findFinalGradesByStudent(Long studentId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:204:    public List<GradeDto> findByGradeType(GradeType gradeType) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:213:    public List<GradeDto> findByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:222:    public Double getAverageGradeForStudentInSubject(Long studentId, Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:228:    public Double getOverallAverageGradeForStudent(Long studentId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:234:    public List<Object[]> getTopPerformingStudents() {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:240:    public Long countGradesByTeacherAndSubject(Long teacherId, Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:245:    public GradeDto createGradeWithValidation(Long studentId, Long teacherId, Long subjectId, 
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:291:    public GradeDto updateGradeWithValidation(Long gradeId, Integer gradeValue, String comments) {
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java:309:    public GradeDto markAsFinal(Long gradeId) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:32:    public UserServiceImpl(UnitOfWork unitOfWork, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:39:    public UserDto create(UserDto dto) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:59:    public UserDto createWithPassword(UserDto userDto, String password) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:86:    public UserDto findById(Long id) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:94:    public UserDto findByUsername(String username) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:102:    public UserDto findByEmail(String email) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:110:    public List<UserDto> findAll() {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:117:    public List<UserDto> findByRole(UserRole role) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:124:    public List<UserDto> findActiveByRole(UserRole role) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:131:    public List<UserDto> searchByName(String name) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:138:    public List<UserDto> findActiveUsers() {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:144:    public UserDto update(Long id, UserDto dto) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:162:    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:175:    public UserDto activateUser(Long userId) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:185:    public UserDto deactivateUser(Long userId) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:195:    public void delete(Long id) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:204:    public boolean existsById(Long id) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:210:    public boolean existsByUsername(String username) {
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java:216:    public boolean existsByEmail(String email) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:31:    public SubjectServiceImpl(SubjectRepository subjectRepository, 
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:55:    public SubjectDto create(SubjectDto dto) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:67:    public SubjectDto findById(Long id) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:74:    public List<SubjectDto> findAll() {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:83:    public SubjectDto update(Long id, SubjectDto dto) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:132:    public void delete(Long id) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:140:    public boolean existsById(Long id) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:145:    public SubjectDto findBySubjectCode(String subjectCode) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:152:    public List<SubjectDto> findActiveSubjects() {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:160:    public List<SubjectDto> searchByName(String name) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:168:    public List<SubjectDto> findByAssessmentType(AssessmentType assessmentType) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:176:    public List<SubjectDto> findBySemester(Integer semester) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:184:    public List<SubjectDto> findByCredits(Integer credits) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:192:    public List<SubjectDto> findByTeacherId(Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:200:    public boolean existsBySubjectCode(String subjectCode) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:205:    public List<SubjectDto> findSubjectsWithGradesForStudent(Long studentId) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:214:    public void assignTeacher(Long subjectId, Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:231:    public void removeTeacher(Long subjectId, Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:244:    public SubjectDto activateSubject(Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java:255:    public SubjectDto deactivateSubject(Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:30:    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:39:    public List<TeacherDto> findAll() {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:48:    public TeacherDto findById(Long id) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:55:    public TeacherDto create(TeacherDto teacherDto) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:69:    public TeacherDto update(Long id, TeacherDto teacherDto) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:85:    public void delete(Long id) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:94:    public boolean existsById(Long id) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:102:    public TeacherDto findByUserId(Long userId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:110:    public TeacherDto findByUsername(String username) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:117:    public List<TeacherDto> findActiveTeachers() {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:152:    public List<TeacherDto> searchByName(String name) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:164:    public List<TeacherDto> findByAcademicTitle(String academicTitle) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:171:    public List<TeacherDto> findByDepartmentPosition(String position) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:178:    public List<TeacherDto> findBySubjectId(Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:184:    public TeacherDto createWithUser(UserDto userDto, String password, TeacherDto teacherDto) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:191:    public TeacherDto assignSubject(Long teacherId, Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:206:    public TeacherDto removeSubject(Long teacherId, Long subjectId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:221:    public TeacherDto activateTeacher(Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java:233:    public TeacherDto deactivateTeacher(Long teacherId) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:29:    public StudentServiceImpl(UnitOfWork unitOfWork, StudentMapper studentMapper) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:36:    public List<StudentDto> findAll() {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:45:    public StudentDto findById(Long id) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:53:    public StudentDto findByIdWithCalculatedData(Long id) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:59:    public StudentDto create(StudentDto studentDto) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:68:    public StudentDto update(Long id, StudentDto studentDto) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:79:    public void delete(Long id) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:88:    public boolean existsById(Long id) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:94:    public List<StudentDto> findActiveStudents() {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:104:    public StudentDto findByUserId(Long userId) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:112:    public List<StudentDto> searchByName(String name) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:124:    public List<StudentDto> findByGroup(Long groupId) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:133:    public List<StudentDto> findByEnrollmentYear(Integer year) {
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java:142:    public Double calculateAverageGrade(Long studentId) {

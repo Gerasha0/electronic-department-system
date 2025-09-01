@@ -1,0 +1,11 @@
+Service methods analysis:
+=== GradeServiceImpl.java ===
+Public methods: 26
+=== UserServiceImpl.java ===
+Public methods: 19
+=== SubjectServiceImpl.java ===
+Public methods: 20
+=== TeacherServiceImpl.java ===
+Public methods: 19
+=== StudentServiceImpl.java ===
+Public methods: 14

@@ -13,39 +13,39 @@ import java.util.Optional;
  */
 @Repository
 public interface TeacherRepository extends BaseRepository<Teacher, Long> {
-    
+
     /**
      * Find teacher by user ID
      */
     Optional<Teacher> findByUserId(Long userId);
-    
+
     /**
      * Find teacher by username
      */
     @Query("SELECT t FROM Teacher t JOIN t.user u WHERE u.username = :username")
     Optional<Teacher> findByUsername(@Param("username") String username);
-    
+
     /**
      * Find active teachers
      */
     List<Teacher> findByIsActiveTrueOrderByUserLastNameAsc();
-    
+
     /**
      * Find teachers by academic title
      */
     List<Teacher> findByAcademicTitleContainingIgnoreCaseAndIsActiveTrue(String academicTitle);
-    
+
     /**
      * Find teachers by department position
      */
     List<Teacher> findByDepartmentPositionContainingIgnoreCaseAndIsActiveTrue(String position);
-    
+
     /**
      * Find teachers teaching specific subject
      */
     @Query("SELECT DISTINCT t FROM Teacher t JOIN t.subjects s WHERE s.id = :subjectId AND t.isActive = true")
     List<Teacher> findBySubjectId(@Param("subjectId") Long subjectId);
-    
+
     /**
      * Search teachers by name
      */

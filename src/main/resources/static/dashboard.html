@@ -6,23 +6,34 @@
     <title>Панель управління - Електронна кафедра</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/dashboard.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Переключити тему">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <svg class="moon-icon" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+    </button>
+
     <header>
         <div class="header-content">
             <h1>📚 Електронна кафедра</h1>
             <div class="user-info">
                 <span id="user-name">Завантаження...</span>
-                <button id="logout-btn" class="btn btn-secondary">Вихід</button>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">🚪 Вихід</button>
             </div>
         </div>
         <nav class="main-nav">
-            <button class="nav-btn active" data-section="overview">Огляд</button>
-            <button class="nav-btn" data-section="grades" id="grades-nav">Оцінки</button>
-            <button class="nav-btn" data-section="users" id="users-nav">Користувачі</button>
-            <button class="nav-btn" data-section="teachers" id="teachers-nav">Викладачі</button>
-            <button class="nav-btn" data-section="students" id="students-nav">Студенти</button>
-            <button class="nav-btn" data-section="subjects" id="subjects-nav">Дисципліни</button>
+            <button class="nav-btn active" data-section="overview">📊 Огляд</button>
+            <button class="nav-btn" data-section="grades" id="grades-nav">📝 Оцінки</button>
+            <button class="nav-btn" data-section="users" id="users-nav">👥 Користувачі</button>
+            <button class="nav-btn" data-section="teachers" id="teachers-nav">👨‍🏫 Викладачі</button>
+            <button class="nav-btn" data-section="students" id="students-nav">🎓 Студенти</button>
+            <button class="nav-btn" data-section="subjects" id="subjects-nav">📚 Дисципліни</button>
         </nav>
     </header>
 
@@ -32,27 +43,35 @@
             <h2>Огляд системи</h2>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>📊 Статистика</h3>
-                    <div id="system-stats">Завантаження...</div>
+                    <h3>📊 Статистика системи</h3>
+                    <div id="system-stats">
+                        <div class="loading"></div>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <h3>👤 Профіль</h3>
-                    <div id="user-profile">Завантаження...</div>
+                    <h3>👤 Мій профіль</h3>
+                    <div id="user-profile">
+                        <div class="loading"></div>
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>📈 Останні дії</h3>
-                    <div id="recent-activities">Завантаження...</div>
+                    <div id="recent-activities">
+                        <div class="loading"></div>
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>ℹ️ Інформація про кафедру</h3>
-                    <div id="department-info">Завантаження...</div>
+                    <div id="department-info">
+                        <div class="loading"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Grades Section -->
         <section id="grades-section" class="section">
-            <h2>📝 Управління оцінками</h2>
+            <h2>Управління оцінками</h2>
             
             <div class="section-controls">
                 <div class="filters">
@@ -64,31 +83,32 @@
                     </select>
                     <select id="grade-filter-type">
                         <option value="">Всі типи</option>
-                        <option value="EXAM">Екзамен</option>
-                        <option value="TEST">Залік</option>
-                        <option value="HOMEWORK">Домашнє завдання</option>
-                        <option value="LAB">Лабораторна</option>
-                        <option value="COURSEWORK">Курсова</option>
+                        <option value="CURRENT">Поточна</option>
+                        <option value="MODULE">Модульна</option>
+                        <option value="MIDTERM">Проміжна</option>
+                        <option value="FINAL">Підсумкова</option>
+                        <option value="RETAKE">Перездача</option>
+                        <option value="MAKEUP">Відпрацювання</option>
                     </select>
-                    <button id="filter-grades" class="btn btn-primary">Фільтрувати</button>
+                    <button id="filter-grades" class="btn btn-primary">🔍 Фільтрувати</button>
                 </div>
-                <button id="add-grade-btn" class="btn btn-success">Додати оцінку</button>
+                <button id="add-grade-btn" class="btn btn-success">➕ Додати оцінку</button>
             </div>
 
             <div class="table-container">
                 <table id="grades-table">
                     <thead>
                         <tr>
-                            <th>Студент</th>
-                            <th>Дисципліна</th>
-                            <th>Тип</th>
-                            <th>Оцінка</th>
-                            <th>Дата</th>
-                            <th>Дії</th>
+                            <th>🎓 Студент</th>
+                            <th>📚 Дисципліна</th>
+                            <th>📋 Тип</th>
+                            <th>⭐ Оцінка</th>
+                            <th>📅 Дата</th>
+                            <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="grades-tbody">
-                        <tr><td colspan="6">Завантаження...</td></tr>
+                        <tr><td colspan="6"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -96,38 +116,38 @@
 
         <!-- Users Section -->
         <section id="users-section" class="section">
-            <h2>👥 Управління користувачами</h2>
+            <h2>Управління користувачами</h2>
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="user-search" placeholder="Пошук за іменем або email...">
+                    <input type="text" id="user-search" placeholder="🔍 Пошук за іменем або email...">
                     <select id="user-filter-role">
                         <option value="">Всі ролі</option>
-                        <option value="ADMIN">Адміністратор</option>
-                        <option value="MANAGER">Менеджер</option>
-                        <option value="TEACHER">Викладач</option>
-                        <option value="STUDENT">Студент</option>
-                        <option value="GUEST">Гість</option>
+                        <option value="ADMIN">⚙️ Адміністратор</option>
+                        <option value="MANAGER">👥 Менеджер</option>
+                        <option value="TEACHER">👨‍🏫 Викладач</option>
+                        <option value="STUDENT">🎓 Студент</option>
+                        <option value="GUEST">👤 Гість</option>
                     </select>
-                    <button id="search-users" class="btn btn-primary">Пошук</button>
+                    <button id="search-users" class="btn btn-primary">🔍 Пошук</button>
                 </div>
-                <button id="add-user-btn" class="btn btn-success">Додати користувача</button>
+                <button id="add-user-btn" class="btn btn-success">➕ Додати користувача</button>
             </div>
 
             <div class="table-container">
                 <table id="users-table">
                     <thead>
                         <tr>
-                            <th>Ім'я</th>
-                            <th>Email</th>
-                            <th>Роль</th>
-                            <th>Статус</th>
-                            <th>Дата створення</th>
-                            <th>Дії</th>
+                            <th>👤 Ім'я</th>
+                            <th>📧 Email</th>
+                            <th>🎭 Роль</th>
+                            <th>📊 Статус</th>
+                            <th>📅 Дата створення</th>
+                            <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="users-tbody">
-                        <tr><td colspan="6">Завантаження...</td></tr>
+                        <tr><td colspan="6"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -135,26 +155,28 @@
 
         <!-- Teachers Section -->
         <section id="teachers-section" class="section">
-            <h2>👨‍🏫 Викладачі</h2>
+            <h2>Викладачі</h2>
             
             <div class="section-controls">
-                <input type="text" id="teacher-search" placeholder="Пошук викладачів...">
-                <button id="search-teachers" class="btn btn-primary">Пошук</button>
+                <div class="filters">
+                    <input type="text" id="teacher-search" placeholder="🔍 Пошук викладачів...">
+                    <button id="search-teachers" class="btn btn-primary">🔍 Пошук</button>
+                </div>
             </div>
 
             <div class="table-container">
                 <table id="teachers-table">
                     <thead>
                         <tr>
-                            <th>Ім'я</th>
-                            <th>Email</th>
-                            <th>Кафедра</th>
-                            <th>Дисципліни</th>
-                            <th>Дії</th>
+                            <th>👨‍🏫 Ім'я</th>
+                            <th>📧 Email</th>
+                            <th>🏢 Кафедра</th>
+                            <th>📚 Дисципліни</th>
+                            <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="teachers-tbody">
-                        <tr><td colspan="5">Завантаження...</td></tr>
+                        <tr><td colspan="5"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -162,27 +184,29 @@
 
         <!-- Students Section -->
         <section id="students-section" class="section">
-            <h2>🎓 Студенти</h2>
+            <h2>Студенти</h2>
             
             <div class="section-controls">
-                <input type="text" id="student-search" placeholder="Пошук студентів...">
-                <button id="search-students" class="btn btn-primary">Пошук</button>
+                <div class="filters">
+                    <input type="text" id="student-search" placeholder="🔍 Пошук студентів...">
+                    <button id="search-students" class="btn btn-primary">🔍 Пошук</button>
+                </div>
             </div>
 
             <div class="table-container">
                 <table id="students-table">
                     <thead>
                         <tr>
-                            <th>Ім'я</th>
-                            <th>Email</th>
-                            <th>Група</th>
-                            <th>Курс</th>
-                            <th>Середній бал</th>
-                            <th>Дії</th>
+                            <th>🎓 Ім'я</th>
+                            <th>📧 Email</th>
+                            <th>👥 Група</th>
+                            <th>📖 Курс</th>
+                            <th>⭐ Середній бал</th>
+                            <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="students-tbody">
-                        <tr><td colspan="6">Завантаження...</td></tr>
+                        <tr><td colspan="6"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -190,31 +214,34 @@
 
         <!-- Subjects Section -->
         <section id="subjects-section" class="section">
-            <h2>📚 Дисципліни</h2>
+            <h2>Дисципліни</h2>
             
             <div class="section-controls">
-                <input type="text" id="subject-search" placeholder="Пошук дисциплін...">
-                <button id="search-subjects" class="btn btn-primary">Пошук</button>
-                <button id="add-subject" class="btn btn-success">Додати дисципліну</button>
+                <div class="filters">
+                    <input type="text" id="subject-search" placeholder="🔍 Пошук дисциплін...">
+                    <button id="search-subjects" class="btn btn-primary">🔍 Пошук</button>
+                </div>
+                <button id="add-subject" class="btn btn-success">➕ Додати дисципліну</button>
             </div>
 
             <div class="table-container">
                 <table id="subjects-table">
                     <thead>
                         <tr>
-                            <th>Назва</th>
-                            <th>Викладач</th>
-                            <th>Кредити</th>
-                            <th>Семестр</th>
-                            <th>Дії</th>
+                            <th>📚 Назва</th>
+                            <th>👨‍🏫 Викладач</th>
+                            <th>💳 Кредити</th>
+                            <th>📅 Семестр</th>
+                            <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="subjects-tbody">
-                        <tr><td colspan="5">Завантаження...</td></tr>
+                        <tr><td colspan="5"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
+    </main>
     </main>
 
     <!-- Modal for adding/editing -->
@@ -232,74 +259,75 @@
     <div id="subjectModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="dashboard.closeSubjectModal()">&times;</span>
-            <h3>Дисципліна</h3>
+            <h3>📚 Управління дисципліною</h3>
             <form id="subjectForm">
                 <div class="form-group">
-                    <label for="subject-name">Назва дисципліни:</label>
-                    <input type="text" id="subject-name" name="subjectName" required>
+                    <label for="subject-name">📝 Назва дисципліни:</label>
+                    <input type="text" id="subject-name" name="subjectName" required placeholder="Введіть назву дисципліни">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-code">Код дисципліни:</label>
-                    <input type="text" id="subject-code" name="subjectCode" required>
+                    <label for="subject-code">🔢 Код дисципліни:</label>
+                    <input type="text" id="subject-code" name="subjectCode" required placeholder="Наприклад: CS101">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-credits">Кредити:</label>
-                    <input type="number" id="subject-credits" name="credits" min="1" max="10" required>
+                    <label for="subject-credits">💳 Кредити:</label>
+                    <input type="number" id="subject-credits" name="credits" min="1" max="10" required placeholder="1-10">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-semester">Семестр:</label>
-                    <input type="number" id="subject-semester" name="semester" min="1" max="8" required>
+                    <label for="subject-semester">📅 Семестр:</label>
+                    <input type="number" id="subject-semester" name="semester" min="1" max="8" required placeholder="1-8">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-hours-total">Загальна кількість годин:</label>
-                    <input type="number" id="subject-hours-total" name="hoursTotal" min="1" required>
+                    <label for="subject-hours-total">⏰ Загальна кількість годин:</label>
+                    <input type="number" id="subject-hours-total" name="hoursTotal" min="1" required placeholder="Загальні години">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-hours-lectures">Години лекцій:</label>
-                    <input type="number" id="subject-hours-lectures" name="hoursLectures" min="0" value="0">
+                    <label for="subject-hours-lectures">📖 Години лекцій:</label>
+                    <input type="number" id="subject-hours-lectures" name="hoursLectures" min="0" value="0" placeholder="Години лекцій">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-hours-practical">Години практичних:</label>
-                    <input type="number" id="subject-hours-practical" name="hoursPractical" min="0" value="0">
+                    <label for="subject-hours-practical">💼 Години практичних:</label>
+                    <input type="number" id="subject-hours-practical" name="hoursPractical" min="0" value="0" placeholder="Години практичних">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-hours-laboratory">Години лабораторних:</label>
-                    <input type="number" id="subject-hours-laboratory" name="hoursLaboratory" min="0" value="0">
+                    <label for="subject-hours-laboratory">🔬 Години лабораторних:</label>
+                    <input type="number" id="subject-hours-laboratory" name="hoursLaboratory" min="0" value="0" placeholder="Години лабораторних">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-assessment-type">Тип оцінювання:</label>
+                    <label for="subject-assessment-type">📊 Тип оцінювання:</label>
                     <select id="subject-assessment-type" name="assessmentType" required>
-                        <option value="EXAM">Екзамен</option>
-                        <option value="TEST">Залік</option>
-                        <option value="CREDIT">Кредит</option>
-                        <option value="DIFFERENTIATED_CREDIT">Диференційований залік</option>
-                        <option value="COURSE_WORK">Курсова робота</option>
+                        <option value="">Оберіть тип оцінювання</option>
+                        <option value="EXAM">📝 Екзамен</option>
+                        <option value="TEST">✅ Залік</option>
+                        <option value="CREDIT">💳 Кредит</option>
+                        <option value="DIFFERENTIATED_CREDIT">📊 Диференційований залік</option>
+                        <option value="COURSE_WORK">📄 Курсова робота</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-description">Опис:</label>
-                    <textarea id="subject-description" name="description" rows="3"></textarea>
+                    <label for="subject-description">📄 Опис:</label>
+                    <textarea id="subject-description" name="description" rows="3" placeholder="Опис дисципліни (необов'язково)"></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="subject-teacher">Викладач:</label>
+                    <label for="subject-teacher">👨‍🏫 Викладач:</label>
                     <select id="subject-teacher" name="teacherId">
                         <option value="">Оберіть викладача (необов'язково)</option>
                     </select>
                 </div>
                 
                 <div class="form-buttons">
-                    <button type="submit" class="btn btn-primary">Зберегти</button>
-                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeSubjectModal()">Скасувати</button>
+                    <button type="submit" class="btn btn-primary">💾 Зберегти</button>
+                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeSubjectModal()">❌ Скасувати</button>
                 </div>
             </form>
         </div>
@@ -307,5 +335,46 @@
 
     <script src="/api-client.js"></script>
     <script src="/dashboard.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = themeToggle.querySelector('.sun-icon');
+        const moonIcon = themeToggle.querySelector('.moon-icon');
+        
+        // Check for saved theme preference or default to system preference
+        const currentTheme = localStorage.getItem('theme') || 
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcon(currentTheme);
+        
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateThemeIcon(newTheme);
+        });
+        
+        function updateThemeIcon(theme) {
+          if (theme === 'dark') {
+            sunIcon.style.display = 'block';
+            moonIcon.style.display = 'none';
+          } else {
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'block';
+          }
+        }
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+          }
+        });
+    </script>
 </body>
 </html>

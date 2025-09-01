@@ -21,16 +21,16 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class StudentServiceImpl implements StudentService {
-    
+
     private final UnitOfWork unitOfWork;
     private final StudentMapper studentMapper;
-    
+
     @Autowired
     public StudentServiceImpl(UnitOfWork unitOfWork, StudentMapper studentMapper) {
         this.unitOfWork = unitOfWork;
         this.studentMapper = studentMapper;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentDto> findAll() {
@@ -39,7 +39,7 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public StudentDto findById(Long id) {
@@ -47,13 +47,13 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
         return mapStudentWithCalculatedData(student);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public StudentDto findByIdWithCalculatedData(Long id) {
         return findById(id); // Already includes calculated data
     }
-    
+
     @Override
     @Transactional
     public StudentDto create(StudentDto studentDto) {
@@ -62,18 +62,18 @@ public class StudentServiceImpl implements StudentService {
         Student savedStudent = unitOfWork.getStudentRepository().save(student);
         return studentMapper.toDto(savedStudent);
     }
-    
+
     @Override
     @Transactional
     public StudentDto update(Long id, StudentDto studentDto) {
         Student existingStudent = unitOfWork.getStudentRepository().findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
-        
+
         studentMapper.updateEntityFromDto(studentDto, existingStudent);
         Student updatedStudent = unitOfWork.getStudentRepository().save(existingStudent);
         return studentMapper.toDto(updatedStudent);
     }
-    
+
     @Override
     @Transactional
     public void delete(Long id) {
@@ -82,13 +82,13 @@ public class StudentServiceImpl implements StudentService {
         }
         unitOfWork.getStudentRepository().deleteById(id);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public boolean existsById(Long id) {
         return unitOfWork.getStudentRepository().existsById(id);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentDto> findActiveStudents() {
@@ -98,7 +98,7 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public StudentDto findByUserId(Long userId) {
@@ -106,7 +106,7 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new RuntimeException("Student not found for user id: " + userId));
         return mapStudentWithCalculatedData(student);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentDto> searchByName(String name) {
@@ -118,7 +118,7 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentDto> findByGroup(Long groupId) {
@@ -127,7 +127,7 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentDto> findByEnrollmentYear(Integer year) {
@@ -136,36 +136,36 @@ public class StudentServiceImpl implements StudentService {
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Double calculateAverageGrade(Long studentId) {
         try {
             List<Grade> grades = unitOfWork.getGradeRepository()
                     .findByStudentIdOrderByGradeDateDesc(studentId);
-            
+
             if (grades.isEmpty()) {
                 return 0.0;
             }
-            
+
             // Calculate average of all grades
             double sum = grades.stream()
                     .mapToInt(Grade::getGradeValue)
                     .average()
                     .orElse(0.0);
-            
+
             return Math.round(sum * 100.0) / 100.0; // Round to 2 decimal places
         } catch (Exception e) {
             return 0.0;
         }
     }
-    
+
     /**
      * Maps Student entity to DTO with calculated data (course, average grade)
      */
     private StudentDto mapStudentWithCalculatedData(Student student) {
         StudentDto dto = studentMapper.toDto(student);
-        
+
         // Calculate course based on enrollment year
         if (student.getEnrollmentYear() != null) {
             int currentYear = LocalDateTime.now().getYear();
@@ -176,11 +176,11 @@ public class StudentServiceImpl implements StudentService {
         } else {
             dto.setCourse(1); // Default to 1st course
         }
-        
+
         // Calculate average grade
         Double averageGrade = calculateAverageGrade(student.getId());
         dto.setAverageGrade(averageGrade);
-        
+
         return dto;
     }
 }

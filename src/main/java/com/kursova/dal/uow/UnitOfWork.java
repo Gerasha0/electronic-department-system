@@ -12,14 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Transactional
 public class UnitOfWork {
-    
+
     private final UserRepository userRepository;
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final StudentGroupRepository studentGroupRepository;
     private final SubjectRepository subjectRepository;
     private final GradeRepository gradeRepository;
-    
+
     @Autowired
     public UnitOfWork(
             UserRepository userRepository,
@@ -35,32 +35,32 @@ public class UnitOfWork {
         this.subjectRepository = subjectRepository;
         this.gradeRepository = gradeRepository;
     }
-    
+
     // Repository getters
     public UserRepository getUserRepository() {
         return userRepository;
     }
-    
+
     public TeacherRepository getTeacherRepository() {
         return teacherRepository;
     }
-    
+
     public StudentRepository getStudentRepository() {
         return studentRepository;
     }
-    
+
     public StudentGroupRepository getStudentGroupRepository() {
         return studentGroupRepository;
     }
-    
+
     public SubjectRepository getSubjectRepository() {
         return subjectRepository;
     }
-    
+
     public GradeRepository getGradeRepository() {
         return gradeRepository;
     }
-    
+
     /**
      * Commit all pending changes
      * Spring automatically handles transaction commit/rollback
@@ -70,7 +70,7 @@ public class UnitOfWork {
         // Spring's transaction management handles the actual commit
         // This method is here for explicit commit calls if needed
     }
-    
+
     /**
      * Rollback current transaction
      * Spring automatically handles rollback on exceptions

@@ -1,0 +1,11 @@
+Entity usage:
+User: 318 references
+Grade: 269 references
+UserRole: 34 references
+AssessmentType: 24 references
+Teacher: 226 references
+Subject: 280 references
+StudentGroup: 51 references
+GradeType: 35 references
+StudyForm: 32 references
+Student: 294 references

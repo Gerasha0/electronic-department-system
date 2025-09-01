@@ -1,0 +1,7 @@
+Repository usage:
+SubjectRepository: 19 usages
+TeacherRepository: 33 usages
+StudentRepository: 26 usages
+UserRepository: 42 usages
+GradeRepository: 38 usages
+StudentGroupRepository: 8 usages
