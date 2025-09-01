@@ -594,13 +594,29 @@ class Dashboard {
         tbody.innerHTML = '<tr><td colspan="6"><div class="loading"></div></td></tr>';
 
         try {
-            const response = await apiClient.getStudents();
+            let response;
+            
+            // Role-based student loading
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only students from their subjects
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getStudentsByTeacher(this.currentUser.teacherId);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6">Профіль викладача не знайдено</td></tr>';
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all students
+                response = await apiClient.getStudents();
+            }
+
             if (response?.success && Array.isArray(response.data)) {
                 this.renderStudentsTable(response.data);
             } else {
                 tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження студентів</td></tr>';
             }
         } catch (error) {
+            console.error('Помилка завантаження студентів:', error);
             tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження даних</td></tr>';
         }
     }
@@ -1062,16 +1078,35 @@ class Dashboard {
 
     async loadStudentsForGrades(selectId = 'grade-student-select', selectedId = null) {
         try {
-            const response = await apiClient.getUsersByRole('STUDENT');
+            let response;
+            
+            // Role-based student loading for grades
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only students from their subjects
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getStudentsByTeacher(this.currentUser.teacherId);
+                } else {
+                    console.error('Teacher profile not found');
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all students
+                response = await apiClient.getUsersByRole('STUDENT');
+            }
+
             const select = document.getElementById(selectId);
             if (select && response?.success) {
                 const students = response.data || [];
                 select.innerHTML = '<option value="">Оберіть студента...</option>' +
-                    students.map(student => 
-                        `<option value="${student.id}" ${selectedId == student.id ? 'selected' : ''}>
-                            ${student.firstName} ${student.lastName}
-                        </option>`
-                    ).join('');
+                    students.map(student => {
+                        // Handle different response formats
+                        const studentId = student.id || student.userId;
+                        const firstName = student.firstName || student.user?.firstName;
+                        const lastName = student.lastName || student.user?.lastName;
+                        return `<option value="${studentId}" ${selectedId == studentId ? 'selected' : ''}>
+                            ${firstName} ${lastName}
+                        </option>`;
+                    }).join('');
             }
         } catch (error) {
             console.error('Error loading students:', error);
@@ -1080,7 +1115,22 @@ class Dashboard {
 
     async loadSubjectsForGrades(selectId = 'grade-subject-select', selectedId = null) {
         try {
-            const response = await apiClient.getPublicSubjects();
+            let response;
+            
+            // Role-based subject loading for grades
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only subjects they teach
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
+                } else {
+                    console.error('Teacher profile not found');
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all subjects
+                response = await apiClient.getPublicSubjects();
+            }
+            
             const select = document.getElementById(selectId);
             if (select && response?.success) {
                 const subjects = response.data || [];

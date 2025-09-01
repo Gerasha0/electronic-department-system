@@ -146,6 +146,10 @@ class ApiClient {
     async getStudent(studentId) {
         return await this.apiCall(`/api/students/${studentId}`);
     }
+
+    async getStudentsByTeacher(teacherId) {
+        return await this.apiCall(`/api/teachers/${teacherId}/students`);
+    }
     
     // Groups management methods
     async getGroups() {

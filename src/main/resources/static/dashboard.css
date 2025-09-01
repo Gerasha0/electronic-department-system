@@ -498,6 +498,15 @@ table tbody tr:last-child td {
     z-index: 10;
 }
 
+/* Fix modal stacking order */
+#modal {
+    z-index: 2000; /* Higher than student grades modal */
+}
+
+#studentGradesModal {
+    z-index: 1500; /* Lower than edit modal */
+}
+
 @keyframes slideUp {
     from { 
         opacity: 0;

@@ -1,5 +1,6 @@
 package com.kursova.bll.services;
 
+import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.dto.UserDto;
 
@@ -44,6 +45,11 @@ public interface TeacherService extends BaseService<TeacherDto, Long> {
      * Find teachers teaching specific subject
      */
     List<TeacherDto> findBySubjectId(Long subjectId);
+
+    /**
+     * Find students taught by specific teacher
+     */
+    List<StudentDto> findStudentsByTeacherId(Long teacherId);
 
     /**
      * Create teacher with user information

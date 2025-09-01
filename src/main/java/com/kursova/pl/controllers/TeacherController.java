@@ -1,5 +1,6 @@
 package com.kursova.pl.controllers;
 
+import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.services.TeacherService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,6 +86,15 @@ public class TeacherController {
             @RequestParam @Parameter(description = "Search term") String name) {
         List<TeacherDto> teachers = teacherService.searchByName(name);
         return ResponseEntity.ok(teachers);
+    }
+
+    @GetMapping("/{id}/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.teacherId")
+    @Operation(summary = "Get students by teacher", description = "Retrieves students taught by specific teacher")
+    public ResponseEntity<List<StudentDto>> getStudentsByTeacher(
+            @PathVariable @Parameter(description = "Teacher ID") Long id) {
+        List<StudentDto> students = teacherService.findStudentsByTeacherId(id);
+        return ResponseEntity.ok(students);
     }
 
     @PutMapping("/{id}")
