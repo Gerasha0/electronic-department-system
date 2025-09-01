@@ -42,4 +42,19 @@ public interface StudentService extends BaseService<StudentDto, Long> {
      * Get student with calculated course (based on enrollment year)
      */
     StudentDto findByIdWithCalculatedData(Long id);
+
+    /**
+     * Find students by group ID
+     */
+    List<StudentDto> findByGroupId(Long groupId);
+
+    /**
+     * Activate student account
+     */
+    StudentDto activateStudent(Long studentId);
+
+    /**
+     * Deactivate student account
+     */
+    StudentDto deactivateStudent(Long studentId);
 }

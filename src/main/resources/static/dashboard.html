@@ -33,6 +33,7 @@
             <button class="nav-btn" data-section="users" id="users-nav">👥 Користувачі</button>
             <button class="nav-btn" data-section="teachers" id="teachers-nav">👨‍🏫 Викладачі</button>
             <button class="nav-btn" data-section="students" id="students-nav">🎓 Студенти</button>
+            <button class="nav-btn" data-section="groups" id="groups-nav">👥 Групи</button>
             <button class="nav-btn" data-section="subjects" id="subjects-nav">📚 Дисципліни</button>
         </nav>
     </header>
@@ -207,6 +208,38 @@
                     </thead>
                     <tbody id="students-tbody">
                         <tr><td colspan="6"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Groups Section -->
+        <section id="groups-section" class="section">
+            <h2>Групи студентів</h2>
+            
+            <div class="section-controls">
+                <div class="filters">
+                    <input type="text" id="group-search" placeholder="🔍 Пошук груп...">
+                    <button id="search-groups" class="btn btn-primary">🔍 Пошук</button>
+                </div>
+                <button id="add-group" class="btn btn-success">➕ Додати групу</button>
+            </div>
+
+            <div class="table-container">
+                <table id="groups-table">
+                    <thead>
+                        <tr>
+                            <th>👥 Назва групи</th>
+                            <th>🏷️ Код групи</th>
+                            <th>📖 Курс</th>
+                            <th>📚 Форма навчання</th>
+                            <th>🎓 Кількість студентів</th>
+                            <th>📅 Рік вступу</th>
+                            <th>⚙️ Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="groups-tbody">
+                        <tr><td colspan="7"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>

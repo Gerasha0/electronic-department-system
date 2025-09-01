@@ -35,6 +35,10 @@ public class UserDto {
     private Boolean isActive;
     private String createdAt;
     private String updatedAt;
+    
+    // Additional fields for role-specific IDs
+    private Long teacherId;
+    private Long studentId;
 
     // Constructors
     public UserDto() {}
@@ -123,6 +127,22 @@ public class UserDto {
 
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    public Long getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(Long teacherId) {
+        this.teacherId = teacherId;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
     }
 
     @Override

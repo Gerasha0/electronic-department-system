@@ -143,6 +143,43 @@ class ApiClient {
         return await this.apiCall('/api/public/students');
     }
     
+    // Groups management methods
+    async getGroups() {
+        return await this.apiCall('/api/groups');
+    }
+    
+    async getGroupById(id) {
+        return await this.apiCall(`/api/groups/${id}`);
+    }
+    
+    async createGroup(groupData) {
+        return await this.apiCall('/api/groups', {
+            method: 'POST',
+            body: JSON.stringify(groupData)
+        });
+    }
+    
+    async updateGroup(id, groupData) {
+        return await this.apiCall(`/api/groups/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(groupData)
+        });
+    }
+    
+    async deleteGroup(id) {
+        return await this.apiCall(`/api/groups/${id}`, {
+            method: 'DELETE'
+        });
+    }
+    
+    async getActiveGroups() {
+        return await this.apiCall('/api/groups/active');
+    }
+    
+    async searchGroups(name) {
+        return await this.apiCall(`/api/groups/search?name=${encodeURIComponent(name)}`);
+    }
+    
     // Subject management methods
     async getSubjects() {
         return await this.apiCall('/api/subjects');
@@ -178,6 +215,10 @@ class ApiClient {
         return await this.apiCall(`/api/subjects/${subjectId}/teachers/${teacherId}`, {
             method: 'DELETE'
         });
+    }
+
+    async getSubjectsByTeacher(teacherId) {
+        return await this.apiCall(`/api/subjects/teacher/${teacherId}`);
     }
 
     // User management methods
@@ -230,6 +271,10 @@ class ApiClient {
 
     async getGradesByStudent(studentId) {
         return await this.apiCall(`/api/grades/student/${studentId}`);
+    }
+
+    async getMyGrades() {
+        return await this.apiCall('/api/grades/my-grades');
     }
 
     async getGradesBySubject(subjectId) {

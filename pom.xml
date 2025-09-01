@@ -13,7 +13,7 @@
 
   <groupId>com.kursova</groupId>
   <artifactId>electronic-department</artifactId>
-  <version>0.4.1</version>
+  <version>0.4.2</version>
   <packaging>jar</packaging>
 
   <name>Electronic Department System</name>

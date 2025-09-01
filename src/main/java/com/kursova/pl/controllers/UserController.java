@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create new user", description = "Creates a new user with the provided information")
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
         UserDto createdUser = userService.create(userDto);
@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/with-password")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create new user with password", description = "Creates a new user with password")
     public ResponseEntity<UserDto> createUserWithPassword(
             @Valid @RequestBody UserDto userDto,
@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all users", description = "Retrieves all users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.findAll();
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/by-username/{username}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get user by username", description = "Retrieves user by username")
     public ResponseEntity<UserDto> getUserByUsername(
             @PathVariable @Parameter(description = "Username") String username) {
@@ -75,7 +75,7 @@ public class UserController {
     }
 
     @GetMapping("/by-role/{role}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get users by role", description = "Retrieves users by role")
     public ResponseEntity<List<UserDto>> getUsersByRole(
             @PathVariable @Parameter(description = "User role") UserRole role) {
@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get active users", description = "Retrieves all active users")
     public ResponseEntity<List<UserDto>> getActiveUsers() {
         List<UserDto> users = userService.findActiveUsers();
@@ -110,7 +110,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user", description = "Updates user information")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable @Parameter(description = "User ID") Long id,
@@ -131,7 +131,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Activate user", description = "Activates user account")
     public ResponseEntity<UserDto> activateUser(
             @PathVariable @Parameter(description = "User ID") Long id) {
@@ -140,7 +140,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Deactivate user", description = "Deactivates user account")
     public ResponseEntity<UserDto> deactivateUser(
             @PathVariable @Parameter(description = "User ID") Long id) {
@@ -158,7 +158,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/exists")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Check if user exists", description = "Checks if user exists by ID")
     public ResponseEntity<Boolean> userExists(
             @PathVariable @Parameter(description = "User ID") Long id) {
@@ -167,7 +167,7 @@ public class UserController {
     }
 
     @GetMapping("/username/{username}/exists")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Check if username exists", description = "Checks if username exists")
     public ResponseEntity<Boolean> usernameExists(
             @PathVariable @Parameter(description = "Username") String username) {
@@ -176,7 +176,7 @@ public class UserController {
     }
 
     @GetMapping("/email/{email}/exists")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Check if email exists", description = "Checks if email exists")
     public ResponseEntity<Boolean> emailExists(
             @PathVariable @Parameter(description = "Email") String email) {

@@ -42,6 +42,16 @@ public interface StudentRepository extends BaseRepository<Student, Long> {
     List<Student> findByGroupIdAndIsActiveTrueOrderByUserLastNameAsc(Long groupId);
 
     /**
+     * Find all students by group (including inactive)
+     */
+    List<Student> findByGroupIdOrderByUserLastNameAsc(Long groupId);
+
+    /**
+     * Simple find by group ID
+     */
+    List<Student> findByGroupId(Long groupId);
+
+    /**
      * Find students by study form
      */
     List<Student> findByStudyFormAndIsActiveTrueOrderByUserLastNameAsc(StudyForm studyForm);

@@ -94,7 +94,19 @@ public class UserServiceImpl implements UserService {
     public UserDto findByUsername(String username) {
         User entity = unitOfWork.getUserRepository().findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
-        return userMapper.toDto(entity);
+        
+        UserDto dto = userMapper.toDto(entity);
+        
+        // Set role-specific IDs
+        if (entity.getRole() == UserRole.TEACHER) {
+            unitOfWork.getTeacherRepository().findByUserId(entity.getId())
+                    .ifPresent(teacher -> dto.setTeacherId(teacher.getId()));
+        } else if (entity.getRole() == UserRole.STUDENT) {
+            unitOfWork.getStudentRepository().findByUserId(entity.getId())
+                    .ifPresent(student -> dto.setStudentId(student.getId()));
+        }
+        
+        return dto;
     }
 
     @Override

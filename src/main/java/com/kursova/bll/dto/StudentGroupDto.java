@@ -18,6 +18,10 @@ public class StudentGroupDto {
     @Size(max = 20, message = "Group name must not exceed 20 characters")
     private String groupName;
 
+    @NotBlank(message = "Group code is required")
+    @Size(max = 10, message = "Group code must not exceed 10 characters")
+    private String groupCode;
+
     @NotNull(message = "Course year is required")
     private Integer courseYear;
 
@@ -28,6 +32,7 @@ public class StudentGroupDto {
     private String specialization;
 
     private Integer startYear;
+    private Integer enrollmentYear;
     private Boolean isActive;
     private String createdAt;
     private String updatedAt;
@@ -61,6 +66,14 @@ public class StudentGroupDto {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public String getGroupCode() {
+        return groupCode;
+    }
+
+    public void setGroupCode(String groupCode) {
+        this.groupCode = groupCode;
     }
 
     public Integer getCourseYear() {
@@ -101,6 +114,14 @@ public class StudentGroupDto {
 
     public void setStartYear(Integer startYear) {
         this.startYear = startYear;
+    }
+
+    public Integer getEnrollmentYear() {
+        return enrollmentYear;
+    }
+
+    public void setEnrollmentYear(Integer enrollmentYear) {
+        this.enrollmentYear = enrollmentYear;
     }
 
     public Boolean getIsActive() {

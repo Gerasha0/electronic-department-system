@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,32 @@ public class GradeController {
     public GradeController(GradeService gradeService, UnitOfWork unitOfWork) {
         this.gradeService = gradeService;
         this.unitOfWork = unitOfWork;
+    }
+
+    /**
+     * Helper method to check if current user is a student and can access the given studentId
+     */
+    private boolean canStudentAccessStudentId(Long studentId, Authentication authentication) {
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_STUDENT"))) {
+            return true; // Not a student, let @PreAuthorize handle it
+        }
+        
+        var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
+        if (currentUser.isEmpty()) {
+            System.out.println("DEBUG: User not found for username: " + authentication.getName());
+            return false;
+        }
+        
+        var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
+        if (studentOpt.isEmpty()) {
+            System.out.println("DEBUG: Student not found for userId: " + currentUser.get().getId());
+            return false;
+        }
+        
+        Long currentStudentId = studentOpt.get().getId();
+        System.out.println("DEBUG: Current student ID: " + currentStudentId + ", Requested student ID: " + studentId);
+        return currentStudentId.equals(studentId);
     }
 
     @PostMapping
@@ -125,10 +152,41 @@ public class GradeController {
     }
 
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
-    @Operation(summary = "Get grades by student", description = "Retrieves all grades for a specific student")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
+    @Operation(summary = "Get grades by student", description = "Retrieves all grades for a specific student (Admin/Manager/Teacher)")
     public ResponseEntity<List<GradeDto>> getGradesByStudent(
             @PathVariable @Parameter(description = "Student ID") Long studentId) {
+        List<GradeDto> grades = gradeService.findByStudentId(studentId);
+        return ResponseEntity.ok(grades);
+    }
+
+    @GetMapping("/my-grades")
+    @Operation(summary = "Get my grades", description = "Retrieves grades for the current student")
+    public ResponseEntity<List<GradeDto>> getMyGrades(Authentication authentication) {
+        
+        System.out.println("DEBUG: getMyGrades called");
+        System.out.println("DEBUG: Authentication: " + authentication);
+        if (authentication != null) {
+            System.out.println("DEBUG: Authentication name: " + authentication.getName());
+            System.out.println("DEBUG: Authentication authorities: " + authentication.getAuthorities());
+        }
+        
+        // Get current user's student ID
+        var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
+        if (currentUser.isEmpty()) {
+            System.out.println("DEBUG: Current user not found");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
+        if (studentOpt.isEmpty()) {
+            System.out.println("DEBUG: Student record not found for user ID: " + currentUser.get().getId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        Long studentId = studentOpt.get().getId();
+        System.out.println("DEBUG: Found student ID: " + studentId);
+        
         List<GradeDto> grades = gradeService.findByStudentId(studentId);
         return ResponseEntity.ok(grades);
     }
@@ -152,20 +210,31 @@ public class GradeController {
     }
 
     @GetMapping("/student/{studentId}/subject/{subjectId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get grades by student and subject", description = "Retrieves grades for a specific student in a specific subject")
     public ResponseEntity<List<GradeDto>> getGradesByStudentAndSubject(
             @PathVariable @Parameter(description = "Student ID") Long studentId,
-            @PathVariable @Parameter(description = "Subject ID") Long subjectId) {
+            @PathVariable @Parameter(description = "Subject ID") Long subjectId,
+            Authentication authentication) {
+        
+        if (!canStudentAccessStudentId(studentId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         List<GradeDto> grades = gradeService.findByStudentAndSubject(studentId, subjectId);
         return ResponseEntity.ok(grades);
     }
 
     @GetMapping("/student/{studentId}/final")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get final grades by student", description = "Retrieves final grades for a specific student")
     public ResponseEntity<List<GradeDto>> getFinalGradesByStudent(
-            @PathVariable @Parameter(description = "Student ID") Long studentId) {
+            @PathVariable @Parameter(description = "Student ID") Long studentId,
+            Authentication authentication) {
+        
+        if (!canStudentAccessStudentId(studentId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         List<GradeDto> grades = gradeService.findFinalGradesByStudent(studentId);
         return ResponseEntity.ok(grades);
     }
@@ -199,20 +268,32 @@ public class GradeController {
     }
 
     @GetMapping("/student/{studentId}/average")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get student average grade", description = "Calculates overall average grade for a student")
     public ResponseEntity<Double> getStudentAverageGrade(
-            @PathVariable @Parameter(description = "Student ID") Long studentId) {
+            @PathVariable @Parameter(description = "Student ID") Long studentId,
+            Authentication authentication) {
+        
+        if (!canStudentAccessStudentId(studentId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         Double averageGrade = gradeService.getOverallAverageGradeForStudent(studentId);
         return ResponseEntity.ok(averageGrade);
     }
 
     @GetMapping("/student/{studentId}/subject/{subjectId}/average")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER') or #studentId == authentication.principal.studentId")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     @Operation(summary = "Get student subject average", description = "Calculates average grade for a student in a specific subject")
     public ResponseEntity<Double> getStudentSubjectAverage(
             @PathVariable @Parameter(description = "Student ID") Long studentId,
-            @PathVariable @Parameter(description = "Subject ID") Long subjectId) {
+            @PathVariable @Parameter(description = "Subject ID") Long subjectId,
+            Authentication authentication) {
+        
+        if (!canStudentAccessStudentId(studentId, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         Double averageGrade = gradeService.getAverageGradeForStudentInSubject(studentId, subjectId);
         return ResponseEntity.ok(averageGrade);
     }

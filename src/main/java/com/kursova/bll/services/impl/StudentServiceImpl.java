@@ -183,4 +183,37 @@ public class StudentServiceImpl implements StudentService {
 
         return dto;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentDto> findByGroupId(Long groupId) {
+        return unitOfWork.getStudentRepository().findByGroupId(groupId)
+                .stream()
+                .map(this::mapStudentWithCalculatedData)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public StudentDto activateStudent(Long studentId) {
+        Student student = unitOfWork.getStudentRepository().findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+        
+        student.setIsActive(true);
+        student.setUpdatedAt(LocalDateTime.now());
+        
+        Student updatedStudent = unitOfWork.getStudentRepository().save(student);
+        return mapStudentWithCalculatedData(updatedStudent);
+    }
+
+    @Override
+    public StudentDto deactivateStudent(Long studentId) {
+        Student student = unitOfWork.getStudentRepository().findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+        
+        student.setIsActive(false);
+        student.setUpdatedAt(LocalDateTime.now());
+        
+        Student updatedStudent = unitOfWork.getStudentRepository().save(student);
+        return mapStudentWithCalculatedData(updatedStudent);
+    }
 }

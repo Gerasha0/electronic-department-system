@@ -19,6 +19,9 @@ public class StudentGroup {
     @Column(name = "group_name", unique = true, nullable = false)
     private String groupName;
 
+    @Column(name = "group_code", unique = true, nullable = false, length = 10)
+    private String groupCode;
+
     @Column(name = "course_year", nullable = false)
     private Integer courseYear;
 
@@ -34,6 +37,9 @@ public class StudentGroup {
 
     @Column(name = "start_year")
     private Integer startYear;
+
+    @Column(name = "enrollment_year")
+    private Integer enrollmentYear;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
@@ -89,6 +95,14 @@ public class StudentGroup {
         this.groupName = groupName;
     }
 
+    public String getGroupCode() {
+        return groupCode;
+    }
+
+    public void setGroupCode(String groupCode) {
+        this.groupCode = groupCode;
+    }
+
     public Integer getCourseYear() {
         return courseYear;
     }
@@ -127,6 +141,14 @@ public class StudentGroup {
 
     public void setStartYear(Integer startYear) {
         this.startYear = startYear;
+    }
+
+    public Integer getEnrollmentYear() {
+        return enrollmentYear;
+    }
+
+    public void setEnrollmentYear(Integer enrollmentYear) {
+        this.enrollmentYear = enrollmentYear;
     }
 
     public Boolean getIsActive() {

@@ -66,4 +66,35 @@ public interface StudentGroupRepository extends BaseRepository<StudentGroup, Lon
            "(g.maxStudents IS NULL OR SIZE(g.students) < g.maxStudents) " +
            "ORDER BY g.groupName")
     List<StudentGroup> findGroupsWithAvailableSlots();
+
+    /**
+     * Find group by group code
+     */
+    Optional<StudentGroup> findByGroupCode(String groupCode);
+
+    /**
+     * Check if group code exists
+     */
+    boolean existsByGroupCode(String groupCode);
+
+    /**
+     * Find groups by enrollment year
+     */
+    List<StudentGroup> findByEnrollmentYear(Integer enrollmentYear);
+
+    /**
+     * Find active groups (simple method)
+     */
+    List<StudentGroup> findByIsActiveTrue();
+
+    /**
+     * Search groups by name (case insensitive)
+     */
+    List<StudentGroup> findByGroupNameContainingIgnoreCase(String name);
+
+    /**
+     * Find groups that have students
+     */
+    @Query("SELECT DISTINCT g FROM StudentGroup g JOIN g.students s WHERE g.isActive = true ORDER BY g.groupName")
+    List<StudentGroup> findGroupsWithStudents();
 }

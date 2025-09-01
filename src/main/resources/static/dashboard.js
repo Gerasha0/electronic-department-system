@@ -52,12 +52,15 @@ class Dashboard {
 
     configureByRole() {
         const role = this.currentUser?.role;
+        
+        // New role-based navigation configuration
         const navButtons = {
-            'users-nav': ['ADMIN', 'MANAGER'],
-            'teachers-nav': ['ADMIN', 'MANAGER'],
-            'students-nav': ['ADMIN', 'MANAGER', 'TEACHER'],
-            'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER'],
-            'grades-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT']
+            'users-nav': ['ADMIN'],                                    // Only ADMIN
+            'teachers-nav': ['ADMIN', 'MANAGER'],                     // ADMIN, MANAGER  
+            'students-nav': ['ADMIN', 'MANAGER', 'TEACHER'],          // ADMIN, MANAGER, TEACHER
+            'groups-nav': ['ADMIN', 'MANAGER', 'TEACHER'],            // ADMIN, MANAGER, TEACHER (read-only for TEACHER)
+            'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'], // All authenticated users
+            'grades-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT']  // All authenticated users
         };
 
         // Hide/show navigation based on role
@@ -68,10 +71,52 @@ class Dashboard {
             }
         });
 
-        // For students, redirect to grades view initially
+        // Configure action buttons based on role
+        this.configureActionButtonsByRole(role);
+
+        // Configure UI elements visibility
+        this.configureActionButtons();
+
+        // Role-specific initial section
         if (role === 'STUDENT') {
-            this.showSection('grades');
+            this.showSection('grades');  // Students see their grades first
+        } else if (role === 'TEACHER') {
+            this.showSection('subjects'); // Teachers see their subjects first
+        } else {
+            this.showSection('overview'); // ADMIN, MANAGER see overview
         }
+    }
+
+    configureActionButtonsByRole(role) {
+        // Configuration for different action buttons based on role
+        const buttonConfig = {
+            'ADMIN': {
+                canCreate: true,
+                canEdit: true,
+                canDelete: true,
+                canActivate: true
+            },
+            'MANAGER': {
+                canCreate: true,    // Can create students, teachers, groups, subjects
+                canEdit: true,      // Can edit students, teachers, groups, subjects
+                canDelete: false,   // Cannot delete (only ADMIN)
+                canActivate: true   // Can activate/deactivate
+            },
+            'TEACHER': {
+                canCreate: false,   // Cannot create
+                canEdit: false,     // Cannot edit (except own grades)
+                canDelete: false,   // Cannot delete
+                canActivate: false  // Cannot activate/deactivate
+            },
+            'STUDENT': {
+                canCreate: false,   // Cannot create
+                canEdit: false,     // Cannot edit
+                canDelete: false,   // Cannot delete
+                canActivate: false  // Cannot activate/deactivate
+            }
+        };
+
+        this.rolePermissions = buttonConfig[role] || buttonConfig['STUDENT'];
     }
 
     setupEventListeners() {
@@ -106,14 +151,24 @@ class Dashboard {
             this.searchTeachers();
         });
 
-        // Subject search
-        document.getElementById('search-subjects')?.addEventListener('click', () => {
-            this.searchSubjects();
+        // Student search
+        document.getElementById('search-students')?.addEventListener('click', () => {
+            this.searchStudents();
         });
 
-        // Add subject button
+        // Group search
+        document.getElementById('search-groups')?.addEventListener('click', () => {
+            this.searchGroups();
+        });
+
+        // Subject search        // Add subject button
         document.getElementById('add-subject')?.addEventListener('click', () => {
             this.showAddSubjectModal();
+        });
+
+        // Add group button
+        document.getElementById('add-group')?.addEventListener('click', () => {
+            this.showAddGroupModal();
         });
 
         // Grade filters
@@ -196,6 +251,9 @@ class Dashboard {
                 break;
             case 'students':
                 await this.loadStudentsData();
+                break;
+            case 'groups':
+                await this.loadGroupsData();
                 break;
             case 'subjects':
                 await this.loadSubjectsData();
@@ -321,10 +379,20 @@ class Dashboard {
         try {
             let response;
             
-            // For students, show only their grades
+            // Role-based grade loading
             if (this.currentUser?.role === 'STUDENT') {
-                response = await apiClient.getGradesByStudent(this.currentUser.id);
+                // Students see only their own grades - use special endpoint
+                response = await apiClient.getMyGrades();
+            } else if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only grades for their subjects
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getGradesByTeacher(this.currentUser.teacherId);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6">Профіль викладача не знайдено</td></tr>';
+                    return;
+                }
             } else {
+                // ADMIN and MANAGER see all grades
                 response = await apiClient.getGrades();
             }
 
@@ -479,6 +547,93 @@ class Dashboard {
         }).join('');
     }
 
+    // === GROUPS MANAGEMENT ===
+    async loadGroupsData() {
+        const tbody = document.getElementById('groups-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="7"><div class="loading"></div></td></tr>';
+
+        try {
+            const response = await apiClient.getGroups();
+            if (response?.success && Array.isArray(response.data)) {
+                this.renderGroupsTable(response.data);
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7">Помилка завантаження груп</td></tr>';
+            }
+        } catch (error) {
+            console.error('Помилка завантаження груп:', error);
+            tbody.innerHTML = '<tr><td colspan="7">Помилка завантаження даних</td></tr>';
+        }
+    }
+
+    renderGroupsTable(groups) {
+        const tbody = document.getElementById('groups-tbody');
+        if (!tbody) return;
+
+        if (!groups.length) {
+            tbody.innerHTML = '<tr><td colspan="7">Групи не знайдені</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = groups.map(group => {
+            const groupName = group.groupName || 'N/A';
+            const groupCode = group.groupCode || 'N/A';
+            const courseYear = group.courseYear || 'N/A';
+            const studyForm = group.studyForm || 'N/A';
+            const studentCount = group.currentStudentCount || 0;
+            const enrollmentYear = group.enrollmentYear || group.startYear || 'N/A';
+            
+            // Check role permissions for action buttons
+            const canEdit = this.rolePermissions?.canEdit || false;
+            const canDelete = this.rolePermissions?.canDelete || false;
+            
+            let actions = `<button class="btn btn-sm btn-info" onclick="dashboard.viewGroupStudents(${group.id})">Студенти</button>`;
+            
+            if (canEdit) {
+                actions += ` <button class="btn btn-sm btn-primary" onclick="dashboard.editGroup(${group.id})">Редагувати</button>`;
+            }
+            
+            if (canDelete) {
+                actions += ` <button class="btn btn-sm btn-danger" onclick="dashboard.deleteGroup(${group.id})">Видалити</button>`;
+            }
+            
+            return `
+            <tr>
+                <td>${groupName}</td>
+                <td>${groupCode}</td>
+                <td>${courseYear}</td>
+                <td>${studyForm}</td>
+                <td>${studentCount}</td>
+                <td>${enrollmentYear}</td>
+                <td>
+                    <div class="table-actions">
+                        ${actions}
+                    </div>
+                </td>
+            </tr>
+        `;
+        }).join('');
+    }
+
+    async viewGroupStudents(groupId) {
+        // Implementation for viewing students in a group
+        console.log('Viewing students in group:', groupId);
+        // TODO: Implement group students view
+    }
+
+    async editGroup(groupId) {
+        // Implementation for editing group
+        console.log('Editing group:', groupId);
+        // TODO: Implement group editing
+    }
+
+    async deleteGroup(groupId) {
+        // Implementation for deleting group
+        console.log('Deleting group:', groupId);
+        // TODO: Implement group deletion
+    }
+
     async loadSubjectsData() {
         const tbody = document.getElementById('subjects-tbody');
         if (!tbody) return;
@@ -486,8 +641,16 @@ class Dashboard {
         tbody.innerHTML = '<tr><td colspan="5"><div class="loading"></div></td></tr>';
 
         try {
-            // Always use public API for now to avoid authentication issues
-            const response = await apiClient.getPublicSubjects();
+            let response;
+            
+            // Role-based subject loading
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only their own subjects
+                response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
+            } else {
+                // Everyone else sees public subjects
+                response = await apiClient.getPublicSubjects();
+            }
                 
             // Check if response is successful and has data
             if (response?.success && Array.isArray(response.data)) {
@@ -1180,6 +1343,67 @@ class Dashboard {
     closeSubjectModal() {
         this.currentSubject = null;
         this.closeModal('subjectModal');
+    }
+
+    // === SEARCH METHODS ===
+    async searchStudents() {
+        const searchInput = document.getElementById('student-search');
+        const searchTerm = searchInput?.value?.trim();
+        
+        if (!searchTerm) {
+            await this.loadStudentsData();
+            return;
+        }
+        
+        // TODO: Implement student search API call
+        console.log('Searching students:', searchTerm);
+    }
+
+    async searchGroups() {
+        const searchInput = document.getElementById('group-search');
+        const searchTerm = searchInput?.value?.trim();
+        
+        if (!searchTerm) {
+            await this.loadGroupsData();
+            return;
+        }
+        
+        try {
+            const response = await apiClient.searchGroups(searchTerm);
+            if (response?.success && Array.isArray(response.data)) {
+                this.renderGroupsTable(response.data);
+            }
+        } catch (error) {
+            console.error('Помилка пошуку груп:', error);
+        }
+    }
+
+    // === GROUP MODAL METHODS ===
+    showAddGroupModal() {
+        if (!this.rolePermissions?.canCreate) {
+            alert('У вас немає прав для створення груп');
+            return;
+        }
+        
+        // TODO: Implement group modal
+        console.log('Show add group modal');
+    }
+
+    // === ROLE-BASED UI CONFIGURATION ===
+    configureActionButtons() {
+        // Configure action buttons based on user role
+        const addButtons = {
+            'add-group': this.rolePermissions?.canCreate,
+            'add-subject': this.rolePermissions?.canCreate,
+            'add-user-btn': this.rolePermissions?.canCreate
+        };
+
+        Object.entries(addButtons).forEach(([buttonId, visible]) => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.style.display = visible ? 'inline-block' : 'none';
+            }
+        });
     }
 }
 

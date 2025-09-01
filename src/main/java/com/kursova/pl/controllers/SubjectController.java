@@ -30,7 +30,7 @@ public class SubjectController {
 
     @GetMapping
     @Operation(summary = "Get all subjects", description = "Retrieve all active subjects")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<SubjectDto>> getAllSubjects() {
         List<SubjectDto> subjects = subjectService.findActiveSubjects();
         return ResponseEntity.ok(subjects);
@@ -38,7 +38,7 @@ public class SubjectController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get subject by ID", description = "Retrieve a specific subject by its ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     public ResponseEntity<SubjectDto> getSubjectById(@PathVariable Long id) {
         SubjectDto subject = subjectService.findById(id);
         return ResponseEntity.ok(subject);
@@ -82,5 +82,20 @@ public class SubjectController {
     public ResponseEntity<Void> removeTeacherFromSubject(@PathVariable Long subjectId, @PathVariable Long teacherId) {
         subjectService.removeTeacher(subjectId, teacherId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/teacher/{teacherId}")
+    @Operation(summary = "Get subjects by teacher", description = "Retrieve subjects assigned to a specific teacher")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #teacherId == authentication.principal.teacherId")
+    public ResponseEntity<List<SubjectDto>> getSubjectsByTeacher(@PathVariable Long teacherId) {
+        List<SubjectDto> subjects = subjectService.findByTeacherId(teacherId);
+        return ResponseEntity.ok(subjects);
+    }
+
+    @GetMapping("/public")
+    @Operation(summary = "Get public subjects info", description = "Get basic info about subjects for public view")
+    public ResponseEntity<List<SubjectDto>> getPublicSubjects() {
+        List<SubjectDto> subjects = subjectService.findActiveSubjects();
+        return ResponseEntity.ok(subjects);
     }
 }
