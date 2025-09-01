@@ -1,0 +1,13 @@
+📦 DTO usage analysis:
+=== UserDto ===
+Usage count: 85
+=== SubjectDto ===
+Usage count: 63
+=== TeacherDto ===
+Usage count: 57
+=== GradeDto ===
+Usage count: 67
+=== StudentDto ===
+Usage count: 39
+=== StudentGroupDto ===
+Usage count: 16

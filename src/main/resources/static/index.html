@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Electronic Department - Демо</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Переключити тему">
+    <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    <svg class="moon-icon" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+    </svg>
+  </button>
+
+  <header>
+    <h1>📚 Електронна кафедра</h1>
+    <nav>
+      <a href="/login.html">🔑 Увійти</a>
+      <a href="/register.html">📝 Реєстрація</a>
+      <a href="#" id="logout-link" style="display: none;">🚪 Вихід</a>
+    </nav>
+  </header>
+  
+  <main>
+    <section id="content">
+      <div class="card">
+        <h2>Ласкаво просимо</h2>
+        <p id="welcome">Будь ласка, увійдіть в систему, щоб отримати доступ до додаткових функцій.</p>
+      </div>
+    </section>
+  </main>
+  
+  <script src="/app.js"></script>
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = themeToggle.querySelector('.sun-icon');
+    const moonIcon = themeToggle.querySelector('.moon-icon');
+    
+    // Check for saved theme preference or default to system preference
+    const currentTheme = localStorage.getItem('theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+    
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+    
+    function updateThemeIcon(theme) {
+      if (theme === 'dark') {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      }
+    }
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        updateThemeIcon(newTheme);
+      }
+    });
+  </script>
+</body>
+</html>

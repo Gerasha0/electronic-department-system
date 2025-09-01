@@ -1,0 +1,7 @@
+📦 Unused imports analysis:
+Potentially unused: import java.time.LocalDateTime; in src/main/java/com/kursova/config/DataInitializer.java
+Potentially unused: import java.util.HashSet; in src/main/java/com/kursova/dal/entities/User.java
+Potentially unused: import com.kursova.bll.dto.StudentGroupDto; in src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java
+Potentially unused: import org.springframework.security.authentication.BadCredentialsException; in src/main/java/com/kursova/pl/controllers/AuthController.java
+Potentially unused: import org.springframework.security.core.authority.SimpleGrantedAuthority; in src/main/java/com/kursova/pl/controllers/AuthController.java
+Potentially unused: import java.util.Collections; in src/main/java/com/kursova/pl/controllers/AuthController.java

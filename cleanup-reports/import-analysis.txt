@@ -1,0 +1,13 @@
+Files with potentially many imports:
+src/main/java/com/kursova/config/SecurityConfig.java: 16 imports
+src/main/java/com/kursova/config/jwt/JwtAuthFilter.java: 12 imports
+src/main/java/com/kursova/bll/services/impl/GradeServiceImpl.java: 17 imports
+src/main/java/com/kursova/bll/services/impl/UserServiceImpl.java: 15 imports
+src/main/java/com/kursova/bll/services/impl/SubjectServiceImpl.java: 14 imports
+src/main/java/com/kursova/bll/services/impl/TeacherServiceImpl.java: 14 imports
+src/main/java/com/kursova/bll/services/impl/StudentServiceImpl.java: 13 imports
+src/main/java/com/kursova/pl/controllers/PublicController.java: 12 imports
+src/main/java/com/kursova/pl/controllers/AuthController.java: 20 imports
+src/main/java/com/kursova/pl/controllers/SubjectController.java: 11 imports
+src/main/java/com/kursova/pl/controllers/UserController.java: 13 imports
+src/main/java/com/kursova/pl/controllers/GradeController.java: 16 imports

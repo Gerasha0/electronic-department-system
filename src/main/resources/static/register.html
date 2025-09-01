@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Реєстрація - Електронна кафедра</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Переключити тему">
+    <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    <svg class="moon-icon" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+    </svg>
+  </button>
+
+  <div class="card">
+    <h2>📝 Реєстрація</h2>
+    <form id="regForm">
+      <div>
+        <label for="username">Ім'я користувача</label>
+        <input type="text" id="username" name="username" required placeholder="Введіть ім'я користувача">
+      </div>
+      <div>
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required placeholder="Введіть пароль">
+      </div>
+      <div>
+        <label for="email">Електронна пошта</label>
+        <input type="email" id="email" name="email" required placeholder="Введіть email">
+      </div>
+      <div>
+        <label for="firstName">Ім'я</label>
+        <input type="text" id="firstName" name="firstName" required placeholder="Введіть ім'я">
+      </div>
+      <div>
+        <label for="lastName">Прізвище</label>
+        <input type="text" id="lastName" name="lastName" required placeholder="Введіть прізвище">
+      </div>
+      <div>
+        <label for="role">Роль</label>
+        <select id="role" name="role" required>
+          <option value="STUDENT">🎓 Студент</option>
+        </select>
+        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
+          💡 Самостійна реєстрація доступна тільки для студентів
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Зареєструватися</button>
+      <button type="button" class="btn btn-secondary" onclick="location.href='/login.html'">Увійти</button>
+    </form>
+    <div id="msg" style="display: none;"></div>
+    
+    <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+      <a href="/" style="color: var(--text-muted); font-size: 0.875rem;">← Повернутися на головну</a>
+    </div>
+  </div>
+  
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = themeToggle.querySelector('.sun-icon');
+    const moonIcon = themeToggle.querySelector('.moon-icon');
+    
+    // Check for saved theme preference or default to system preference
+    const currentTheme = localStorage.getItem('theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+    
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+    
+    function updateThemeIcon(theme) {
+      if (theme === 'dark') {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      }
+    }
+    
+    // Registration form functionality
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const msgDiv = document.getElementById('msg');
+      const submitBtn = form.querySelector('button[type="submit"]');
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Реєстрація...';
+      msgDiv.style.display = 'none';
+      
+      const user = {
+        username: form.username.value.trim(),
+        email: form.email.value.trim(),
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        role: form.role.value
+      };
+      
+      try {
+        const res = await fetch('/api/auth/register?password=' + encodeURIComponent(form.password.value), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(user)
+        });
+        
+        const json = await res.json();
+        msgDiv.style.display = 'block';
+        
+        if (res.status === 201) {
+          msgDiv.style.color = 'var(--success)';
+          msgDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+          msgDiv.style.borderColor = 'var(--success)';
+          msgDiv.innerHTML = '✅ Зареєстровано успішно! <a href="/login.html" style="color: var(--success); font-weight: 600;">Увійти</a>';
+        } else {
+          msgDiv.style.color = 'var(--danger)';
+          msgDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+          msgDiv.style.borderColor = 'var(--danger)';
+          msgDiv.textContent = json || 'Помилка реєстрації';
+        }
+      } catch (error) {
+        msgDiv.style.display = 'block';
+        msgDiv.style.color = 'var(--danger)';
+        msgDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+        msgDiv.style.borderColor = 'var(--danger)';
+        msgDiv.textContent = 'Помилка з\'єднання з сервером';
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Зареєструватися';
+      }
+    });
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        updateThemeIcon(newTheme);
+      }
+    });
+  </script>
+</body>
+</html>

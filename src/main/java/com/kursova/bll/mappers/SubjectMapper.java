@@ -1,0 +1,49 @@
+package com.kursova.bll.mappers;
+
+import com.kursova.bll.dto.SubjectDto;
+import com.kursova.dal.entities.Subject;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
+
+import java.util.List;
+
+/**
+ * Mapper for Subject entity and SubjectDto
+ */
+@Mapper(componentModel = "spring", uses = {DateTimeMapper.class})
+public interface SubjectMapper {
+
+    SubjectMapper INSTANCE = Mappers.getMapper(SubjectMapper.class);
+
+    @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Mapping(target = "teachers", ignore = true) // Handle teachers separately to avoid circular dependency
+    SubjectDto toDto(Subject entity);
+
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "teachers", ignore = true)
+    @Mapping(target = "grades", ignore = true)
+    Subject toEntity(SubjectDto dto);
+
+    List<SubjectDto> toDtoList(List<Subject> entities);
+
+    List<Subject> toEntityList(List<SubjectDto> dtos);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "teachers", ignore = true)
+    @Mapping(target = "grades", ignore = true)
+    void updateEntityFromDto(SubjectDto dto, @MappingTarget Subject entity);
+
+    // Simple mapping without nested objects for lists
+    @Named("subjectToDto")
+    @Mapping(target = "teachers", ignore = true)
+    @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    SubjectDto toDtoSimple(Subject entity);
+}
