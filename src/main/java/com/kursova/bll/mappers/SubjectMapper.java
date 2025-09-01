@@ -20,7 +20,7 @@ public interface SubjectMapper {
     
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "teachers", ignore = true) // Avoid circular references
+    @Mapping(target = "teachers", ignore = true) // Handle teachers separately to avoid circular dependency
     SubjectDto toDto(Subject entity);
     
     @Mapping(target = "createdAt", ignore = true)
@@ -29,7 +29,6 @@ public interface SubjectMapper {
     @Mapping(target = "grades", ignore = true)
     Subject toEntity(SubjectDto dto);
     
-    @Named("subjectToDtoSimple")
     List<SubjectDto> toDtoList(List<Subject> entities);
     
     List<Subject> toEntityList(List<SubjectDto> dtos);

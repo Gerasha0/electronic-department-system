@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  * Data initializer to populate the database with sample data
  */
 @Component
+@ConditionalOnProperty(name = "app.data.initialize", havingValue = "true", matchIfMissing = true)
 public class DataInitializer implements CommandLineRunner {
     
     private final UnitOfWork unitOfWork;

@@ -3,6 +3,9 @@ package com.kursova.bll.services.impl;
 import com.kursova.bll.dto.UserDto;
 import com.kursova.bll.mappers.UserMapper;
 import com.kursova.bll.services.UserService;
+import com.kursova.dal.entities.Student;
+import com.kursova.dal.entities.StudyForm;
+import com.kursova.dal.entities.Teacher;
 import com.kursova.dal.entities.User;
 import com.kursova.dal.entities.UserRole;
 import com.kursova.dal.uow.UnitOfWork;
@@ -11,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -42,6 +46,12 @@ public class UserServiceImpl implements UserService {
         
         User entity = userMapper.toEntity(dto);
         entity = unitOfWork.getUserRepository().save(entity);
+        
+        // If the user is a STUDENT, create a corresponding Student entity
+        if (entity.getRole() == UserRole.STUDENT) {
+            createStudentEntity(entity);
+        }
+        
         return userMapper.toDto(entity);
     }
     
@@ -57,6 +67,17 @@ public class UserServiceImpl implements UserService {
         User entity = userMapper.toEntity(userDto);
         entity.setPassword(passwordEncoder.encode(password));
         entity = unitOfWork.getUserRepository().save(entity);
+        
+        // If the user is a STUDENT, create a corresponding Student entity
+        if (entity.getRole() == UserRole.STUDENT) {
+            createStudentEntity(entity);
+        }
+        
+        // If the user is a TEACHER, create a corresponding Teacher entity
+        if (entity.getRole() == UserRole.TEACHER) {
+            createTeacherEntity(entity);
+        }
+        
         return userMapper.toDto(entity);
     }
     
@@ -194,5 +215,61 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return unitOfWork.getUserRepository().existsByEmail(email);
+    }
+    
+    /**
+     * Creates a Student entity for a User with STUDENT role
+     */
+    private void createStudentEntity(User user) {
+        String studentNumber = generateStudentNumber();
+        Integer enrollmentYear = LocalDateTime.now().getYear();
+        
+        Student student = new Student(user, studentNumber, enrollmentYear, StudyForm.FULL_TIME);
+        student.setIsActive(true);
+        
+        unitOfWork.getStudentRepository().save(student);
+    }
+    
+    /**
+     * Generates a unique student number
+     */
+    private String generateStudentNumber() {
+        // Find the highest existing student number to generate next one
+        List<Student> students = unitOfWork.getStudentRepository().findAll();
+        int maxNumber = 0;
+        
+        for (Student student : students) {
+            String number = student.getStudentNumber();
+            if (number != null && number.length() >= 3) {
+                try {
+                    // Extract number part (last 3 digits)
+                    String numberPart = number.substring(number.length() - 3);
+                    int currentNumber = Integer.parseInt(numberPart);
+                    maxNumber = Math.max(maxNumber, currentNumber);
+                } catch (NumberFormatException e) {
+                    // Ignore invalid numbers
+                }
+            }
+        }
+        
+        // Generate next number
+        int nextNumber = maxNumber + 1;
+        int currentYear = LocalDateTime.now().getYear();
+        String yearSuffix = String.valueOf(currentYear).substring(2); // Last 2 digits of year
+        
+        return String.format("БЗ%s%03d", yearSuffix, nextNumber);
+    }
+    
+    /**
+     * Creates a Teacher entity when a user with TEACHER role is created
+     */
+    private void createTeacherEntity(User user) {
+        Teacher teacher = new Teacher();
+        teacher.setUser(user);
+        teacher.setIsActive(true);
+        teacher.setHireDate(LocalDateTime.now());
+        teacher.setDepartmentPosition("Викладач"); // Default position
+        
+        unitOfWork.getTeacherRepository().save(teacher);
     }
 }

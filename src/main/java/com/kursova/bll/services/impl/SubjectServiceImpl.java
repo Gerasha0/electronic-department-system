@@ -1,7 +1,9 @@
 package com.kursova.bll.services.impl;
 
 import com.kursova.bll.dto.SubjectDto;
+import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.mappers.SubjectMapper;
+import com.kursova.bll.mappers.TeacherMapper;
 import com.kursova.bll.services.SubjectService;
 import com.kursova.dal.entities.Subject;
 import com.kursova.dal.entities.Teacher;
@@ -24,13 +26,28 @@ public class SubjectServiceImpl implements SubjectService {
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
     private final SubjectMapper subjectMapper;
+    private final TeacherMapper teacherMapper;
     
     public SubjectServiceImpl(SubjectRepository subjectRepository, 
                              TeacherRepository teacherRepository,
-                             SubjectMapper subjectMapper) {
+                             SubjectMapper subjectMapper,
+                             TeacherMapper teacherMapper) {
         this.subjectRepository = subjectRepository;
         this.teacherRepository = teacherRepository;
         this.subjectMapper = subjectMapper;
+        this.teacherMapper = teacherMapper;
+    }
+    
+    // Helper method to add teachers to SubjectDto
+    private SubjectDto enrichWithTeachers(Subject subject) {
+        SubjectDto dto = subjectMapper.toDto(subject);
+        if (subject.getTeachers() != null && !subject.getTeachers().isEmpty()) {
+            List<TeacherDto> teacherDtos = subject.getTeachers().stream()
+                .map(teacherMapper::toDto)
+                .collect(Collectors.toList());
+            dto.setTeachers(teacherDtos);
+        }
+        return dto;
     }
     
     @Override
@@ -50,7 +67,7 @@ public class SubjectServiceImpl implements SubjectService {
     public SubjectDto findById(Long id) {
         Subject subject = subjectRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + id));
-        return subjectMapper.toDto(subject);
+        return enrichWithTeachers(subject);
     }
     
     @Override
@@ -135,7 +152,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findActiveSubjects() {
         return subjectRepository.findByIsActiveTrueOrderBySubjectNameAsc()
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
     
@@ -143,7 +160,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> searchByName(String name) {
         return subjectRepository.searchByName(name)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
     
@@ -194,7 +211,7 @@ public class SubjectServiceImpl implements SubjectService {
     
     @Override
     @Transactional
-    public SubjectDto assignTeacher(Long subjectId, Long teacherId) {
+    public void assignTeacher(Long subjectId, Long teacherId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
         
@@ -206,13 +223,12 @@ public class SubjectServiceImpl implements SubjectService {
         }
         
         subject.getTeachers().add(teacher);
-        Subject savedSubject = subjectRepository.save(subject);
-        return subjectMapper.toDto(savedSubject);
+        subjectRepository.save(subject);
     }
     
     @Override
     @Transactional
-    public SubjectDto removeTeacher(Long subjectId, Long teacherId) {
+    public void removeTeacher(Long subjectId, Long teacherId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
         
@@ -220,8 +236,7 @@ public class SubjectServiceImpl implements SubjectService {
             .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
         
         subject.getTeachers().remove(teacher);
-        Subject savedSubject = subjectRepository.save(subject);
-        return subjectMapper.toDto(savedSubject);
+        subjectRepository.save(subject);
     }
     
     @Override

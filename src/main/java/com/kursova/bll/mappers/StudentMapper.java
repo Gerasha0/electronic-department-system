@@ -13,14 +13,16 @@ import java.util.List;
 /**
  * Mapper for Student entity and StudentDto
  */
-@Mapper(componentModel = "spring", uses = {UserMapper.class, StudentGroupMapper.class, DateTimeMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, DateTimeMapper.class})
 public interface StudentMapper {
     
     StudentMapper INSTANCE = Mappers.getMapper(StudentMapper.class);
     
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "group", source = "group", qualifiedByName = "toDtoSimple")
+    @Mapping(target = "group", ignore = true) // Avoid circular references
+    @Mapping(target = "course", ignore = true)
+    @Mapping(target = "averageGrade", ignore = true)
     StudentDto toDto(Student entity);
     
     @Mapping(target = "createdAt", ignore = true)
@@ -46,5 +48,7 @@ public interface StudentMapper {
     @Mapping(target = "group", ignore = true) // Avoid circular references in lists
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Mapping(target = "course", ignore = true)
+    @Mapping(target = "averageGrade", ignore = true)
     StudentDto toDtoSimple(Student entity);
 }

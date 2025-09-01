@@ -55,6 +55,18 @@ public interface GradeRepository extends BaseRepository<Grade, Long> {
      * Find grades in date range
      */
     List<Grade> findByGradeDateBetweenOrderByGradeDateDesc(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Find grade by id and fetch related student.user, teacher.user and subject to avoid lazy init issues
+     */
+    @Query("select g from Grade g " +
+        "left join fetch g.student s " +
+        "left join fetch s.user su " +
+        "left join fetch g.teacher t " +
+        "left join fetch t.user tu " +
+        "left join fetch g.subject subj " +
+        "where g.id = :id")
+    Optional<Grade> findByIdWithRelations(@Param("id") Long id);
     
     /**
      * Calculate average grade for student in subject
@@ -80,4 +92,15 @@ public interface GradeRepository extends BaseRepository<Grade, Long> {
      */
     @Query("SELECT COUNT(g) FROM Grade g WHERE g.teacher.id = :teacherId AND g.subject.id = :subjectId")
     Long countGradesByTeacherAndSubject(@Param("teacherId") Long teacherId, @Param("subjectId") Long subjectId);
+
+    /**
+     * Find all grades and fetch related student.user, teacher.user and subject to avoid lazy init issues
+     */
+    @Query("select distinct g from Grade g " +
+        "left join fetch g.student s " +
+        "left join fetch s.user su " +
+        "left join fetch g.teacher t " +
+        "left join fetch t.user tu " +
+        "left join fetch g.subject subj")
+    List<Grade> findAllWithRelations();
 }

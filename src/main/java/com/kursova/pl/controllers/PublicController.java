@@ -2,8 +2,10 @@ package com.kursova.pl.controllers;
 
 import com.kursova.bll.dto.SubjectDto;
 import com.kursova.bll.dto.TeacherDto;
+import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.services.SubjectService;
 import com.kursova.bll.services.TeacherService;
+import com.kursova.bll.services.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,10 +25,12 @@ public class PublicController {
     
     private final TeacherService teacherService;
     private final SubjectService subjectService;
+    private final StudentService studentService;
     
-    public PublicController(TeacherService teacherService, SubjectService subjectService) {
+    public PublicController(TeacherService teacherService, SubjectService subjectService, StudentService studentService) {
         this.teacherService = teacherService;
         this.subjectService = subjectService;
+        this.studentService = studentService;
     }
     
     @GetMapping("/teachers")
@@ -47,8 +51,8 @@ public class PublicController {
     @GetMapping("/teachers/search")
     @Operation(summary = "Search teachers by name", description = "Searches teachers by name")
     public ResponseEntity<List<TeacherDto>> searchTeachers(
-            @RequestParam @Parameter(description = "Search term") String name) {
-        List<TeacherDto> teachers = teacherService.searchByName(name);
+            @RequestParam @Parameter(description = "Search term") String q) {
+        List<TeacherDto> teachers = teacherService.searchByName(q);
         return ResponseEntity.ok(teachers);
     }
     
@@ -70,8 +74,8 @@ public class PublicController {
     @GetMapping("/subjects/search")
     @Operation(summary = "Search subjects by name", description = "Searches subjects by name")
     public ResponseEntity<List<SubjectDto>> searchSubjects(
-            @RequestParam @Parameter(description = "Search term") String name) {
-        List<SubjectDto> subjects = subjectService.searchByName(name);
+            @RequestParam @Parameter(description = "Search term") String q) {
+        List<SubjectDto> subjects = subjectService.searchByName(q);
         return ResponseEntity.ok(subjects);
     }
     
@@ -101,6 +105,13 @@ public class PublicController {
         info.setTotalSubjects(subjectService.findActiveSubjects().size());
         
         return ResponseEntity.ok(info);
+    }
+    
+    @GetMapping("/students")
+    @Operation(summary = "Get all active students", description = "Retrieves information about all active students with calculated data")
+    public ResponseEntity<List<StudentDto>> getAllStudents() {
+        List<StudentDto> students = studentService.findActiveStudents();
+        return ResponseEntity.ok(students);
     }
     
     /**

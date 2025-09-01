@@ -58,12 +58,12 @@ public interface SubjectService extends BaseService<SubjectDto, Long> {
     /**
      * Assign teacher to subject
      */
-    SubjectDto assignTeacher(Long subjectId, Long teacherId);
+    void assignTeacher(Long subjectId, Long teacherId);
     
     /**
      * Remove teacher from subject
      */
-    SubjectDto removeTeacher(Long subjectId, Long teacherId);
+    void removeTeacher(Long subjectId, Long teacherId);
     
     /**
      * Activate subject

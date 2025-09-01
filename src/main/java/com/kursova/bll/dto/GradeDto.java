@@ -28,6 +28,7 @@ public class GradeDto {
     
     // Related entities as simple references
     private Long studentId;
+    private Long studentUserId; // User ID of the student
     private String studentName;
     private String studentNumber;
     
@@ -123,6 +124,14 @@ public class GradeDto {
         this.studentId = studentId;
     }
     
+    public Long getStudentUserId() {
+        return studentUserId;
+    }
+    
+    public void setStudentUserId(Long studentUserId) {
+        this.studentUserId = studentUserId;
+    }
+    
     public String getStudentName() {
         return studentName;
     }
@@ -181,20 +190,26 @@ public class GradeDto {
     
     // Helper methods
     public String getGradeLetter() {
-        if (gradeValue >= 90) return "A";
-        if (gradeValue >= 80) return "B";
-        if (gradeValue >= 70) return "C";
-        if (gradeValue >= 60) return "D";
-        return "F";
+    if (gradeValue == null) return null;
+    if (gradeValue >= 90) return "A";
+    if (gradeValue >= 80) return "B";
+    if (gradeValue >= 70) return "C";
+    if (gradeValue >= 60) return "D";
+    return "F";
     }
     
     public String getGradeStatus() {
-        return gradeValue >= 60 ? "Зараховано" : "Не зараховано";
+    if (gradeValue == null) return null;
+    return gradeValue >= 60 ? "Зараховано" : "Не зараховано";
     }
     
     public String getDisplayInfo() {
         StringBuilder info = new StringBuilder();
-        info.append(gradeValue).append(" (").append(getGradeLetter()).append(")");
+        if (gradeValue == null) {
+            info.append("N/A");
+        } else {
+            info.append(gradeValue).append(" (").append(getGradeLetter()).append(")");
+        }
         if (gradeType != null) {
             info.append(" - ").append(gradeType.getDisplayName());
         }

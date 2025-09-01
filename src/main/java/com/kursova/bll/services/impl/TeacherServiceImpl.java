@@ -115,15 +115,48 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     @Transactional(readOnly = true)
     public List<TeacherDto> findActiveTeachers() {
-        // Simplified - return all teachers for now
-        return findAll();
+        List<Teacher> teachers = unitOfWork.getTeacherRepository().findAll()
+                .stream()
+                .filter(teacher -> teacher.getIsActive())
+                .collect(Collectors.toList());
+        
+        return teachers.stream()
+                .map(this::mapTeacherWithSubjects)
+                .collect(Collectors.toList());
+    }
+    
+    private TeacherDto mapTeacherWithSubjects(Teacher teacher) {
+        TeacherDto dto = teacherMapper.toDto(teacher);
+        
+        // Manually add subjects to avoid circular dependency
+        if (teacher.getSubjects() != null && !teacher.getSubjects().isEmpty()) {
+            List<com.kursova.bll.dto.SubjectDto> subjectDtos = teacher.getSubjects().stream()
+                    .map(subject -> {
+                        com.kursova.bll.dto.SubjectDto subjectDto = new com.kursova.bll.dto.SubjectDto();
+                        subjectDto.setId(subject.getId());
+                        subjectDto.setSubjectName(subject.getSubjectName());
+                        subjectDto.setSubjectCode(subject.getSubjectCode());
+                        subjectDto.setCredits(subject.getCredits());
+                        subjectDto.setSemester(subject.getSemester());
+                        return subjectDto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setSubjects(subjectDtos);
+        }
+        
+        return dto;
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<TeacherDto> searchByName(String name) {
-        // Simplified - return all teachers for now
-        return findAll();
+        if (name == null || name.trim().isEmpty()) {
+            return findActiveTeachers();
+        }
+        List<Teacher> teachers = unitOfWork.getTeacherRepository().searchByName(name.trim());
+        return teachers.stream()
+                .map(this::mapTeacherWithSubjects)
+                .collect(Collectors.toList());
     }
     
     @Override

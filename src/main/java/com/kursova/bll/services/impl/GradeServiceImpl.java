@@ -12,6 +12,8 @@ import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +28,7 @@ public class GradeServiceImpl implements GradeService {
     
     private final UnitOfWork unitOfWork;
     private final GradeMapper gradeMapper;
+    private static final Logger log = LoggerFactory.getLogger(GradeServiceImpl.class);
     
     @Autowired
     public GradeServiceImpl(UnitOfWork unitOfWork, GradeMapper gradeMapper) {
@@ -38,17 +41,24 @@ public class GradeServiceImpl implements GradeService {
     @Override
     @Transactional(readOnly = true)
     public List<GradeDto> findAll() {
-        return unitOfWork.getGradeRepository().findAll()
-                .stream()
-                .map(gradeMapper::toDto)
-                .collect(Collectors.toList());
+        // Using full mapping to show student, teacher and subject names
+        return unitOfWork.getGradeRepository().findAllWithRelations()
+            .stream()
+            .map(gradeMapper::toDto)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional(readOnly = true)
+    public List<GradeDto> getAllGrades() {
+        return findAll();
     }
     
     @Override
     @Transactional(readOnly = true)
     public GradeDto findById(Long id) {
-        Grade grade = unitOfWork.getGradeRepository().findById(id)
-                .orElseThrow(() -> new RuntimeException("Grade not found with id: " + id));
+    Grade grade = unitOfWork.getGradeRepository().findByIdWithRelations(id)
+        .orElseGet(() -> unitOfWork.getGradeRepository().findById(id)
+            .orElseThrow(() -> new RuntimeException("Grade not found with id: " + id)));
         return gradeMapper.toDto(grade);
     }
     
@@ -62,9 +72,33 @@ public class GradeServiceImpl implements GradeService {
         grade.setCreatedAt(LocalDateTime.now());
         grade.setUpdatedAt(LocalDateTime.now());
         grade.setGradeDate(LocalDateTime.now());
-        
-        Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
-        return gradeMapper.toDto(savedGrade);
+        // Ensure related entities are set from DTO IDs to avoid null foreign keys
+        if (gradeDto.getStudentId() == null) {
+            throw new IllegalArgumentException("studentId is required");
+        }
+        if (gradeDto.getTeacherId() == null) {
+            throw new IllegalArgumentException("teacherId is required");
+        }
+        if (gradeDto.getSubjectId() == null) {
+            throw new IllegalArgumentException("subjectId is required");
+        }
+
+        Student student = unitOfWork.getStudentRepository().findById(gradeDto.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + gradeDto.getStudentId()));
+        Teacher teacher = unitOfWork.getTeacherRepository().findById(gradeDto.getTeacherId())
+                .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + gradeDto.getTeacherId()));
+        Subject subject = unitOfWork.getSubjectRepository().findById(gradeDto.getSubjectId())
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + gradeDto.getSubjectId()));
+
+        grade.setStudent(student);
+        grade.setTeacher(teacher);
+        grade.setSubject(subject);
+
+    Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
+    // Reload saved grade with relations to ensure mapper can access nested user/subject fields
+    Grade savedWithRelations = unitOfWork.getGradeRepository().findByIdWithRelations(savedGrade.getId())
+        .orElse(savedGrade);
+    return gradeMapper.toDto(savedWithRelations);
     }
     
     public GradeDto save(GradeDto gradeDto) {
@@ -243,7 +277,13 @@ public class GradeServiceImpl implements GradeService {
         grade.setCreatedAt(LocalDateTime.now());
         grade.setUpdatedAt(LocalDateTime.now());
         
-        Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
+    log.debug("Creating grade - studentId={}, teacherId={}, subjectId={}",
+        studentId, teacherId, subjectId);
+    log.debug("Before save - grade.getStudent()={}, grade.getTeacher()={}, grade.getSubject()={}",
+        grade.getStudent(), grade.getTeacher(), grade.getSubject());
+
+    Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
+    log.debug("Saved grade id={}", savedGrade.getId());
         return gradeMapper.toDto(savedGrade);
     }
     

@@ -34,6 +34,10 @@ public class StudentDto {
     
     private StudentGroupDto group;
     
+    // Calculated fields
+    private Integer course; // Calculated based on enrollment year
+    private Double averageGrade; // Calculated based on grades
+    
     // Constructors
     public StudentDto() {}
     
@@ -132,6 +136,22 @@ public class StudentDto {
     
     public void setGroup(StudentGroupDto group) {
         this.group = group;
+    }
+    
+    public Integer getCourse() {
+        return course;
+    }
+    
+    public void setCourse(Integer course) {
+        this.course = course;
+    }
+    
+    public Double getAverageGrade() {
+        return averageGrade;
+    }
+    
+    public void setAverageGrade(Double averageGrade) {
+        this.averageGrade = averageGrade;
     }
     
     // Helper methods

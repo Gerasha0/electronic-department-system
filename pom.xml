@@ -13,7 +13,7 @@
 
   <groupId>com.kursova</groupId>
   <artifactId>electronic-department</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <packaging>jar</packaging>
 
   <name>Electronic Department System</name>
@@ -61,11 +61,12 @@
       <artifactId>h2</artifactId>
       <scope>runtime</scope>
     </dependency>
-    
+
     <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
       <scope>runtime</scope>
+      <version>8.0.33</version>
     </dependency>
 
     <!-- MapStruct for mapping between layers -->
@@ -119,6 +120,32 @@
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>2.2.0</version>
     </dependency>
+
+    <!-- Flyway for database migrations -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+      <version>9.22.3</version>
+    </dependency>
+
+    <!-- JWT -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>0.11.5</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>0.11.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>0.11.5</version>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -143,6 +170,20 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
+      </plugin>
+      
+      <!-- Flyway Maven plugin with MySQL driver on plugin classpath -->
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>9.22.3</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

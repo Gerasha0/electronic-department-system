@@ -3,6 +3,9 @@ package com.kursova.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,7 +31,7 @@ public class SecurityConfig {
     }
     
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, com.kursova.config.jwt.JwtUtils jwtUtils) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -41,6 +44,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
+                // Allow root, explicit HTML pages and static resources
+                .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/static/**", "/favicon.ico", "/*.css", "/*.js", "/*.html").permitAll()
                 
                 // Admin only endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -51,6 +56,12 @@ public class SecurityConfig {
                 // Teacher endpoints
                 .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
                 
+                // Grade endpoints
+                .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
+                
+                // User endpoints
+                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                
                 // Student endpoints
                 .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT")
                 
@@ -58,8 +69,16 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // For H2 console
-        
+
+        // Add JWT filter before username/password filter
+        http.addFilterBefore(new com.kursova.config.jwt.JwtAuthFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
     
     @Bean

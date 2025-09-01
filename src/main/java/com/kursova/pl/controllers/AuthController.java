@@ -2,6 +2,11 @@ package com.kursova.pl.controllers;
 
 import com.kursova.bll.dto.UserDto;
 import com.kursova.bll.services.UserService;
+import com.kursova.config.jwt.JwtUtils;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,9 +31,13 @@ import java.util.Map;
 public class AuthController {
     
     private final UserService userService;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
     
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
         this.userService = userService;
+        this.jwtUtils = jwtUtils;
+        this.authenticationManager = authenticationManager;
     }
     
     /**
@@ -100,30 +109,38 @@ public class AuthController {
     @Operation(summary = "Login user", description = "Authenticates user with username and password")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            // Find user by username
+            // Authenticate using AuthenticationManager (will check password)
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+
             UserDto user = userService.findByUsername(loginRequest.getUsername());
-            
             if (user == null || !user.getIsActive()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(false, "Invalid credentials or user is not active", null));
+                        .body(new LoginResponse(false, "Invalid credentials or user is not active", null));
             }
-            
-            // For testing purposes, we'll create a simple authentication
-            // In production, you would validate the password properly
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(),
-                null,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-            );
-            
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            
-            return ResponseEntity.ok(new LoginResponse(true, "Login successful", user));
-            
-        } catch (Exception e) {
+
+            String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+
+            // Return token in message field and user info
+            LoginResponse resp = new LoginResponse(true, token, user);
+            return ResponseEntity.ok(resp);
+
+        } catch (AuthenticationException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new LoginResponse(false, "Invalid credentials", null));
+                    .body(new LoginResponse(false, "Invalid credentials", null));
         }
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Registers a new user with password")
+    public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto, @RequestParam String password) {
+        if (userService.existsByUsername(userDto.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username exists");
+        }
+
+        UserDto created = userService.createWithPassword(userDto, password);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
     
     @PostMapping("/logout")
