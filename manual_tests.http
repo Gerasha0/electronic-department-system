@@ -9,14 +9,348 @@ Accept: application/json
 GET http://localhost:8080/api/public/status
 Accept: application/json
 
-### 2. Аутентификация - Логин как админ
-POST http://localhost:8080/api/auth/login
+# Electronic Department System API Manual Tests
+# Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@adminToken = Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NjcyNTY3OSwiZXhwIjoxNzU2NzI5Mjc5fQ.fFm7qP2HB-YagGc9neJ8jwM8gbk4KwUW63zH-WNsBCA
+
+# ===== AUTHENTICATION =====
+# Operations for user authentication - NO TOKEN REQUIRED for login/register
+
+### Login user
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
   "username": "admin",
   "password": "admin123"
 }
+
+### Register user - NO TOKEN REQUIRED
+POST {{baseUrl}}/api/auth/register?password=newPassword123
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@test.com",
+  "firstName": "New",
+  "lastName": "User",
+  "role": "STUDENT"
+}
+
+### Logout user - TOKEN REQUIRED
+POST {{baseUrl}}/api/auth/logout
+Authorization: {{adminToken}}
+
+### Get current user - TOKEN REQUIRED
+GET {{baseUrl}}/api/auth/current-user
+Authorization: {{adminToken}}
+
+# ===== PUBLIC INFORMATION =====
+# Public access to general department information - NO TOKEN REQUIRED
+
+### Get all active teachers - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/teachers
+
+### Get teacher by ID - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/teachers/1
+
+### Search teachers by name - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/teachers/search?q=Іван
+
+### Get all active subjects - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/subjects
+
+### Get subject by ID - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/subjects/1
+
+### Search subjects by name - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/subjects/search?q=Програмування
+
+### Get all active students - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/students
+
+### System status - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/status
+
+### Health check - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/health
+
+### Get department information - NO TOKEN REQUIRED
+GET {{baseUrl}}/api/public/department-info
+
+# ===== GRADE MANAGEMENT =====
+# Operations for managing student grades - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER/STUDENT roles)
+
+### Get grade by ID - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER/STUDENT)
+GET {{baseUrl}}/api/grades/1
+Authorization: {{adminToken}}
+
+### Update grade - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+PUT {{baseUrl}}/api/grades/1
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "gradeValue": 85,
+  "gradeType": "MODULE",
+  "comments": "Updated grade"
+}
+
+### Delete grade - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+DELETE {{baseUrl}}/api/grades/1
+Authorization: {{adminToken}}
+
+### Get all grades - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+GET {{baseUrl}}/api/grades
+Authorization: {{adminToken}}
+
+### Create new grade - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+POST {{baseUrl}}/api/grades
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "gradeValue": 90,
+  "gradeType": "CURRENT",
+  "comments": "Test grade",
+  "studentId": 1,
+  "teacherId": 1,
+  "subjectId": 1
+}
+
+### Create grade by user ids - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+POST {{baseUrl}}/api/grades/by-user-ids
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": 5,
+  "teacherId": 1,
+  "subjectId": 1,
+  "gradeValue": 88,
+  "gradeType": "MODULE"
+}
+
+### Create grade by ids - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+POST {{baseUrl}}/api/grades/by-ids
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "studentId": 1,
+  "teacherId": 1,
+  "subjectId": 1,
+  "gradeValue": 92,
+  "gradeType": "FINAL"
+}
+
+### Get grades by type - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+GET {{baseUrl}}/api/grades/type/MODULE
+Authorization: {{adminToken}}
+
+### Get grades by teacher - TOKEN REQUIRED (ADMIN/MANAGER or own teacherId)
+GET {{baseUrl}}/api/grades/teacher/1
+Authorization: {{adminToken}}
+
+### Get grades by subject - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+GET {{baseUrl}}/api/grades/subject/1
+Authorization: {{adminToken}}
+
+### Get grades by student - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER or own studentId)
+GET {{baseUrl}}/api/grades/student/1
+Authorization: {{adminToken}}
+
+### Get grades by student and subject - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER or own studentId)
+GET {{baseUrl}}/api/grades/student/1/subject/1
+Authorization: {{adminToken}}
+
+### Get student subject average - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER or own studentId)
+GET {{baseUrl}}/api/grades/student/1/subject/1/average
+Authorization: {{adminToken}}
+
+### Get final grades by student - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER or own studentId)
+GET {{baseUrl}}/api/grades/student/1/final
+Authorization: {{adminToken}}
+
+### Get student average grade - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER or own studentId)
+GET {{baseUrl}}/api/grades/student/1/average
+Authorization: {{adminToken}}
+
+### Debug grades raw - TOKEN REQUIRED (ADMIN only)
+GET {{baseUrl}}/api/grades/diagnostics
+Authorization: {{adminToken}}
+
+# ===== SUBJECT MANAGEMENT =====
+# Operations related to subject management - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER roles)
+
+### Get subject by ID - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+GET {{baseUrl}}/api/subjects/1
+Authorization: {{adminToken}}
+
+### Update subject - TOKEN REQUIRED (ADMIN/MANAGER)
+PUT {{baseUrl}}/api/subjects/1
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "subjectName": "Updated Programming",
+  "subjectCode": "PROG-301-UPD",
+  "credits": 6,
+  "semester": 5,
+  "hoursTotal": 180,
+  "hoursLectures": 60,
+  "hoursPractical": 90,
+  "hoursLaboratory": 30,
+  "assessmentType": "EXAM",
+  "description": "Updated programming course"
+}
+
+### Delete subject - TOKEN REQUIRED (ADMIN/MANAGER)
+DELETE {{baseUrl}}/api/subjects/1
+Authorization: {{adminToken}}
+
+### Get all subjects - TOKEN REQUIRED (ADMIN/MANAGER/TEACHER)
+GET {{baseUrl}}/api/subjects
+Authorization: {{adminToken}}
+
+### Create new subject - TOKEN REQUIRED (ADMIN/MANAGER)
+POST {{baseUrl}}/api/subjects
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "subjectName": "New Programming Course",
+  "subjectCode": "NEWPROG-401",
+  "credits": 5,
+  "semester": 7,
+  "hoursTotal": 150,
+  "hoursLectures": 45,
+  "hoursPractical": 75,
+  "hoursLaboratory": 30,
+  "assessmentType": "EXAM",
+  "description": "Advanced programming course"
+}
+
+### Assign teacher to subject - TOKEN REQUIRED (ADMIN/MANAGER)
+POST {{baseUrl}}/api/subjects/1/teachers/1
+Authorization: {{adminToken}}
+
+### Remove teacher from subject - TOKEN REQUIRED (ADMIN/MANAGER)
+DELETE {{baseUrl}}/api/subjects/1/teachers/1
+Authorization: {{adminToken}}
+
+# ===== USER MANAGEMENT =====
+# Operations for managing users - TOKEN REQUIRED (ADMIN/MANAGER roles)
+
+### Get user by ID - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/1
+Authorization: {{adminToken}}
+
+### Update user - TOKEN REQUIRED (ADMIN/MANAGER)
+PUT {{baseUrl}}/api/users/1
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "username": "updated_admin",
+  "email": "updated_admin@university.ua",
+  "firstName": "Updated",
+  "lastName": "Admin",
+  "role": "ADMIN"
+}
+
+### Delete user - TOKEN REQUIRED (ADMIN only)
+DELETE {{baseUrl}}/api/users/1
+Authorization: {{adminToken}}
+
+### Update user password - TOKEN REQUIRED (ADMIN/MANAGER or own account)
+PUT {{baseUrl}}/api/users/1/password?oldPassword=admin123&newPassword=newPassword123
+Authorization: {{adminToken}}
+
+### Deactivate user - TOKEN REQUIRED (ADMIN/MANAGER)
+PUT {{baseUrl}}/api/users/1/deactivate
+Authorization: {{adminToken}}
+
+### Activate user - TOKEN REQUIRED (ADMIN/MANAGER)
+PUT {{baseUrl}}/api/users/1/activate
+Authorization: {{adminToken}}
+
+### Get all users - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users
+Authorization: {{adminToken}}
+
+### Create new user - TOKEN REQUIRED (ADMIN/MANAGER)
+POST {{baseUrl}}/api/users
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "username": "newuser123",
+  "email": "newuser123@test.com",
+  "firstName": "New",
+  "lastName": "User",
+  "role": "STUDENT"
+}
+
+### Create new user with password - TOKEN REQUIRED (ADMIN/MANAGER)
+POST {{baseUrl}}/api/users/with-password?password=testPassword123
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "username": "userwithpass",
+  "email": "userwithpass@test.com",
+  "firstName": "User",
+  "lastName": "WithPass",
+  "role": "STUDENT"
+}
+
+### Check if user exists - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/1/exists
+Authorization: {{adminToken}}
+
+### Check if username exists - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/username/admin/exists
+Authorization: {{adminToken}}
+
+### Search users by name - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/search?name=Admin
+Authorization: {{adminToken}}
+
+### Check if email exists - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/email/admin@university.ua/exists
+Authorization: {{adminToken}}
+
+### Get user by username - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/by-username/admin
+Authorization: {{adminToken}}
+
+### Get users by role - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/by-role/STUDENT
+Authorization: {{adminToken}}
+
+### Get active users - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/active
+Authorization: {{adminToken}}
+
+### Get active users by role - TOKEN REQUIRED (ADMIN/MANAGER)
+GET {{baseUrl}}/api/users/active/by-role/TEACHER
+Authorization: {{adminToken}}
+
+# ===== NOTES =====
+# Token Requirements Summary:
+# - NO TOKEN: All /api/public/*, /api/auth/login, /api/auth/register
+# - TOKEN REQUIRED: All other endpoints with specific role restrictions
+# - ADMIN: Full access to all operations
+# - MANAGER: Most operations except some user management
+# - TEACHER: Grade and subject operations within their scope
+# - STUDENT: Read access to their own grades and some public info
+#
+# Role hierarchy: ADMIN > MANAGER > TEACHER > STUDENT
+# Some endpoints allow access to own data (e.g., student can see own grades)
 
 ### 3. Аутентификация - Логин как преподаватель
 POST http://localhost:8080/api/auth/login
