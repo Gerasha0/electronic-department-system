@@ -175,9 +175,16 @@ class ApiClient {
     }
     
     async deleteGroup(id) {
-        return await this.apiCall(`/api/groups/${id}`, {
+        const response = await this.apiCall(`/api/groups/${id}`, {
             method: 'DELETE'
         });
+        
+        // Handle both success response and 204 No Content
+        if (response?.success || response?.status === 204 || response?.status === 200) {
+            return { success: true, data: response?.data };
+        }
+        
+        return response;
     }
     
     async getActiveGroups() {
@@ -186,6 +193,22 @@ class ApiClient {
     
     async searchGroups(name) {
         return await this.apiCall(`/api/groups/search?name=${encodeURIComponent(name)}`);
+    }
+    
+    async getGroupStudents(groupId) {
+        return await this.apiCall(`/api/groups/${groupId}/students`);
+    }
+    
+    async addStudentToGroup(groupId, studentId) {
+        return await this.apiCall(`/api/groups/${groupId}/students/${studentId}`, {
+            method: 'POST'
+        });
+    }
+    
+    async removeStudentFromGroup(groupId, studentId) {
+        return await this.apiCall(`/api/groups/${groupId}/students/${studentId}`, {
+            method: 'DELETE'
+        });
     }
     
     // Subject management methods

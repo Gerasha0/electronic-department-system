@@ -2,7 +2,9 @@ package com.kursova.bll.services.impl;
 
 import com.kursova.bll.dto.StudentGroupDto;
 import com.kursova.bll.mappers.StudentGroupMapper;
+import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.StudentGroupService;
+import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.StudentGroup;
 import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,13 @@ public class StudentGroupServiceImpl implements StudentGroupService {
 
     private final UnitOfWork unitOfWork;
     private final StudentGroupMapper groupMapper;
+    private final ArchiveService archiveService;
 
     @Autowired
-    public StudentGroupServiceImpl(UnitOfWork unitOfWork, StudentGroupMapper groupMapper) {
+    public StudentGroupServiceImpl(UnitOfWork unitOfWork, StudentGroupMapper groupMapper, ArchiveService archiveService) {
         this.unitOfWork = unitOfWork;
         this.groupMapper = groupMapper;
+        this.archiveService = archiveService;
     }
 
     @Override
@@ -80,14 +84,10 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
-        StudentGroup group = unitOfWork.getStudentGroupRepository().findById(id)
-                .orElseThrow(() -> new RuntimeException("StudentGroup not found with id: " + id));
-        
-        // Soft delete - set isActive to false
-        group.setIsActive(false);
-        group.setUpdatedAt(LocalDateTime.now());
-        unitOfWork.getStudentGroupRepository().save(group);
+        // Archive the group and all related data instead of just deleting
+        archiveService.archiveStudentGroup(id, "SYSTEM", "Group deleted by user");
     }
 
     @Override

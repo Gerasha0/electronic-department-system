@@ -70,8 +70,13 @@ mvn clean compile
 
 3. **Запуск приложения:**
 ```bash
+sudo service mysql start
 mvn spring-boot:run
+or
+mvn spring-boot:run -Dspring-boot.run.profiles=prod > server.log 2>&1 &
 ```
+
+pkill -f "spring-boot:run"
 
 4. **Доступ к приложению:**
 - Главное приложение: http://localhost:8080

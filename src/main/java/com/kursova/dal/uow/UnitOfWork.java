@@ -19,6 +19,9 @@ public class UnitOfWork {
     private final StudentGroupRepository studentGroupRepository;
     private final SubjectRepository subjectRepository;
     private final GradeRepository gradeRepository;
+    private final ArchivedStudentGroupRepository archivedStudentGroupRepository;
+    private final ArchivedStudentRepository archivedStudentRepository;
+    private final ArchivedGradeRepository archivedGradeRepository;
 
     @Autowired
     public UnitOfWork(
@@ -27,13 +30,19 @@ public class UnitOfWork {
             StudentRepository studentRepository,
             StudentGroupRepository studentGroupRepository,
             SubjectRepository subjectRepository,
-            GradeRepository gradeRepository) {
+            GradeRepository gradeRepository,
+            ArchivedStudentGroupRepository archivedStudentGroupRepository,
+            ArchivedStudentRepository archivedStudentRepository,
+            ArchivedGradeRepository archivedGradeRepository) {
         this.userRepository = userRepository;
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
         this.studentGroupRepository = studentGroupRepository;
         this.subjectRepository = subjectRepository;
         this.gradeRepository = gradeRepository;
+        this.archivedStudentGroupRepository = archivedStudentGroupRepository;
+        this.archivedStudentRepository = archivedStudentRepository;
+        this.archivedGradeRepository = archivedGradeRepository;
     }
 
     // Repository getters
@@ -59,6 +68,18 @@ public class UnitOfWork {
 
     public GradeRepository getGradeRepository() {
         return gradeRepository;
+    }
+
+    public ArchivedStudentGroupRepository getArchivedStudentGroupRepository() {
+        return archivedStudentGroupRepository;
+    }
+
+    public ArchivedStudentRepository getArchivedStudentRepository() {
+        return archivedStudentRepository;
+    }
+
+    public ArchivedGradeRepository getArchivedGradeRepository() {
+        return archivedGradeRepository;
     }
 
     /**

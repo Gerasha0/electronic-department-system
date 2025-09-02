@@ -9,13 +9,7 @@
 
 ### 1. Запуск MySQL в Docker
 ```bash
-docker run --name mysql-electronic-dept \
-  -e MYSQL_ROOT_PASSWORD=rootpassword \
-  -e MYSQL_DATABASE=electronic_department \
-  -e MYSQL_USER=dept_user \
-  -e MYSQL_PASSWORD=b8ef2g6 \
-  -p 3306:3306 \
-  -d mysql:8.0
+docker run --name mysql-electronic-dept -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=electronic_department -e MYSQL_USER=dept_user -e MYSQL_PASSWORD=b8ef2g6 -p 3306:3306 -d mysql:8.0
 ```
 
 ### 2. Восстановление базы данных

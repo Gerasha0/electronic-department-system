@@ -216,4 +216,33 @@ public class StudentServiceImpl implements StudentService {
         Student updatedStudent = unitOfWork.getStudentRepository().save(student);
         return mapStudentWithCalculatedData(updatedStudent);
     }
+
+    @Override
+    @Transactional
+    public StudentDto assignToGroup(Long studentId, Long groupId) {
+        Student student = unitOfWork.getStudentRepository().findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+        
+        var group = unitOfWork.getStudentGroupRepository().findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found with id: " + groupId));
+        
+        student.setGroup(group);
+        student.setUpdatedAt(LocalDateTime.now());
+        
+        Student updatedStudent = unitOfWork.getStudentRepository().save(student);
+        return mapStudentWithCalculatedData(updatedStudent);
+    }
+
+    @Override
+    @Transactional
+    public StudentDto removeFromGroup(Long studentId) {
+        Student student = unitOfWork.getStudentRepository().findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+        
+        student.setGroup(null);
+        student.setUpdatedAt(LocalDateTime.now());
+        
+        Student updatedStudent = unitOfWork.getStudentRepository().save(student);
+        return mapStudentWithCalculatedData(updatedStudent);
+    }
 }

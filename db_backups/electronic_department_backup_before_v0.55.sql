@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: electronic_department
+-- Host: localhost    Database: electronic_department
 -- ------------------------------------------------------
 -- Server version	8.0.43-0ubuntu0.24.04.1
 
@@ -14,6 +14,14 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `electronic_department`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `electronic_department` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `electronic_department`;
 
 --
 -- Table structure for table `grades`
@@ -66,14 +74,17 @@ CREATE TABLE `student_groups` (
   `course_year` int NOT NULL,
   `created_at` datetime(6) DEFAULT NULL,
   `group_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `group_code` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` bit(1) DEFAULT NULL,
   `max_students` int DEFAULT NULL,
   `specialization` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `start_year` int DEFAULT NULL,
+  `enrollment_year` int DEFAULT NULL,
   `study_form` enum('FULL_TIME','PART_TIME','EVENING','DISTANCE') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_jc3sgr86kaisj55xdprb2dtlr` (`group_name`)
+  UNIQUE KEY `UK_jc3sgr86kaisj55xdprb2dtlr` (`group_name`),
+  UNIQUE KEY `group_code` (`group_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -83,7 +94,7 @@ CREATE TABLE `student_groups` (
 
 LOCK TABLES `student_groups` WRITE;
 /*!40000 ALTER TABLE `student_groups` DISABLE KEYS */;
-INSERT INTO `student_groups` VALUES (1,3,'2025-08-29 12:27:09.777911','БЗ-121',_binary '',25,'Кібербезпека',2021,'FULL_TIME','2025-08-29 12:27:09.777918'),(2,3,'2025-08-29 12:27:09.785114','ПІ-121',_binary '',30,'Програмна інженерія',2021,'FULL_TIME','2025-08-29 12:27:09.785122'),(3,2,'2025-08-29 12:27:09.786637','КН-221',_binary '',28,'Комп\'ютерні науки',2022,'FULL_TIME','2025-08-29 12:27:09.786643');
+INSERT INTO `student_groups` VALUES (1,3,'2025-08-29 12:27:09.777911','БЗ-121','GR0001',_binary '',25,'Кібербезпека',2021,2021,'FULL_TIME','2025-08-29 12:27:09.777918'),(2,3,'2025-08-29 12:27:09.785114','ПІ-121','GR0002',_binary '',30,'Програмна інженерія',2021,2021,'FULL_TIME','2025-08-29 12:27:09.785122'),(3,2,'2025-08-29 12:27:09.786637','КН-221','GR0003',_binary '',28,'Комп\'ютерні науки',2022,2022,'FULL_TIME','2025-08-29 12:27:09.786643');
 /*!40000 ALTER TABLE `student_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -158,7 +169,7 @@ CREATE TABLE `subjects` (
 
 LOCK TABLES `subjects` WRITE;
 /*!40000 ALTER TABLE `subjects` DISABLE KEYS */;
-INSERT INTO `subjects` VALUES (1,'EXAM','2025-08-29 12:27:09.788546',6,'Основи програмування на мові Java',30,60,90,180,_binary '',5,'PROG-301','Програмування','2025-08-29 12:27:09.788556'),(2,'EXAM','2025-08-29 12:27:09.791866',5,'Проектування та розробка баз даних',30,45,75,150,_binary '',5,'DB-301','Бази даних','2025-08-29 12:27:09.791873'),(3,'DIFFERENTIATED_CREDIT','2025-08-29 12:27:09.793820',4,'Вивчення основних алгоритмів та структур даних',30,40,50,120,_binary '',3,'ASD-201','Алгоритми та структури даних','2025-08-29 12:27:09.793827'),(4,'COURSE_WORK','2025-08-29 12:27:09.795734',5,'Розробка веб-додатків з використанням сучасних технологій',30,30,90,150,_binary '',7,'WEB-401','Веб-технології','2025-08-29 12:27:09.795744'),(5,'EXAM','2025-09-01 10:46:34.731639',4,'',50,30,40,120,_binary '',1,'123','Нихеранеделание','2025-09-01 10:46:34.731669');
+INSERT INTO `subjects` VALUES (1,'EXAM','2025-08-29 12:27:09.788546',6,'Основи програмування на мові Java',30,60,90,180,_binary '',5,'PROG-301','Програмування','2025-08-29 12:27:09.788556'),(2,'EXAM','2025-08-29 12:27:09.791866',5,'Проектування та розробка баз даних',30,45,75,150,_binary '',5,'DB-301','Бази даних','2025-08-29 12:27:09.791873'),(3,'DIFFERENTIATED_CREDIT','2025-08-29 12:27:09.793820',4,'Вивчення основних алгоритмів та структур даних',30,40,50,120,_binary '',2,'ASD-201','Алгоритми та структури даних','2025-09-01 11:49:17.261634'),(4,'COURSE_WORK','2025-08-29 12:27:09.795734',5,'Розробка веб-додатків з використанням сучасних технологій',30,30,90,150,_binary '',7,'WEB-401','Веб-технології','2025-08-29 12:27:09.795744');
 /*!40000 ALTER TABLE `subjects` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -246,7 +257,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_6dotkott2kjsp8vw4d0m25fb7` (`email`),
   UNIQUE KEY `UK_r43af9ap4edm43mmtq01oddj6` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,9 +266,13 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'2025-08-29 12:27:09.165077','admin@university.ua','Адміністратор',_binary '','Системи','$2a$10$OK2TZatAUFXKNwjsHZBWUOkVPvLYkajETscrJ6rFWf3JYv5UHf2t2','ADMIN','2025-09-01 07:16:22.267028','admin'),(3,'2025-08-29 12:27:09.351371','ivanov@university.ua','Іван',_binary '','Іванов','$2a$10$gPKlsMS/BWl5odPiWiwNyer7ePeWJdHIoaWAphdjKRdpzluZGVdI.','TEACHER','2025-08-29 12:27:09.351379','teacher1'),(4,'2025-08-29 12:27:09.435814','petrov@university.ua','Петро',_binary '','Петров','$2a$10$ebPIoFaPurPbH3Fd6Nqwn.pypIoDvcNvlUhh/6PcRPb9BzBm5AWCG','TEACHER','2025-08-29 12:27:09.435821','teacher2'),(5,'2025-08-29 12:27:09.520368','sidorov@student.ua','Сергій',_binary '','Сидоров','$2a$10$YF6uTYJ6RW84zF2/KdyYNeAUlFxwTivVW2OSnfeFEpcUAjolywcO6','STUDENT','2025-08-29 12:27:09.520378','student1'),(6,'2025-08-29 12:27:09.604398','kowalenko@student.ua','Анна',_binary '','Коваленко','$2a$10$ky3NS/yaNwU8EnEc3Rvn3eBGAb1yBzjfLe/pL2iE3PMsI/xympnga','STUDENT','2025-08-29 12:27:09.604405','student2'),(7,'2025-08-29 12:27:09.689989','moroz@student.ua','Олексій',_binary '','Мороз','$2a$10$4kg7bkuR3EkS8yCqcd2.BOn1IDXPjidGyh3321jarAm9KOPrZGAR.','STUDENT','2025-08-29 12:27:09.690005','student3'),(9,'2025-09-01 06:59:49.142402','test@test.com','Test',NULL,'User','$2a$10$i4RVM3Z2QryWzs3L3nhwWu/l5f8Cuc8W4VCMh67MxLe.EX/J3N.Dm','STUDENT','2025-09-01 06:59:49.142419','testuser'),(10,'2025-09-01 07:00:07.431320','new@test.com','New',NULL,'User','$2a$10$uy.5Ql2l2prll5Tm03kWuOyQ/Eu1c9tP0TYNs4DMr/b8HxVQfdU3q','STUDENT','2025-09-01 07:00:07.431338','newuser'),(12,'2025-09-01 08:30:37.254839','alesha@test.com','Альоша',NULL,'Альошович','$2a$10$ttT3GZQkhr1o1CzTylQ6GOWBjAFjyPL5yHuDhk3PBlJktrJA1tCtK','STUDENT','2025-09-01 08:30:37.254867','alesha'),(14,'2025-09-01 09:45:42.915094','test@teacher.com','Тест',NULL,'Вчитель','$2a$10$bLJhEBnxrFvvnhKDfKEJ0umLQcfuccCU3VhUR6X..LfrhXcOcwKY6','TEACHER','2025-09-01 09:45:42.915112','testteacher');
+INSERT INTO `users` VALUES (1,'2025-08-29 12:27:09.165077','admin@university.ua','Адміністратор',_binary '','Системи','$2a$10$OK2TZatAUFXKNwjsHZBWUOkVPvLYkajETscrJ6rFWf3JYv5UHf2t2','ADMIN','2025-09-01 07:16:22.267028','admin'),(3,'2025-08-29 12:27:09.351371','ivanov@university.ua','Іван',_binary '','Іванов','$2a$10$gPKlsMS/BWl5odPiWiwNyer7ePeWJdHIoaWAphdjKRdpzluZGVdI.','TEACHER','2025-08-29 12:27:09.351379','teacher1'),(4,'2025-08-29 12:27:09.435814','petrov@university.ua','Петро',_binary '','Петров','$2a$10$ebPIoFaPurPbH3Fd6Nqwn.pypIoDvcNvlUhh/6PcRPb9BzBm5AWCG','TEACHER','2025-08-29 12:27:09.435821','teacher2'),(5,'2025-08-29 12:27:09.520368','sidorov@student.ua','Сергій',_binary '','Сидоров','$2a$10$YF6uTYJ6RW84zF2/KdyYNeAUlFxwTivVW2OSnfeFEpcUAjolywcO6','STUDENT','2025-08-29 12:27:09.520378','student1'),(6,'2025-08-29 12:27:09.604398','kowalenko@student.ua','Анна',_binary '','Коваленко','$2a$10$ky3NS/yaNwU8EnEc3Rvn3eBGAb1yBzjfLe/pL2iE3PMsI/xympnga','STUDENT','2025-08-29 12:27:09.604405','student2'),(7,'2025-08-29 12:27:09.689989','moroz@student.ua','Олексій',_binary '','Мороз','$2a$10$4kg7bkuR3EkS8yCqcd2.BOn1IDXPjidGyh3321jarAm9KOPrZGAR.','STUDENT','2025-08-29 12:27:09.690005','student3'),(9,'2025-09-01 06:59:49.142402','test@test.com','Test',NULL,'User','$2a$10$i4RVM3Z2QryWzs3L3nhwWu/l5f8Cuc8W4VCMh67MxLe.EX/J3N.Dm','STUDENT','2025-09-01 06:59:49.142419','testuser'),(10,'2025-09-01 07:00:07.431320','new@test.com','New',NULL,'User','$2a$10$uy.5Ql2l2prll5Tm03kWuOyQ/Eu1c9tP0TYNs4DMr/b8HxVQfdU3q','STUDENT','2025-09-01 07:00:07.431338','newuser'),(12,'2025-09-01 08:30:37.254839','alesha@test.com','Альоша',NULL,'Альошович','$2a$10$ttT3GZQkhr1o1CzTylQ6GOWBjAFjyPL5yHuDhk3PBlJktrJA1tCtK','STUDENT','2025-09-01 08:30:37.254867','alesha'),(14,'2025-09-01 09:45:42.915094','test@teacher.com','Тест',NULL,'Вчитель','$2a$10$bLJhEBnxrFvvnhKDfKEJ0umLQcfuccCU3VhUR6X..LfrhXcOcwKY6','TEACHER','2025-09-01 09:45:42.915112','testteacher'),(15,'2025-09-01 13:19:26.083922','manager@test.com','manager',_binary '','M','$2a$10$WabyRAQrDoXDpZpSfMz6H.gRORfCFTJjwJkKSccm2UwqM6xCdf6u.','MANAGER','2025-09-01 13:19:33.220160','manager');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping events for database 'electronic_department'
+--
 
 --
 -- Dumping routines for database 'electronic_department'
@@ -272,4 +287,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-01 11:05:50
+-- Dump completed on 2025-09-02  6:13:55

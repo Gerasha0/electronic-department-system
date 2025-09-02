@@ -57,4 +57,14 @@ public interface StudentService extends BaseService<StudentDto, Long> {
      * Deactivate student account
      */
     StudentDto deactivateStudent(Long studentId);
+
+    /**
+     * Assign student to group
+     */
+    StudentDto assignToGroup(Long studentId, Long groupId);
+
+    /**
+     * Remove student from group
+     */
+    StudentDto removeFromGroup(Long studentId);
 }

@@ -448,10 +448,29 @@ class Dashboard {
 
     renderGradesTable(grades) {
         const tbody = document.getElementById('grades-tbody');
-        if (!tbody) return;
+        const table = document.getElementById('grades-table');
+        if (!tbody || !table) return;
+
+        // Check if admin/manager should see actions column
+        const role = this.currentUser?.role;
+        const showActions = role === 'TEACHER'; // Only teachers can edit/delete grades
+        const colCount = showActions ? 6 : 5;
+
+        // Update table header based on permissions
+        const thead = table.querySelector('thead tr');
+        if (thead) {
+            thead.innerHTML = `
+                <th>🎓 Студент</th>
+                <th>📚 Дисципліна</th>
+                <th>📋 Тип</th>
+                <th>⭐ Оцінка</th>
+                <th>📅 Дата</th>
+                ${showActions ? '<th>⚙️ Дії</th>' : ''}
+            `;
+        }
 
         if (!grades.length) {
-            tbody.innerHTML = '<tr><td colspan="6">Оцінки не знайдені</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="${colCount}">Оцінки не знайдені</td></tr>`;
             return;
         }
 
@@ -471,14 +490,14 @@ class Dashboard {
                 <td>${gradeType}</td>
                 <td><strong>${gradeValue}</strong></td>
                 <td>${formattedDate}</td>
+                ${showActions ? `
                 <td>
                     <div class="table-actions">
-                        ${this.currentUser?.role !== 'STUDENT' ? `
-                            <button class="btn btn-sm btn-primary" onclick="dashboard.editGrade(${grade.id})">Редагувати</button>
-                            <button class="btn btn-sm btn-danger" onclick="dashboard.deleteGrade(${grade.id})">Видалити</button>
-                        ` : ''}
+                        <button class="btn btn-sm btn-primary" onclick="dashboard.editGrade(${grade.id})">Редагувати</button>
+                        <button class="btn btn-sm btn-danger" onclick="dashboard.deleteGrade(${grade.id})">Видалити</button>
                     </div>
                 </td>
+                ` : ''}
             </tr>
         `;
         }).join('');
@@ -796,9 +815,10 @@ class Dashboard {
             const studentCount = group.currentStudentCount || 0;
             const enrollmentYear = group.enrollmentYear || group.startYear || 'N/A';
             
-            // Check role permissions for action buttons
-            const canEdit = this.rolePermissions?.canEdit || false;
-            const canDelete = this.rolePermissions?.canDelete || false;
+            // Check role permissions for action buttons - only MANAGER can edit/delete groups
+            const role = this.currentUser?.role;
+            const canEdit = role === 'MANAGER';
+            const canDelete = role === 'ADMIN' || role === 'MANAGER'; // Both ADMIN and MANAGER can delete
             
             let actions = `<button class="btn btn-sm btn-info" onclick="dashboard.viewGroupStudents(${group.id})">Студенти</button>`;
             
@@ -829,21 +849,404 @@ class Dashboard {
     }
 
     async viewGroupStudents(groupId) {
-        // Implementation for viewing students in a group
-        console.log('Viewing students in group:', groupId);
-        // TODO: Implement group students view
+        try {
+            const [groupResponse, studentsResponse] = await Promise.all([
+                apiClient.getGroupById(groupId),
+                apiClient.getGroupStudents(groupId)
+            ]);
+            
+            if (groupResponse?.success) {
+                const group = groupResponse.data;
+                const students = studentsResponse?.success ? studentsResponse.data : [];
+                
+                // Add students to group object
+                group.students = students;
+                group.currentStudentCount = students.length;
+                
+                this.showGroupStudentsModal(group);
+            } else {
+                alert('Помилка завантаження групи');
+            }
+        } catch (error) {
+            console.error('Error loading group students:', error);
+            alert('Помилка: ' + error.message);
+        }
     }
 
-    async editGroup(groupId) {
-        // Implementation for editing group
-        console.log('Editing group:', groupId);
-        // TODO: Implement group editing
+    showGroupStudentsModal(group) {
+        // Store current group ID for operations
+        this.currentGroupId = group.id;
+        
+        const modalHtml = `
+            <div id="groupStudentsModal" class="modal">
+                <div class="modal-content modal-wide">
+                    <span class="close" onclick="dashboard.closeGroupStudentsModal()">&times;</span>
+                    <h2>👥 Студенти групи: ${group.groupName}</h2>
+                    <div class="group-info">
+                        <div class="info-row">
+                            <span><strong>🏷️ Код групи:</strong> ${group.groupCode}</span>
+                            <span><strong>📖 Курс:</strong> ${group.courseYear}</span>
+                            <span><strong>📚 Форма навчання:</strong> ${group.studyForm}</span>
+                        </div>
+                        <div class="info-row">
+                            <span><strong>🎓 Кількість студентів:</strong> ${group.currentStudentCount || 0}</span>
+                            <span><strong>📅 Рік вступу:</strong> ${group.enrollmentYear || 'N/A'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="students-actions">
+                        ${this.currentUser?.role === 'MANAGER' ? `
+                            <button class="btn btn-success" onclick="dashboard.addStudentToGroup(${group.id})">➕ Додати студента</button>
+                            <button class="btn btn-warning" onclick="dashboard.removeAllStudentsFromGroup(${group.id})" style="margin-left: 10px;">👥➖ Видалити всіх</button>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="students-container">
+                        <div class="table-container scrollable">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>🎓 Ім'я</th>
+                                        <th>📧 Email</th>
+                                        <th>📖 Курс</th>
+                                        <th>⭐ Середній бал</th>
+                                        <th>⚙️ Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="group-students-tbody">
+                                    ${this.renderGroupStudentsTable(group.students || [])}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('groupStudentsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Show modal
+        const modal = document.getElementById('groupStudentsModal');
+        modal.style.display = 'block';
+        
+        // Handle modal events
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeGroupStudentsModal();
+            }
+        });
+        
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
     }
 
-    async deleteGroup(groupId) {
-        // Implementation for deleting group
-        console.log('Deleting group:', groupId);
-        // TODO: Implement group deletion
+    renderGroupStudentsTable(students) {
+        if (!students || !students.length) {
+            return '<tr><td colspan="5">Студенти в групі не знайдені</td></tr>';
+        }
+
+        return students.map(student => {
+            const fullName = student.user ? `${student.user.firstName} ${student.user.lastName}` : (student.fullName || 'N/A');
+            const email = student.user ? student.user.email : 'N/A';
+            const course = student.course || 'N/A';
+            const averageGrade = student.averageGrade !== undefined ? 
+                (student.averageGrade > 0 ? student.averageGrade.toFixed(2) : '0.00') : 'N/A';
+            
+            const canEdit = this.currentUser?.role === 'MANAGER';
+            
+            return `
+                <tr>
+                    <td>${fullName}</td>
+                    <td>${email}</td>
+                    <td>${course}</td>
+                    <td>${averageGrade}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-info" onclick="dashboard.viewStudentInfo(${student.id})">ℹ️ Інфо</button>
+                            <button class="btn btn-sm btn-primary" onclick="dashboard.viewStudentGrades(${student.id})">📝 Оцінки</button>
+                            ${canEdit ? `
+                                <button class="btn btn-sm btn-warning" onclick="dashboard.editStudentInGroup(${student.id})">✏️ Редагувати</button>
+                                <button class="btn btn-sm btn-danger" onclick="dashboard.removeStudentFromGroup(${student.id})">🗑️ Видалити</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    closeGroupStudentsModal() {
+        const modal = document.getElementById('groupStudentsModal');
+        if (modal) {
+            modal.remove();
+        }
+        // Clear current group ID
+        this.currentGroupId = null;
+        // Restore body scroll
+        document.body.style.overflow = 'auto';
+    }
+
+    async addStudentToGroup(groupId) {
+        try {
+            // Get available students (not in any group)
+            const studentsResponse = await apiClient.getUsersByRole('STUDENT');
+            if (!studentsResponse?.success) {
+                alert('Помилка завантаження студентів');
+                return;
+            }
+
+            const allStudents = studentsResponse.data;
+            
+            // Filter students that are not in groups (or handle this on backend)
+            const availableStudents = allStudents; // TODO: filter by group assignment
+
+            if (!availableStudents.length) {
+                alert('Немає доступних студентів для додавання до групи');
+                return;
+            }
+
+            this.showAddStudentToGroupModal(groupId, availableStudents);
+        } catch (error) {
+            console.error('Error loading students:', error);
+            alert('Помилка: ' + error.message);
+        }
+    }
+
+    showAddStudentToGroupModal(groupId, students) {
+        const modalHtml = `
+            <div id="addStudentModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="dashboard.closeAddStudentModal()">&times;</span>
+                    <h2>➕ Додати студента до групи</h2>
+                    
+                    <form id="add-student-form">
+                        <div class="form-group">
+                            <label for="student-select">Оберіть студента:</label>
+                            <select id="student-select" name="studentId" required>
+                                <option value="">-- Оберіть студента --</option>
+                                ${students.map(student => `
+                                    <option value="${student.id}">
+                                        ${student.firstName} ${student.lastName} (${student.email})
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">➕ Додати</button>
+                            <button type="button" class="btn btn-secondary" onclick="dashboard.closeAddStudentModal()">❌ Скасувати</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('addStudentModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Handle form submission
+        document.getElementById('add-student-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const studentId = parseInt(formData.get('studentId'));
+            
+            if (!studentId) {
+                alert('Будь ласка, оберіть студента');
+                return;
+            }
+
+            try {
+                const response = await apiClient.addStudentToGroup(groupId, studentId);
+                if (response?.success) {
+                    alert('Студента додано до групи успішно!');
+                    this.closeAddStudentModal();
+                    
+                    // Refresh both the group students modal and the main groups table
+                    await this.refreshGroupData(groupId);
+                    
+                } else {
+                    throw new Error(response?.error || 'Невідома помилка');
+                }
+            } catch (error) {
+                console.error('Error adding student to group:', error);
+                alert('Помилка додавання студента до групи: ' + error.message);
+            }
+        });
+        
+        // Show modal
+        const modal = document.getElementById('addStudentModal');
+        modal.style.display = 'block';
+        
+        // Handle modal events
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeAddStudentModal();
+            }
+        });
+    }
+
+    closeAddStudentModal() {
+        const modal = document.getElementById('addStudentModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    async editStudentInGroup(studentId) {
+        // TODO: Implement edit student functionality
+        alert('Функція редагування студента буде реалізована пізніше');
+    }
+
+    async removeStudentFromGroup(studentId) {
+        if (confirm('Ви впевнені, що хочете видалити студента з групи?')) {
+            try {
+                // Find the group ID from the modal data or from the current group context
+                const groupStudentsModal = document.getElementById('groupStudentsModal');
+                if (!groupStudentsModal) {
+                    alert('Помилка: не знайдено контекст групи');
+                    return;
+                }
+                
+                let groupId = this.currentGroupId;
+                if (!groupId) {
+                    alert('Помилка: не вдалося визначити групу');
+                    return;
+                }
+
+                console.log('Removing student', studentId, 'from group', groupId);
+                
+                const response = await apiClient.removeStudentFromGroup(groupId, studentId);
+                if (response?.success) {
+                    alert('Студента видалено з групи успішно!');
+                    
+                    // Refresh both the group students modal and the main groups table
+                    await this.refreshGroupData(groupId);
+                    
+                } else {
+                    throw new Error(response?.error || 'Невідома помилка');
+                }
+            } catch (error) {
+                console.error('Error removing student from group:', error);
+                alert('Помилка видалення студента з групи: ' + error.message);
+            }
+        }
+    }
+
+    async refreshGroupData(groupId) {
+        try {
+            // Refresh the group students modal if it's open
+            const [groupResponse, studentsResponse] = await Promise.all([
+                apiClient.getGroupById(groupId),
+                apiClient.getGroupStudents(groupId)
+            ]);
+            
+            if (groupResponse?.success) {
+                const group = groupResponse.data;
+                const students = studentsResponse?.success ? studentsResponse.data : [];
+                
+                group.students = students;
+                group.currentStudentCount = students.length;
+                
+                // Update the modal if it's open
+                const modal = document.getElementById('groupStudentsModal');
+                if (modal) {
+                    this.showGroupStudentsModal(group);
+                }
+                
+                // Refresh the main groups table to show updated student count
+                await this.loadGroupsData();
+            }
+        } catch (error) {
+            console.error('Error refreshing group data:', error);
+        }
+    }
+
+    async viewStudentInfo(studentId) {
+        try {
+            const response = await apiClient.getStudent(studentId);
+            if (response?.success || response) {
+                const student = response.data || response;
+                this.showStudentInfoModal(student);
+            } else {
+                alert('Помилка завантаження інформації про студента');
+            }
+        } catch (error) {
+            console.error('Error loading student info:', error);
+            alert('Помилка: ' + error.message);
+        }
+    }
+
+    showStudentInfoModal(student) {
+        const modalHtml = `
+            <div id="studentInfoModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="dashboard.closeStudentInfoModal()">&times;</span>
+                    <h2>ℹ️ Інформація про студента</h2>
+                    <div class="student-info">
+                        <div class="info-section">
+                            <h3>👤 Особисті дані</h3>
+                            <p><strong>Ім'я:</strong> ${student.user?.firstName || 'N/A'}</p>
+                            <p><strong>Прізвище:</strong> ${student.user?.lastName || 'N/A'}</p>
+                            <p><strong>Email:</strong> ${student.user?.email || 'N/A'}</p>
+                            <p><strong>Статус:</strong> ${student.user?.isActive ? 'Активний' : 'Неактивний'}</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3>🎓 Навчальна інформація</h3>
+                            <p><strong>Група:</strong> ${student.group?.groupName || 'Не призначено'}</p>
+                            <p><strong>Курс:</strong> ${student.course || 'N/A'}</p>
+                            <p><strong>Середній бал:</strong> ${student.averageGrade ? student.averageGrade.toFixed(2) : 'N/A'}</p>
+                            <p><strong>Дата створення:</strong> ${student.user?.createdAt ? new Date(student.user.createdAt).toLocaleDateString('uk-UA') : 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="dashboard.viewStudentGrades(${student.id})">📝 Переглянути оцінки</button>
+                        <button class="btn btn-secondary" onclick="dashboard.closeStudentInfoModal()">❌ Закрити</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('studentInfoModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Show modal
+        const modal = document.getElementById('studentInfoModal');
+        modal.style.display = 'block';
+        
+        // Handle modal events
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeStudentInfoModal();
+            }
+        });
+    }
+
+    closeStudentInfoModal() {
+        const modal = document.getElementById('studentInfoModal');
+        if (modal) {
+            modal.remove();
+        }
     }
 
     async loadSubjectsData() {
@@ -1749,22 +2152,358 @@ class Dashboard {
 
     // === GROUP MODAL METHODS ===
     showAddGroupModal() {
-        if (!this.rolePermissions?.canCreate) {
+        const role = this.currentUser?.role;
+        if (role !== 'MANAGER') {
             alert('У вас немає прав для створення груп');
             return;
         }
         
-        // TODO: Implement group modal
-        console.log('Show add group modal');
+        this.showGroupModal();
+    }
+
+    async showGroupModal(group = null) {
+        const modal = document.getElementById('modal');
+        const title = document.getElementById('modal-title');
+        const body = document.getElementById('modal-body');
+
+        title.textContent = group ? 'Редагувати групу' : 'Додати групу';
+        
+        body.innerHTML = `
+            <form id="group-form" class="group-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="group-name">🏷️ Назва групи:</label>
+                        <input type="text" id="group-name" name="groupName" required 
+                               placeholder="Наприклад: КН-21" 
+                               value="${group?.groupName || ''}" 
+                               maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="group-code">🏷️ Код групи:</label>
+                        <input type="text" id="group-code" name="groupCode" required 
+                               placeholder="Наприклад: КН21" 
+                               value="${group?.groupCode || ''}" 
+                               maxlength="10">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="group-course">📖 Курс:</label>
+                        <select id="group-course" name="courseYear" required>
+                            <option value="">Оберіть курс</option>
+                            <option value="1" ${group?.courseYear === 1 ? 'selected' : ''}>1 курс</option>
+                            <option value="2" ${group?.courseYear === 2 ? 'selected' : ''}>2 курс</option>
+                            <option value="3" ${group?.courseYear === 3 ? 'selected' : ''}>3 курс</option>
+                            <option value="4" ${group?.courseYear === 4 ? 'selected' : ''}>4 курс</option>
+                            <option value="5" ${group?.courseYear === 5 ? 'selected' : ''}>5 курс</option>
+                            <option value="6" ${group?.courseYear === 6 ? 'selected' : ''}>6 курс</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="group-study-form">📚 Форма навчання:</label>
+                        <select id="group-study-form" name="studyForm" required>
+                            <option value="">Оберіть форму навчання</option>
+                            <option value="FULL_TIME" ${group?.studyForm === 'FULL_TIME' ? 'selected' : ''}>🎓 Денна</option>
+                            <option value="PART_TIME" ${group?.studyForm === 'PART_TIME' ? 'selected' : ''}>🌙 Вечірня</option>
+                            <option value="CORRESPONDENCE" ${group?.studyForm === 'CORRESPONDENCE' ? 'selected' : ''}>📮 Заочна</option>
+                            <option value="DISTANCE" ${group?.studyForm === 'DISTANCE' ? 'selected' : ''}>💻 Дистанційна</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="group-enrollment-year">📅 Рік вступу:</label>
+                        <input type="number" id="group-enrollment-year" name="enrollmentYear" 
+                               min="2020" max="2030" 
+                               value="${group?.enrollmentYear || new Date().getFullYear()}" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="group-max-students">👥 Максимум студентів (необов'язково):</label>
+                        <input type="number" id="group-max-students" name="maxStudents" 
+                               min="1" max="50" 
+                               value="${group?.maxStudents || ''}" 
+                               placeholder="Наприклад: 25">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="group-specialization">📚 Спеціалізація (необов'язково):</label>
+                    <input type="text" id="group-specialization" name="specialization" 
+                           value="${group?.specialization || ''}" 
+                           placeholder="Наприклад: Комп'ютерні науки" 
+                           maxlength="200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="group-students">👥 Студенти групи:</label>
+                    <div class="students-selection" id="students-selection">
+                        <div class="loading">Завантаження студентів...</div>
+                    </div>
+                </div>
+                
+                ${group?.currentStudentCount ? `
+                <div class="form-group">
+                    <div class="info-display">
+                        <strong>🎓 Поточна кількість студентів:</strong> ${group.currentStudentCount}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">💾 ${group ? 'Оновити' : 'Створити'} групу</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').style.display='none'">❌ Скасувати</button>
+                </div>
+            </form>
+        `;
+
+        // Load available students
+        await this.loadStudentsForGroup(group);
+
+        // Handle form submission
+        document.getElementById('group-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleGroupSubmit(group);
+        });
+
+        modal.style.display = 'block';
+    }
+
+    async loadStudentsForGroup(group = null) {
+        try {
+            // Get all students and students already in the group
+            const studentsResponse = await apiClient.getUsersByRole('STUDENT');
+            const allStudents = studentsResponse?.success ? studentsResponse.data : [];
+            
+            // Get group students if editing existing group
+            let groupStudents = [];
+            if (group?.id) {
+                const groupStudentsResponse = await apiClient.getGroupStudents(group.id);
+                groupStudents = groupStudentsResponse?.success ? groupStudentsResponse.data : (group.students || []);
+            }
+            
+            const groupStudentIds = groupStudents.map(s => s.id || s.userId);
+
+            const container = document.getElementById('students-selection');
+            if (!container) return;
+
+            if (!allStudents.length) {
+                container.innerHTML = '<p class="no-data">Студенти не знайдені</p>';
+                return;
+            }
+
+            // Create checkable list of students
+            container.innerHTML = `
+                <div class="students-filter-container">
+                    <input type="text" id="students-filter" class="students-filter" 
+                           placeholder="🔍 Пошук студентів..." />
+                </div>
+                <div class="students-list" id="students-list">
+                    ${allStudents.map(student => `
+                        <label class="student-item">
+                            <input type="checkbox" 
+                                   name="selectedStudents" 
+                                   value="${student.id}"
+                                   ${groupStudentIds.includes(student.id) ? 'checked' : ''}>
+                            <span class="student-name">${student.firstName} ${student.lastName}</span>
+                            <span class="student-email">${student.email}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+
+            // Add search functionality
+            const filterInput = document.getElementById('students-filter');
+            if (filterInput) {
+                filterInput.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase();
+                    const studentItems = container.querySelectorAll('.student-item');
+                    
+                    studentItems.forEach(item => {
+                        const name = item.querySelector('.student-name').textContent.toLowerCase();
+                        const email = item.querySelector('.student-email').textContent.toLowerCase();
+                        const matches = name.includes(query) || email.includes(query);
+                        item.style.display = matches ? 'flex' : 'none';
+                    });
+                });
+            }
+
+        } catch (error) {
+            console.error('Error loading students for group:', error);
+            const container = document.getElementById('students-selection');
+            if (container) {
+                container.innerHTML = '<p class="error">Помилка завантаження студентів</p>';
+            }
+        }
+    }
+
+    async handleGroupSubmit(existingGroup = null) {
+        const form = document.getElementById('group-form');
+        const formData = new FormData(form);
+        
+        // Get selected students
+        const selectedStudents = Array.from(form.querySelectorAll('input[name="selectedStudents"]:checked'))
+            .map(checkbox => parseInt(checkbox.value));
+
+        const groupData = {
+            groupName: formData.get('groupName'),
+            groupCode: formData.get('groupCode'),
+            courseYear: parseInt(formData.get('courseYear')),
+            studyForm: formData.get('studyForm'),
+            enrollmentYear: parseInt(formData.get('enrollmentYear')),
+            maxStudents: formData.get('maxStudents') ? parseInt(formData.get('maxStudents')) : null,
+            specialization: formData.get('specialization') || null,
+            isActive: true
+        };
+
+        try {
+            let response;
+            if (existingGroup) {
+                // Update existing group
+                response = await apiClient.updateGroup(existingGroup.id, groupData);
+                if (response?.success) {
+                    // TODO: Update student assignments
+                    // This would require additional API endpoints for managing group students
+                    alert('Групу оновлено успішно!');
+                }
+            } else {
+                // Create new group
+                response = await apiClient.createGroup(groupData);
+                if (response?.success) {
+                    // TODO: Assign selected students to the group
+                    // This would require additional API endpoints for managing group students
+                    alert('Групу створено успішно!');
+                }
+            }
+
+            if (response?.success) {
+                document.getElementById('modal').style.display = 'none';
+                this.loadGroupsData();
+            } else {
+                throw new Error(response?.data?.message || response?.error || 'Невідома помилка');
+            }
+        } catch (error) {
+            console.error('Error saving group:', error);
+            alert('Помилка збереження групи: ' + error.message);
+        }
+    }
+
+    async editGroup(groupId) {
+        try {
+            const response = await apiClient.getGroupById(groupId);
+            if (response?.success) {
+                this.showGroupModal(response.data);
+            } else {
+                alert('Помилка завантаження групи');
+            }
+        } catch (error) {
+            console.error('Error loading group for edit:', error);
+            alert('Помилка: ' + error.message);
+        }
+    }
+
+    async removeAllStudentsFromGroup(groupId) {
+        try {
+            // Get group info first
+            const groupResponse = await apiClient.getGroupById(groupId);
+            if (!groupResponse?.success) {
+                throw new Error('Не вдалося отримати інформацію про групу');
+            }
+
+            const group = groupResponse.data;
+            const studentCount = group.students?.length || 0;
+
+            if (studentCount === 0) {
+                alert('В цій групі немає студентів для видалення');
+                return;
+            }
+
+            const confirmMessage = `Ви впевнені, що хочете видалити ВСІХ ${studentCount} студентів з групи "${group.groupName}"?\n\nЦя дія незворотна!`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            // Remove all students
+            const promises = group.students.map(student => 
+                apiClient.removeStudentFromGroup(groupId, student.id)
+            );
+
+            const results = await Promise.all(promises);
+            const failed = results.filter(r => !r?.success);
+
+            if (failed.length > 0) {
+                alert(`Помилка: ${failed.length} студентів не вдалося видалити з групи`);
+            } else {
+                alert(`Всіх ${studentCount} студентів успішно видалено з групи!`);
+            }
+
+            // Refresh data
+            await this.refreshGroupData(groupId);
+
+        } catch (error) {
+            console.error('Error removing all students from group:', error);
+            alert('Помилка видалення студентів: ' + error.message);
+        }
+    }
+
+    async deleteGroup(groupId) {
+        try {
+            // Get group info first to show in confirmation
+            const groupResponse = await apiClient.getGroupById(groupId);
+            const groupName = groupResponse?.success ? groupResponse.data.groupName : 'цю групу';
+            
+            const confirmMessage = `Ви впевнені, що хочете видалити групу "${groupName}"?\n\nУВАГА: Це дія незворотна! Всі студенти будуть відкріплені від групи.`;
+            
+            if (confirm(confirmMessage)) {
+                const response = await apiClient.deleteGroup(groupId);
+                if (response?.success || response?.status === 204) {
+                    alert('Групу видалено успішно!');
+                    this.loadGroupsData();
+                    
+                    // Close group students modal if it's open
+                    const modal = document.getElementById('groupStudentsModal');
+                    if (modal) {
+                        this.closeGroupStudentsModal();
+                    }
+                } else {
+                    throw new Error(response?.data?.message || response?.error || 'Невідома помилка');
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting group:', error);
+            alert('Помилка видалення групи: ' + error.message);
+        }
+    }
+
+    // === UTILITY FUNCTIONS ===
+    
+    showLoadingSpinner(buttonElement, originalText) {
+        if (buttonElement) {
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `<span class="loading-spinner"></span>${originalText}`;
+        }
+    }
+
+    hideLoadingSpinner(buttonElement, originalText) {
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalText;
+        }
     }
 
     // === ROLE-BASED UI CONFIGURATION ===
     configureActionButtons() {
         // Configure action buttons based on user role
+        const role = this.currentUser?.role;
+        
         const addButtons = {
-            'add-group': this.rolePermissions?.canCreate,
+            'add-group': role === 'MANAGER', // Only managers can create groups
             'add-subject': this.rolePermissions?.canCreate,
-            'add-user-btn': this.rolePermissions?.canCreate
+            'add-user-btn': this.rolePermissions?.canCreate,
+            'add-grade-btn': role === 'TEACHER' // Only teachers can add grades
         };
 
         Object.entries(addButtons).forEach(([buttonId, visible]) => {
