@@ -114,6 +114,14 @@ public class PublicController {
         return ResponseEntity.ok(students);
     }
 
+    @GetMapping("/students/search")
+    @Operation(summary = "Search students by name", description = "Searches students by name")
+    public ResponseEntity<List<StudentDto>> searchStudents(
+            @RequestParam @Parameter(description = "Search term") String q) {
+        List<StudentDto> students = studentService.searchByName(q);
+        return ResponseEntity.ok(students);
+    }
+
     /**
      * DTO for department information
      */

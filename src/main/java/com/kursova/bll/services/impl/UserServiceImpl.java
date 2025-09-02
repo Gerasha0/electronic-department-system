@@ -141,7 +141,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> searchByName(String name) {
-        List<User> entities = unitOfWork.getUserRepository().findByFullNameContainingIgnoreCase(name);
+        List<User> entities = unitOfWork.getUserRepository().searchByNameOrEmail(name);
         return userMapper.toDtoList(entities);
     }
 

@@ -22,6 +22,13 @@ public class Student {
     @Column(name = "enrollment_year")
     private Integer enrollmentYear;
 
+    @Column(name = "course_year")
+    private Integer courseYear;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "education_level")
+    private EducationLevel educationLevel;
+
     @Column(name = "phone_number")
     private String phoneNumber;
 
@@ -102,6 +109,22 @@ public class Student {
         this.enrollmentYear = enrollmentYear;
     }
 
+    public Integer getCourseYear() {
+        return courseYear;
+    }
+
+    public void setCourseYear(Integer courseYear) {
+        this.courseYear = courseYear;
+    }
+
+    public EducationLevel getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(EducationLevel educationLevel) {
+        this.educationLevel = educationLevel;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -177,6 +200,14 @@ public class Student {
     // Helper methods
     public String getFullName() {
         return user != null ? user.getFullName() : "";
+    }
+
+    public Integer getCourse() {
+        return courseYear;
+    }
+
+    public void setCourse(Integer course) {
+        this.courseYear = course;
     }
 
     public String getDisplayInfo() {

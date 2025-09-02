@@ -26,6 +26,10 @@ public class StudentGroup {
     private Integer courseYear;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "education_level")
+    private EducationLevel educationLevel;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "study_form")
     private StudyForm studyForm;
 
@@ -109,6 +113,14 @@ public class StudentGroup {
 
     public void setCourseYear(Integer courseYear) {
         this.courseYear = courseYear;
+    }
+
+    public EducationLevel getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(EducationLevel educationLevel) {
+        this.educationLevel = educationLevel;
     }
 
     public StudyForm getStudyForm() {

@@ -1,5 +1,6 @@
 package com.kursova.bll.dto;
 
+import com.kursova.dal.entities.EducationLevel;
 import com.kursova.dal.entities.StudyForm;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ public class StudentGroupDto {
     @NotNull(message = "Course year is required")
     private Integer courseYear;
 
+    private EducationLevel educationLevel;
     private StudyForm studyForm;
     private Integer maxStudents;
 
@@ -82,6 +84,14 @@ public class StudentGroupDto {
 
     public void setCourseYear(Integer courseYear) {
         this.courseYear = courseYear;
+    }
+
+    public EducationLevel getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(EducationLevel educationLevel) {
+        this.educationLevel = educationLevel;
     }
 
     public StudyForm getStudyForm() {

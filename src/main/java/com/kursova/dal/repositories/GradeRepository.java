@@ -103,4 +103,14 @@ public interface GradeRepository extends BaseRepository<Grade, Long> {
         "left join fetch t.user tu " +
         "left join fetch g.subject subj")
     List<Grade> findAllWithRelations();
+
+    /**
+     * Find grades for subjects taught by teacher
+     */
+    @Query("SELECT g FROM Grade g " +
+           "JOIN g.subject s " +
+           "JOIN s.teachers t " +
+           "WHERE t.id = :teacherId " +
+           "ORDER BY g.gradeDate DESC")
+    List<Grade> findGradesByTeacherId(@Param("teacherId") Long teacherId);
 }

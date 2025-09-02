@@ -39,6 +39,9 @@ public class GradeDto {
     private String subjectName;
     private String subjectCode;
 
+    private Long groupId;
+    private String groupName;
+
     // Constructors
     public GradeDto() {}
 
@@ -186,6 +189,22 @@ public class GradeDto {
 
     public void setSubjectCode(String subjectCode) {
         this.subjectCode = subjectCode;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     // Helper methods

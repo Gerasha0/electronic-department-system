@@ -128,4 +128,40 @@ public class ArchiveController {
             return ResponseEntity.badRequest().body("Error archiving group: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/groups/{id}")
+    @Operation(summary = "Permanently delete archived group", description = "Permanently deletes an archived group record")
+    public ResponseEntity<String> deleteArchivedGroup(
+            @PathVariable @Parameter(description = "Archived group ID") Long id) {
+        try {
+            archiveService.deleteArchivedGroup(id);
+            return ResponseEntity.ok("Archived group deleted permanently");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting archived group: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/students/{id}")
+    @Operation(summary = "Permanently delete archived student", description = "Permanently deletes an archived student record")
+    public ResponseEntity<String> deleteArchivedStudent(
+            @PathVariable @Parameter(description = "Archived student ID") Long id) {
+        try {
+            archiveService.deleteArchivedStudent(id);
+            return ResponseEntity.ok("Archived student deleted permanently");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting archived student: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/grades/{id}")
+    @Operation(summary = "Permanently delete archived grade", description = "Permanently deletes an archived grade record")
+    public ResponseEntity<String> deleteArchivedGrade(
+            @PathVariable @Parameter(description = "Archived grade ID") Long id) {
+        try {
+            archiveService.deleteArchivedGrade(id);
+            return ResponseEntity.ok("Archived grade deleted permanently");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting archived grade: " + e.getMessage());
+        }
+    }
 }

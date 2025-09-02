@@ -20,7 +20,6 @@ public interface StudentMapper {
 
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "course", ignore = true)
     @Mapping(target = "averageGrade", ignore = true)
     @Mapping(target = "group", source = "group", qualifiedByName = "toDtoSimple")
     StudentDto toDto(Student entity);
@@ -30,7 +29,6 @@ public interface StudentMapper {
     @Mapping(target = "group", ignore = true) // Avoid circular references in lists
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "course", ignore = true)
     @Mapping(target = "averageGrade", ignore = true)
     StudentDto toDtoSimple(Student entity);
 
@@ -39,7 +37,6 @@ public interface StudentMapper {
     @Mapping(target = "group", source = "group", qualifiedByName = "toDtoSimple")
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "course", ignore = true)
     @Mapping(target = "averageGrade", ignore = true)
     StudentDto toDtoWithGroup(Student entity);
 
@@ -66,7 +63,6 @@ public interface StudentMapper {
     @Mapping(target = "group", ignore = true) // Avoid circular references in lists
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "course", ignore = true)
     @Mapping(target = "averageGrade", ignore = true)
     StudentDto toDtoForList(Student entity);
 }

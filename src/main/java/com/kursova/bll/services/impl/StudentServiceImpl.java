@@ -113,7 +113,7 @@ public class StudentServiceImpl implements StudentService {
         if (name == null || name.trim().isEmpty()) {
             return findActiveStudents();
         }
-        List<Student> students = unitOfWork.getStudentRepository().searchByName(name.trim());
+        List<Student> students = unitOfWork.getStudentRepository().searchByNameOrEmail(name.trim());
         return students.stream()
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
@@ -175,8 +175,10 @@ public class StudentServiceImpl implements StudentService {
     private StudentDto mapStudentWithCalculatedData(Student student) {
         StudentDto dto = studentMapper.toDto(student);
 
-        // Calculate course based on enrollment year
-        if (student.getEnrollmentYear() != null) {
+        // Use courseYear if available, otherwise calculate based on enrollment year
+        if (student.getCourseYear() != null) {
+            dto.setCourse(student.getCourseYear());
+        } else if (student.getEnrollmentYear() != null) {
             int currentYear = LocalDateTime.now().getYear();
             int course = currentYear - student.getEnrollmentYear() + 1;
             // Course should be between 1 and 6 years

@@ -153,4 +153,31 @@ public class ArchiveServiceImpl implements ArchiveService {
 
         return new ArchiveStatistics(totalGroups, totalStudents, totalGrades, lastArchiveDate);
     }
+
+    @Override
+    @Transactional
+    public void deleteArchivedGroup(Long archivedGroupId) {
+        if (!unitOfWork.getArchivedStudentGroupRepository().existsById(archivedGroupId)) {
+            throw new RuntimeException("Archived group not found with id: " + archivedGroupId);
+        }
+        unitOfWork.getArchivedStudentGroupRepository().deleteById(archivedGroupId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteArchivedStudent(Long archivedStudentId) {
+        if (!unitOfWork.getArchivedStudentRepository().existsById(archivedStudentId)) {
+            throw new RuntimeException("Archived student not found with id: " + archivedStudentId);
+        }
+        unitOfWork.getArchivedStudentRepository().deleteById(archivedStudentId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteArchivedGrade(Long archivedGradeId) {
+        if (!unitOfWork.getArchivedGradeRepository().existsById(archivedGradeId)) {
+            throw new RuntimeException("Archived grade not found with id: " + archivedGradeId);
+        }
+        unitOfWork.getArchivedGradeRepository().deleteById(archivedGradeId);
+    }
 }

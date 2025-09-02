@@ -1,5 +1,6 @@
 package com.kursova.bll.dto;
 
+import com.kursova.dal.entities.EducationLevel;
 import com.kursova.dal.entities.StudyForm;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,9 @@ public class StudentDto {
 
     private Integer enrollmentYear;
 
+    private Integer courseYear;
+    private EducationLevel educationLevel;
+
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
     private String phoneNumber;
 
@@ -35,7 +39,6 @@ public class StudentDto {
     private StudentGroupDto group;
 
     // Calculated fields
-    private Integer course; // Calculated based on enrollment year
     private Double averageGrade; // Calculated based on grades
 
     // Constructors
@@ -80,6 +83,22 @@ public class StudentDto {
 
     public void setEnrollmentYear(Integer enrollmentYear) {
         this.enrollmentYear = enrollmentYear;
+    }
+
+    public Integer getCourseYear() {
+        return courseYear;
+    }
+
+    public void setCourseYear(Integer courseYear) {
+        this.courseYear = courseYear;
+    }
+
+    public EducationLevel getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(EducationLevel educationLevel) {
+        this.educationLevel = educationLevel;
     }
 
     public String getPhoneNumber() {
@@ -139,11 +158,11 @@ public class StudentDto {
     }
 
     public Integer getCourse() {
-        return course;
+        return courseYear;
     }
 
     public void setCourse(Integer course) {
-        this.course = course;
+        this.courseYear = course;
     }
 
     public Double getAverageGrade() {

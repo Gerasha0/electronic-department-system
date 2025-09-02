@@ -68,6 +68,21 @@ public interface ArchiveService {
     ArchiveStatistics getArchiveStatistics();
 
     /**
+     * Permanently delete archived group
+     */
+    void deleteArchivedGroup(Long archivedGroupId);
+
+    /**
+     * Permanently delete archived student
+     */
+    void deleteArchivedStudent(Long archivedStudentId);
+
+    /**
+     * Permanently delete archived grade
+     */
+    void deleteArchivedGrade(Long archivedGradeId);
+
+    /**
      * Inner class for archive statistics
      */
     class ArchiveStatistics {

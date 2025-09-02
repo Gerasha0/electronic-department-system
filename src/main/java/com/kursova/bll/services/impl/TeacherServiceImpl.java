@@ -1,11 +1,16 @@
 package com.kursova.bll.services.impl;
 
+import com.kursova.bll.dto.GradeDto;
 import com.kursova.bll.dto.StudentDto;
+import com.kursova.bll.dto.SubjectDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.dto.UserDto;
+import com.kursova.bll.mappers.GradeMapper;
+import com.kursova.bll.mappers.SubjectMapper;
 import com.kursova.bll.mappers.TeacherMapper;
 import com.kursova.bll.services.StudentService;
 import com.kursova.bll.services.TeacherService;
+import com.kursova.dal.entities.Grade;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Teacher;
 import com.kursova.dal.entities.Subject;
@@ -28,12 +33,16 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final UnitOfWork unitOfWork;
     private final TeacherMapper teacherMapper;
+    private final SubjectMapper subjectMapper;
+    private final GradeMapper gradeMapper;
     private final StudentService studentService;
 
     @Autowired
-    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, StudentService studentService) {
+    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, SubjectMapper subjectMapper, GradeMapper gradeMapper, StudentService studentService) {
         this.unitOfWork = unitOfWork;
         this.teacherMapper = teacherMapper;
+        this.subjectMapper = subjectMapper;
+        this.gradeMapper = gradeMapper;
         this.studentService = studentService;
     }
 
@@ -158,7 +167,7 @@ public class TeacherServiceImpl implements TeacherService {
         if (name == null || name.trim().isEmpty()) {
             return findActiveTeachers();
         }
-        List<Teacher> teachers = unitOfWork.getTeacherRepository().searchByName(name.trim());
+        List<Teacher> teachers = unitOfWork.getTeacherRepository().searchByNameOrEmail(name.trim());
         return teachers.stream()
                 .map(this::mapTeacherWithSubjects)
                 .collect(Collectors.toList());
@@ -253,6 +262,31 @@ public class TeacherServiceImpl implements TeacherService {
         List<Student> students = unitOfWork.getStudentRepository().findStudentsByTeacherId(teacherId);
         return students.stream()
                 .map(student -> studentService.findById(student.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SubjectDto> findSubjectsByTeacherId(Long teacherId) {
+        Teacher teacher = unitOfWork.getTeacherRepository().findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
+        
+        return teacher.getSubjects().stream()
+                .map(subjectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GradeDto> findGradesByTeacherId(Long teacherId) {
+        // Find all grades for subjects taught by this teacher
+        Teacher teacher = unitOfWork.getTeacherRepository().findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
+        
+        List<Grade> grades = unitOfWork.getGradeRepository().findGradesByTeacherId(teacherId);
+        
+        return grades.stream()
+                .map(gradeMapper::toDto)
                 .collect(Collectors.toList());
     }
 }

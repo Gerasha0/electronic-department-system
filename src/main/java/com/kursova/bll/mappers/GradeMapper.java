@@ -30,6 +30,8 @@ public interface GradeMapper {
     @Mapping(target = "subjectId", source = "subject.id")
     @Mapping(target = "subjectName", source = "subject.subjectName")
     @Mapping(target = "subjectCode", source = "subject.subjectCode")
+    @Mapping(target = "groupId", source = "student.group.id")
+    @Mapping(target = "groupName", source = "student.group.groupName")
     GradeDto toDto(Grade entity);
 
     @Mapping(target = "createdAt", ignore = true)
@@ -67,5 +69,7 @@ public interface GradeMapper {
     @Mapping(target = "subjectId", source = "subject.id")
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
+    @Mapping(target = "groupId", source = "student.group.id")
+    @Mapping(target = "groupName", ignore = true)
     GradeDto toDtoSimple(Grade entity);
 }

@@ -132,7 +132,7 @@ class ApiClient {
     }
 
     async searchUsers(query) {
-        return await this.apiCall(`/api/users/search?q=${encodeURIComponent(query)}`);
+        return await this.apiCall(`/api/users/search?name=${encodeURIComponent(query)}`);
     }
 
     async getUsersByRole(role) {
@@ -151,8 +151,19 @@ class ApiClient {
         return await this.apiCall(`/api/students/search-without-group?name=${encodeURIComponent(query)}`);
     }
 
+    async searchPublicStudents(query) {
+        return await this.apiCall(`/api/public/students/search?q=${encodeURIComponent(query)}`);
+    }
+
     async getStudent(studentId) {
         return await this.apiCall(`/api/students/${studentId}`);
+    }
+
+    async createStudent(studentData) {
+        return await this.apiCall('/api/students', {
+            method: 'POST',
+            body: JSON.stringify(studentData)
+        });
     }
 
     async getStudentsByTeacher(teacherId) {
@@ -229,6 +240,10 @@ class ApiClient {
     // Subject management methods
     async getSubjects() {
         return await this.apiCall('/api/subjects');
+    }
+    
+    async getSubjectById(id) {
+        return await this.apiCall(`/api/subjects/${id}`);
     }
     
     async createSubject(subjectData) {
@@ -386,6 +401,86 @@ class ApiClient {
 
     async getDepartmentInfo() {
         return await this.apiCall('/api/public/department-info');
+    }
+
+    // Archive management methods (Admin only)
+    async getArchiveStatistics() {
+        return await this.apiCall('/api/archive/statistics');
+    }
+
+    async getArchivedGroups() {
+        return await this.apiCall('/api/archive/groups');
+    }
+
+    async getArchivedStudents() {
+        return await this.apiCall('/api/archive/students');
+    }
+
+    async getArchivedGrades() {
+        return await this.apiCall('/api/archive/grades');
+    }
+
+    async searchArchivedGroups(query) {
+        return await this.apiCall(`/api/archive/groups/search?searchTerm=${encodeURIComponent(query)}`);
+    }
+
+    async searchArchivedStudents(query) {
+        return await this.apiCall(`/api/archive/students/search?searchTerm=${encodeURIComponent(query)}`);
+    }
+
+    async getArchivedStudentsByGroup(originalGroupId) {
+        return await this.apiCall(`/api/archive/students/by-group/${originalGroupId}`);
+    }
+
+    async getArchivedGradesByStudent(originalStudentId) {
+        return await this.apiCall(`/api/archive/grades/by-student/${originalStudentId}`);
+    }
+
+    async getArchivedGroupsByDateRange(startDate, endDate) {
+        return await this.apiCall(`/api/archive/groups/by-date-range?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
+    }
+
+    async archiveStudent(studentId, reason = 'Manual archiving') {
+        return await this.apiCall(`/api/archive/students/${studentId}?reason=${encodeURIComponent(reason)}`, {
+            method: 'POST'
+        });
+    }
+
+    async archiveGroup(groupId, reason = 'Manual archiving') {
+        return await this.apiCall(`/api/archive/groups/${groupId}?reason=${encodeURIComponent(reason)}`, {
+            method: 'POST'
+        });
+    }
+
+    async deleteArchivedGroup(archivedGroupId) {
+        return await this.apiCall(`/api/archive/groups/${archivedGroupId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async deleteArchivedStudent(archivedStudentId) {
+        return await this.apiCall(`/api/archive/students/${archivedStudentId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async deleteArchivedGrade(archivedGradeId) {
+        return await this.apiCall(`/api/archive/grades/${archivedGradeId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Teacher-specific methods
+    async getStudentsByTeacher(teacherId) {
+        return await this.apiCall(`/api/teachers/${teacherId}/students`);
+    }
+
+    async getSubjectsByTeacher(teacherId) {
+        return await this.apiCall(`/api/teachers/${teacherId}/subjects`);
+    }
+
+    async getGradesByTeacher(teacherId) {
+        return await this.apiCall(`/api/teachers/${teacherId}/grades`);
     }
 }
 

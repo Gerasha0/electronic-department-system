@@ -1,6 +1,8 @@
 package com.kursova.pl.controllers;
 
+import com.kursova.bll.dto.GradeDto;
 import com.kursova.bll.dto.StudentDto;
+import com.kursova.bll.dto.SubjectDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.services.TeacherService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -95,6 +97,24 @@ public class TeacherController {
             @PathVariable @Parameter(description = "Teacher ID") Long id) {
         List<StudentDto> students = teacherService.findStudentsByTeacherId(id);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/{id}/subjects")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.teacherId")
+    @Operation(summary = "Get subjects by teacher", description = "Retrieves subjects taught by specific teacher")
+    public ResponseEntity<List<SubjectDto>> getSubjectsByTeacher(
+            @PathVariable @Parameter(description = "Teacher ID") Long id) {
+        List<SubjectDto> subjects = teacherService.findSubjectsByTeacherId(id);
+        return ResponseEntity.ok(subjects);
+    }
+
+    @GetMapping("/{id}/grades")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #id == authentication.principal.teacherId")
+    @Operation(summary = "Get grades by teacher", description = "Retrieves grades given by specific teacher")
+    public ResponseEntity<List<GradeDto>> getGradesByTeacher(
+            @PathVariable @Parameter(description = "Teacher ID") Long id) {
+        List<GradeDto> grades = teacherService.findGradesByTeacherId(id);
+        return ResponseEntity.ok(grades);
     }
 
     @PutMapping("/{id}")

@@ -27,14 +27,15 @@
                 <button id="logout-btn" class="btn btn-secondary btn-sm">🚪 Вихід</button>
             </div>
         </div>
-        <nav class="main-nav">
-            <button class="nav-btn active" data-section="overview">📊 Огляд</button>
-            <button class="nav-btn" data-section="grades" id="grades-nav">📝 Оцінки</button>
-            <button class="nav-btn" data-section="users" id="users-nav">👥 Користувачі</button>
-            <button class="nav-btn" data-section="teachers" id="teachers-nav">👨‍🏫 Викладачі</button>
-            <button class="nav-btn" data-section="students" id="students-nav">🎓 Студенти</button>
-            <button class="nav-btn" data-section="groups" id="groups-nav">👥 Групи</button>
-            <button class="nav-btn" data-section="subjects" id="subjects-nav">📚 Дисципліни</button>
+        <nav class="main-nav nav-buttons">
+            <button class="nav-btn nav-button active" data-section="overview" id="overview-nav">📊 Огляд</button>
+            <button class="nav-btn nav-button" data-section="grades" id="grades-nav">📝 Оцінки</button>
+            <button class="nav-btn nav-button" data-section="users" id="users-nav">👥 Користувачі</button>
+            <button class="nav-btn nav-button" data-section="teachers" id="teachers-nav">👨‍🏫 Викладачі</button>
+            <button class="nav-btn nav-button" data-section="students" id="students-nav">🎓 Студенти</button>
+            <button class="nav-btn nav-button" data-section="groups" id="groups-nav">👥 Групи</button>
+            <button class="nav-btn nav-button" data-section="subjects" id="subjects-nav">📚 Дисципліни</button>
+            <button class="nav-btn nav-button" data-section="archive" id="archive-nav">🗄️ Архів</button>
         </nav>
     </header>
 
@@ -80,14 +81,23 @@
                         <option value="">Всі дисципліни</option>
                     </select>
                     <input type="text" id="grade-search-student" placeholder="🔍 Пошук по студентам..." class="search-input">
+                    <select id="grade-filter-group">
+                        <option value="">Всі групи</option>
+                    </select>
                     <select id="grade-filter-type">
                         <option value="">Всі типи</option>
-                        <option value="CURRENT">Поточна</option>
-                        <option value="MODULE">Модульна</option>
-                        <option value="MIDTERM">Проміжна</option>
-                        <option value="FINAL">Підсумкова</option>
-                        <option value="RETAKE">Перездача</option>
-                        <option value="MAKEUP">Відпрацювання</option>
+                        <option value="CURRENT">📝 Поточна</option>
+                        <option value="MODULE">📊 Модульна</option>
+                        <option value="MIDTERM">⚡ Проміжна</option>
+                        <option value="FINAL">🏆 Підсумкова</option>
+                        <option value="RETAKE">🔄 Перездача</option>
+                        <option value="MAKEUP">📝 Відпрацювання</option>
+                        <option value="EXAM">📝 Іспит</option>
+                        <option value="CREDIT">✅ Залік</option>
+                        <option value="COURSEWORK">📚 Курсова</option>
+                        <option value="LABORATORY">🔬 Лабораторна</option>
+                        <option value="PRACTICAL">🛠️ Практична</option>
+                        <option value="HOMEWORK">📖 Домашнє завдання</option>
                     </select>
                     <button id="filter-grades" class="btn btn-primary">🔍 Фільтрувати</button>
                 </div>
@@ -119,7 +129,10 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="user-search" placeholder="🔍 Пошук за іменем або email...">
+                    <div class="search-group">
+                        <input type="text" id="user-search" placeholder="🔍 Пошук за іменем або email...">
+                        <button id="search-users" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
                     <select id="user-filter-role">
                         <option value="">Всі ролі</option>
                         <option value="ADMIN">⚙️ Адміністратор</option>
@@ -128,7 +141,6 @@
                         <option value="STUDENT">🎓 Студент</option>
                         <option value="GUEST">👤 Гість</option>
                     </select>
-                    <button id="search-users" class="btn btn-primary">🔍 Пошук</button>
                 </div>
                 <button id="add-user-btn" class="btn btn-success">➕ Додати користувача</button>
             </div>
@@ -158,8 +170,10 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="teacher-search" placeholder="🔍 Пошук викладачів...">
-                    <button id="search-teachers" class="btn btn-primary">🔍 Пошук</button>
+                    <div class="search-group">
+                        <input type="text" id="teacher-search" placeholder="🔍 Пошук викладачів...">
+                        <button id="search-teachers" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
                 </div>
             </div>
 
@@ -187,14 +201,58 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <select id="student-filter-subject">
-                        <option value="">Всі дисципліни</option>
-                    </select>
-                    <input type="text" id="student-search" placeholder="🔍 Пошук студентів..." class="search-input">
+                    <div class="search-group">
+                        <input type="text" id="student-search" placeholder="🔍 Пошук студентів..." class="search-input">
+                        <button id="search-students" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
                     <select id="student-filter-group">
                         <option value="">Всі групи</option>
                     </select>
-                    <button id="filter-students" class="btn btn-primary">🔍 Фільтрувати</button>
+                    <select id="student-filter-course">
+                        <option value="">Всі курси</option>
+                        <optgroup label="🎓 Бакалавр">
+                            <option value="bachelor-1">1 курс</option>
+                            <option value="bachelor-2">2 курс</option>
+                            <option value="bachelor-3">3 курс</option>
+                            <option value="bachelor-4">4 курс</option>
+                            <option value="bachelor-5">5 курс</option>
+                        </optgroup>
+                        <optgroup label="🎯 Магістр">
+                            <option value="master-1">1 курс</option>
+                            <option value="master-2">2 курс</option>
+                        </optgroup>
+                        <optgroup label="🔬 Аспірант">
+                            <option value="phd-1">1 рік</option>
+                            <option value="phd-2">2 рік</option>
+                            <option value="phd-3">3 рік</option>
+                            <option value="phd-4">4 рік</option>
+                        </optgroup>
+                    </select>
+                    <div class="grade-filter-container">
+                        <label class="filter-label">⭐ Середній бал:</label>
+                        <div class="grade-range-filter">
+                            <div class="range-input-group">
+                                <label for="student-filter-grade-min">від:</label>
+                                <input type="number" id="student-filter-grade-min" min="0" max="100" value="0" class="grade-range-input">
+                            </div>
+                            <div class="range-separator">—</div>
+                            <div class="range-input-group">
+                                <label for="student-filter-grade-max">до:</label>
+                                <input type="number" id="student-filter-grade-max" min="0" max="100" value="100" class="grade-range-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sort-group">
+                        <label for="student-sort">Сортування:</label>
+                        <select id="student-sort">
+                            <option value="name-asc">👤 Ім'я (А-Я)</option>
+                            <option value="name-desc">👤 Ім'я (Я-А)</option>
+                            <option value="grade-desc">⭐ Середній бал (↓)</option>
+                            <option value="grade-asc">⭐ Середній бал (↑)</option>
+                            <option value="course-asc">📖 Курс (↑)</option>
+                            <option value="course-desc">📖 Курс (↓)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -223,8 +281,10 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="group-search" placeholder="🔍 Пошук груп...">
-                    <button id="search-groups" class="btn btn-primary">🔍 Пошук</button>
+                    <div class="search-group">
+                        <input type="text" id="group-search" placeholder="🔍 Пошук груп...">
+                        <button id="search-groups" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
                 </div>
                 <button id="add-group" class="btn btn-success">➕ Додати групу</button>
             </div>
@@ -255,8 +315,10 @@
             
             <div class="section-controls">
                 <div class="filters">
-                    <input type="text" id="subject-search" placeholder="🔍 Пошук дисциплін...">
-                    <button id="search-subjects" class="btn btn-primary">🔍 Пошук</button>
+                    <div class="search-group">
+                        <input type="text" id="subject-search" placeholder="🔍 Пошук дисциплін...">
+                        <button id="search-subjects" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
                 </div>
                 <button id="add-subject" class="btn btn-success">➕ Додати дисципліну</button>
             </div>
@@ -278,7 +340,109 @@
                 </table>
             </div>
         </section>
-    </main>
+
+        <!-- Archive Section (Admin only) -->
+        <section id="archive-section" class="section">
+            <h2>🗄️ Архів даних</h2>
+            
+            <div class="archive-stats">
+                <div class="stat-card">
+                    <h3>📊 Статистика архіву</h3>
+                    <div id="archive-stats">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="archive-tabs">
+                <button class="archive-tab-btn active" data-archive-tab="groups">👥 Групи</button>
+                <button class="archive-tab-btn" data-archive-tab="students">🎓 Студенти</button>
+                <button class="archive-tab-btn" data-archive-tab="grades">📝 Оцінки</button>
+            </div>
+
+            <!-- Archived Groups Tab -->
+            <div id="archive-groups-tab" class="archive-tab-content active">
+                <div class="section-controls">
+                    <div class="filters">
+                        <input type="text" id="archive-groups-search" placeholder="🔍 Пошук архівних груп...">
+                        <button id="search-archive-groups" class="btn btn-primary">🔍 Пошук</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👥 Назва групи</th>
+                                <th>🏷️ Код групи</th>
+                                <th>📖 Курс</th>
+                                <th>📚 Форма навчання</th>
+                                <th>📅 Дата архівації</th>
+                                <th>👤 Ким архівовано</th>
+                                <th>📄 Причина</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-groups-tbody">
+                            <tr><td colspan="8"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Archived Students Tab -->
+            <div id="archive-students-tab" class="archive-tab-content">
+                <div class="section-controls">
+                    <div class="filters">
+                        <input type="text" id="archive-students-search" placeholder="🔍 Пошук архівних студентів...">
+                        <button id="search-archive-students" class="btn btn-primary">🔍 Пошук</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>🎓 Номер студента</th>
+                                <th>👥 Група</th>
+                                <th>📖 Рік вступу</th>
+                                <th>📚 Форма навчання</th>
+                                <th>📅 Дата архівації</th>
+                                <th>👤 Ким архівовано</th>
+                                <th>📄 Причина</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-students-tbody">
+                            <tr><td colspan="8"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Archived Grades Tab -->
+            <div id="archive-grades-tab" class="archive-tab-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>🎓 Студент</th>
+                                <th>📚 Дисципліна</th>
+                                <th>📋 Тип оцінки</th>
+                                <th>⭐ Оцінка</th>
+                                <th>📅 Дата оцінки</th>
+                                <th>📅 Дата архівації</th>
+                                <th>👤 Ким архівовано</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-grades-tbody">
+                            <tr><td colspan="8"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Modal for adding/editing -->

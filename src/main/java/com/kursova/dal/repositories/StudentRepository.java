@@ -75,6 +75,15 @@ public interface StudentRepository extends BaseRepository<Student, Long> {
     List<Student> searchByName(@Param("name") String name);
 
     /**
+     * Search students by name or email
+     */
+    @Query("SELECT s FROM Student s JOIN s.user u WHERE " +
+           "(LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+           "AND s.isActive = true ORDER BY u.lastName, u.firstName")
+    List<Student> searchByNameOrEmail(@Param("searchTerm") String searchTerm);
+
+    /**
      * Check if student number exists
      */
     boolean existsByStudentNumber(String studentNumber);

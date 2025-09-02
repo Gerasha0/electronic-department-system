@@ -53,6 +53,14 @@ public interface UserRepository extends BaseRepository<User, Long> {
     List<User> findByFullNameContainingIgnoreCase(@Param("name") String name);
 
     /**
+     * Search users by name or email (case insensitive)
+     */
+    @Query("SELECT u FROM User u WHERE " +
+           "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<User> searchByNameOrEmail(@Param("searchTerm") String searchTerm);
+
+    /**
      * Find active users
      */
     List<User> findByIsActiveTrue();
