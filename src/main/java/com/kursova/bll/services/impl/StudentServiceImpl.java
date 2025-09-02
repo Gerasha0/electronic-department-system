@@ -130,6 +130,15 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<StudentDto> findStudentsWithoutGroup() {
+        List<Student> students = unitOfWork.getStudentRepository().findByGroupIsNullAndIsActiveTrueOrderByUserLastNameAsc();
+        return students.stream()
+                .map(this::mapStudentWithCalculatedData)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<StudentDto> findByEnrollmentYear(Integer year) {
         List<Student> students = unitOfWork.getStudentRepository().findByEnrollmentYearAndIsActiveTrueOrderByUserLastNameAsc(year);
         return students.stream()

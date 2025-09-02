@@ -811,7 +811,7 @@ class Dashboard {
             const groupName = group.groupName || 'N/A';
             const groupCode = group.groupCode || 'N/A';
             const courseYear = group.courseYear || 'N/A';
-            const studyForm = group.studyForm || 'N/A';
+            const studyForm = this.translateStudyForm(group.studyForm) || 'N/A';
             const studentCount = group.currentStudentCount || 0;
             const enrollmentYear = group.enrollmentYear || group.startYear || 'N/A';
             
@@ -886,7 +886,7 @@ class Dashboard {
                         <div class="info-row">
                             <span><strong>🏷️ Код групи:</strong> ${group.groupCode}</span>
                             <span><strong>📖 Курс:</strong> ${group.courseYear}</span>
-                            <span><strong>📚 Форма навчання:</strong> ${group.studyForm}</span>
+                            <span><strong>📚 Форма навчання:</strong> ${this.translateStudyForm(group.studyForm)}</span>
                         </div>
                         <div class="info-row">
                             <span><strong>🎓 Кількість студентів:</strong> ${group.currentStudentCount || 0}</span>
@@ -972,7 +972,6 @@ class Dashboard {
                             <button class="btn btn-sm btn-info" onclick="dashboard.viewStudentInfo(${student.id})">ℹ️ Інфо</button>
                             <button class="btn btn-sm btn-primary" onclick="dashboard.viewStudentGrades(${student.id})">📝 Оцінки</button>
                             ${canEdit ? `
-                                <button class="btn btn-sm btn-warning" onclick="dashboard.editStudentInGroup(${student.id})">✏️ Редагувати</button>
                                 <button class="btn btn-sm btn-danger" onclick="dashboard.removeStudentFromGroup(${student.id})">🗑️ Видалити</button>
                             ` : ''}
                         </div>
@@ -995,20 +994,17 @@ class Dashboard {
 
     async addStudentToGroup(groupId) {
         try {
-            // Get available students (not in any group)
-            const studentsResponse = await apiClient.getUsersByRole('STUDENT');
+            // Get students without group
+            const studentsResponse = await apiClient.getStudentsWithoutGroup();
             if (!studentsResponse?.success) {
                 alert('Помилка завантаження студентів');
                 return;
             }
 
-            const allStudents = studentsResponse.data;
-            
-            // Filter students that are not in groups (or handle this on backend)
-            const availableStudents = allStudents; // TODO: filter by group assignment
+            const availableStudents = studentsResponse.data;
 
             if (!availableStudents.length) {
-                alert('Немає доступних студентів для додавання до групи');
+                alert('Немає доступних студентів для додавання до групи (всі студенти вже призначені до груп)');
                 return;
             }
 
@@ -1028,14 +1024,25 @@ class Dashboard {
                     
                     <form id="add-student-form">
                         <div class="form-group">
+                            <label for="student-search-input">🔍 Пошук студента:</label>
+                            <input type="text" id="student-search-input" class="form-control" 
+                                   placeholder="Введіть ім'я або прізвище студента..." />
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="student-select">Оберіть студента:</label>
                             <select id="student-select" name="studentId" required>
                                 <option value="">-- Оберіть студента --</option>
-                                ${students.map(student => `
-                                    <option value="${student.id}">
-                                        ${student.firstName} ${student.lastName} (${student.email})
-                                    </option>
-                                `).join('')}
+                                ${students.map(student => {
+                                    const firstName = student.user ? student.user.firstName : student.firstName;
+                                    const lastName = student.user ? student.user.lastName : student.lastName;
+                                    const email = student.user ? student.user.email : student.email;
+                                    return `
+                                        <option value="${student.id}" data-name="${firstName} ${lastName}" data-email="${email}">
+                                            ${firstName} ${lastName} (${email})
+                                        </option>
+                                    `;
+                                }).join('')}
                             </select>
                         </div>
                         
@@ -1056,6 +1063,66 @@ class Dashboard {
         
         // Add new modal
         document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Add search functionality
+        const searchInput = document.getElementById('student-search-input');
+        const studentSelect = document.getElementById('student-select');
+        
+        if (searchInput && studentSelect) {
+            let searchTimeout;
+            searchInput.addEventListener('input', async (e) => {
+                const query = e.target.value.trim();
+                
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // Debounce search requests
+                searchTimeout = setTimeout(async () => {
+                    if (query.length >= 2) {
+                        try {
+                            const searchResponse = await apiClient.searchStudentsWithoutGroup(query);
+                            if (searchResponse?.success) {
+                                // Update select options with search results
+                                const filteredStudents = searchResponse.data;
+                                updateStudentSelectOptions(studentSelect, filteredStudents);
+                            }
+                        } catch (error) {
+                            console.error('Search error:', error);
+                        }
+                    } else if (query.length === 0) {
+                        // Reset to all available students if search is cleared
+                        updateStudentSelectOptions(studentSelect, students);
+                    }
+                }, 300);
+            });
+        }
+        
+        // Helper function to update select options
+        function updateStudentSelectOptions(selectElement, studentList) {
+            const currentValue = selectElement.value;
+            selectElement.innerHTML = '<option value="">-- Оберіть студента --</option>';
+            
+            studentList.forEach(student => {
+                const firstName = student.user ? student.user.firstName : student.firstName;
+                const lastName = student.user ? student.user.lastName : student.lastName;
+                const email = student.user ? student.user.email : student.email;
+                
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = `${firstName} ${lastName} (${email})`;
+                option.dataset.name = `${firstName} ${lastName}`;
+                option.dataset.email = email;
+                
+                selectElement.appendChild(option);
+            });
+            
+            // Restore selected value if it still exists
+            if (currentValue) {
+                selectElement.value = currentValue;
+            }
+        }
         
         // Handle form submission
         document.getElementById('add-student-form').addEventListener('submit', async (e) => {
@@ -1103,11 +1170,6 @@ class Dashboard {
         if (modal) {
             modal.remove();
         }
-    }
-
-    async editStudentInGroup(studentId) {
-        // TODO: Implement edit student functionality
-        alert('Функція редагування студента буде реалізована пізніше');
     }
 
     async removeStudentFromGroup(studentId) {
@@ -2273,9 +2335,9 @@ class Dashboard {
 
     async loadStudentsForGroup(group = null) {
         try {
-            // Get all students and students already in the group
-            const studentsResponse = await apiClient.getUsersByRole('STUDENT');
-            const allStudents = studentsResponse?.success ? studentsResponse.data : [];
+            // Get students without group and students already in the current group
+            const studentsWithoutGroupResponse = await apiClient.getStudentsWithoutGroup();
+            const studentsWithoutGroup = studentsWithoutGroupResponse?.success ? studentsWithoutGroupResponse.data : [];
             
             // Get group students if editing existing group
             let groupStudents = [];
@@ -2284,13 +2346,21 @@ class Dashboard {
                 groupStudents = groupStudentsResponse?.success ? groupStudentsResponse.data : (group.students || []);
             }
             
+            // Combine students without group and current group students (for editing)
+            const allAvailableStudents = [...studentsWithoutGroup, ...groupStudents];
+            
+            // Remove duplicates by id
+            const uniqueStudents = allAvailableStudents.filter((student, index, self) =>
+                index === self.findIndex(s => s.id === student.id)
+            );
+            
             const groupStudentIds = groupStudents.map(s => s.id || s.userId);
 
             const container = document.getElementById('students-selection');
             if (!container) return;
 
-            if (!allStudents.length) {
-                container.innerHTML = '<p class="no-data">Студенти не знайдені</p>';
+            if (!uniqueStudents.length) {
+                container.innerHTML = '<p class="no-data">Немає доступних студентів (всі студенти вже призначені до груп)</p>';
                 return;
             }
 
@@ -2301,16 +2371,20 @@ class Dashboard {
                            placeholder="🔍 Пошук студентів..." />
                 </div>
                 <div class="students-list" id="students-list">
-                    ${allStudents.map(student => `
+                    ${uniqueStudents.map(student => {
+                        const fullName = student.user ? `${student.user.firstName} ${student.user.lastName}` : 
+                                        `${student.firstName} ${student.lastName}`;
+                        const email = student.user ? student.user.email : student.email;
+                        return `
                         <label class="student-item">
                             <input type="checkbox" 
                                    name="selectedStudents" 
                                    value="${student.id}"
                                    ${groupStudentIds.includes(student.id) ? 'checked' : ''}>
-                            <span class="student-name">${student.firstName} ${student.lastName}</span>
-                            <span class="student-email">${student.email}</span>
+                            <span class="student-name">${fullName}</span>
+                            <span class="student-email">${email}</span>
                         </label>
-                    `).join('')}
+                    `;}).join('')}
                 </div>
             `;
 
@@ -2364,17 +2438,35 @@ class Dashboard {
                 // Update existing group
                 response = await apiClient.updateGroup(existingGroup.id, groupData);
                 if (response?.success) {
-                    // TODO: Update student assignments
-                    // This would require additional API endpoints for managing group students
-                    alert('Групу оновлено успішно!');
+                    // Update student assignments
+                    const studentsResponse = await apiClient.updateGroupStudents(existingGroup.id, selectedStudents);
+                    if (studentsResponse?.success) {
+                        alert('Групу та список студентів оновлено успішно!');
+                    } else {
+                        alert('Групу оновлено, але сталася помилка з оновленням студентів: ' + (studentsResponse?.error || 'Невідома помилка'));
+                    }
                 }
             } else {
                 // Create new group
                 response = await apiClient.createGroup(groupData);
                 if (response?.success) {
-                    // TODO: Assign selected students to the group
-                    // This would require additional API endpoints for managing group students
-                    alert('Групу створено успішно!');
+                    const newGroupId = response.data.id;
+                    // Assign selected students to the new group
+                    if (selectedStudents.length > 0) {
+                        const promises = selectedStudents.map(studentId => 
+                            apiClient.addStudentToGroup(newGroupId, studentId)
+                        );
+                        const studentsResults = await Promise.all(promises);
+                        const failed = studentsResults.filter(r => !r?.success);
+                        
+                        if (failed.length > 0) {
+                            alert(`Групу створено, але ${failed.length} студентів не вдалося додати до групи`);
+                        } else {
+                            alert('Групу створено та студентів додано успішно!');
+                        }
+                    } else {
+                        alert('Групу створено успішно!');
+                    }
                 }
             }
 
@@ -2479,6 +2571,16 @@ class Dashboard {
     }
 
     // === UTILITY FUNCTIONS ===
+    
+    translateStudyForm(studyForm) {
+        const translations = {
+            'FULL_TIME': '🎓 Денна',
+            'PART_TIME': '🌙 Вечірня',
+            'CORRESPONDENCE': '📮 Заочна',
+            'DISTANCE': '💻 Дистанційна'
+        };
+        return translations[studyForm] || studyForm;
+    }
     
     showLoadingSpinner(buttonElement, originalText) {
         if (buttonElement) {

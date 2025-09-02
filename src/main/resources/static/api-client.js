@@ -143,6 +143,14 @@ class ApiClient {
         return await this.apiCall('/api/public/students');
     }
 
+    async getStudentsWithoutGroup() {
+        return await this.apiCall('/api/students/without-group');
+    }
+
+    async searchStudentsWithoutGroup(query) {
+        return await this.apiCall(`/api/students/search-without-group?name=${encodeURIComponent(query)}`);
+    }
+
     async getStudent(studentId) {
         return await this.apiCall(`/api/students/${studentId}`);
     }
@@ -202,6 +210,13 @@ class ApiClient {
     async addStudentToGroup(groupId, studentId) {
         return await this.apiCall(`/api/groups/${groupId}/students/${studentId}`, {
             method: 'POST'
+        });
+    }
+    
+    async updateGroupStudents(groupId, studentIds) {
+        return await this.apiCall(`/api/groups/${groupId}/students`, {
+            method: 'PUT',
+            body: JSON.stringify(studentIds)
         });
     }
     

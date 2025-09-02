@@ -115,6 +115,33 @@ public class GroupController {
         }
     }
 
+    @PutMapping("/{id}/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Update group students", description = "Updates the list of students in a group")
+    public ResponseEntity<?> updateGroupStudents(
+            @PathVariable @Parameter(description = "Group ID") Long id,
+            @RequestBody List<Long> studentIds) {
+        try {
+            // First, remove all students from the group
+            List<StudentDto> currentStudents = studentService.findByGroupId(id);
+            for (StudentDto student : currentStudents) {
+                studentService.removeFromGroup(student.getId());
+            }
+            
+            // Then, add the new students to the group
+            for (Long studentId : studentIds) {
+                studentService.assignToGroup(studentId, id);
+            }
+            
+            // Return updated student list
+            List<StudentDto> updatedStudents = studentService.findByGroupId(id);
+            return ResponseEntity.ok(Map.of("success", true, "data", updatedStudents));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Update group", description = "Updates group information")

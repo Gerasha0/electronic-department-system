@@ -62,6 +62,14 @@ public class StudentController {
         return ResponseEntity.ok(students);
     }
 
+    @GetMapping("/without-group")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Get students without group", description = "Retrieves all students that are not assigned to any group")
+    public ResponseEntity<List<StudentDto>> getStudentsWithoutGroup() {
+        List<StudentDto> students = studentService.findStudentsWithoutGroup();
+        return ResponseEntity.ok(students);
+    }
+
     @GetMapping("/group/{groupId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get students by group", description = "Retrieves students by group ID")
@@ -78,6 +86,29 @@ public class StudentController {
             @RequestParam @Parameter(description = "Search term") String name) {
         List<StudentDto> students = studentService.searchByName(name);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/search-without-group")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Search students without group by name", description = "Searches students without group by first or last name")
+    public ResponseEntity<List<StudentDto>> searchStudentsWithoutGroupByName(
+            @RequestParam @Parameter(description = "Search term") String name) {
+        List<StudentDto> allStudentsWithoutGroup = studentService.findStudentsWithoutGroup();
+        
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity.ok(allStudentsWithoutGroup);
+        }
+        
+        String searchTerm = name.trim().toLowerCase();
+        List<StudentDto> filteredStudents = allStudentsWithoutGroup.stream()
+                .filter(student -> {
+                    String fullName = student.getFullName().toLowerCase();
+                    String email = student.getUser() != null ? student.getUser().getEmail().toLowerCase() : "";
+                    return fullName.contains(searchTerm) || email.contains(searchTerm);
+                })
+                .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(filteredStudents);
     }
 
     @PutMapping("/{id}")

@@ -29,6 +29,11 @@ public interface StudentService extends BaseService<StudentDto, Long> {
     List<StudentDto> findByGroup(Long groupId);
 
     /**
+     * Find students without group (not assigned to any group)
+     */
+    List<StudentDto> findStudentsWithoutGroup();
+
+    /**
      * Find students by enrollment year
      */
     List<StudentDto> findByEnrollmentYear(Integer year);
