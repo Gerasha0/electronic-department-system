@@ -56,7 +56,8 @@ public class SecurityConfig {
                 // Teacher endpoints
                 .requestMatchers("/api/teacher/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
 
-                // Grade endpoints
+                // Grade endpoints - specific endpoints for different roles
+                .requestMatchers("/api/grades/my-grades").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT")
                 .requestMatchers("/api/grades/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
 
                 // User endpoints
@@ -64,6 +65,11 @@ public class SecurityConfig {
 
                 // Student endpoints
                 .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT")
+
+                // Guest endpoints - read-only access
+                .requestMatchers("/api/departments/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT", "GUEST")
+                .requestMatchers("/api/teachers/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT", "GUEST")
+                .requestMatchers("/api/subjects/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER", "STUDENT", "GUEST")
 
                 // All other endpoints require authentication
                 .anyRequest().authenticated()

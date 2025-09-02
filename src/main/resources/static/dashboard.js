@@ -6,7 +6,21 @@ class Dashboard {
     constructor() {
         this.currentUser = null;
         this.currentSection = 'overview';
+        this.allGrades = []; // Store all grades for filtering
         this.init();
+    }
+
+    // Translate grade types to Ukrainian
+    translateGradeType(gradeType) {
+        const translations = {
+            'CURRENT': 'Поточна',
+            'MODULE': 'Модульна', 
+            'MIDTERM': 'Проміжна',
+            'FINAL': 'Підсумкова',
+            'RETAKE': 'Перездача',
+            'MAKEUP': 'Відпрацювання'
+        };
+        return translations[gradeType] || gradeType;
     }
 
     async init() {
@@ -56,11 +70,11 @@ class Dashboard {
         // New role-based navigation configuration
         const navButtons = {
             'users-nav': ['ADMIN'],                                    // Only ADMIN
-            'teachers-nav': ['ADMIN', 'MANAGER'],                     // ADMIN, MANAGER  
+            'teachers-nav': ['ADMIN', 'MANAGER', 'GUEST'],            // ADMIN, MANAGER, GUEST (read-only for GUEST)  
             'students-nav': ['ADMIN', 'MANAGER', 'TEACHER'],          // ADMIN, MANAGER, TEACHER
             'groups-nav': ['ADMIN', 'MANAGER', 'TEACHER'],            // ADMIN, MANAGER, TEACHER (read-only for TEACHER)
-            'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'], // All authenticated users
-            'grades-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT']  // All authenticated users
+            'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT', 'GUEST'], // All authenticated users
+            'grades-nav': ['ADMIN', 'MANAGER', 'STUDENT']             // All authenticated users except GUEST and TEACHER
         };
 
         // Hide/show navigation based on role
@@ -82,6 +96,8 @@ class Dashboard {
             this.showSection('grades');  // Students see their grades first
         } else if (role === 'TEACHER') {
             this.showSection('subjects'); // Teachers see their subjects first
+        } else if (role === 'GUEST') {
+            this.showSection('subjects'); // Guests see subjects first
         } else {
             this.showSection('overview'); // ADMIN, MANAGER see overview
         }
@@ -109,6 +125,12 @@ class Dashboard {
                 canActivate: false  // Cannot activate/deactivate
             },
             'STUDENT': {
+                canCreate: false,   // Cannot create
+                canEdit: false,     // Cannot edit
+                canDelete: false,   // Cannot delete
+                canActivate: false  // Cannot activate/deactivate
+            },
+            'GUEST': {
                 canCreate: false,   // Cannot create
                 canEdit: false,     // Cannot edit
                 canDelete: false,   // Cannot delete
@@ -173,6 +195,20 @@ class Dashboard {
 
         // Grade filters
         document.getElementById('filter-grades')?.addEventListener('click', () => {
+            this.filterGrades();
+        });
+
+        // Grade search input - filter on type
+        document.getElementById('grade-search-student')?.addEventListener('input', () => {
+            this.filterGrades();
+        });
+
+        // Grade filter dropdowns - filter on change
+        document.getElementById('grade-filter-subject')?.addEventListener('change', () => {
+            this.filterGrades();
+        });
+
+        document.getElementById('grade-filter-type')?.addEventListener('change', () => {
             this.filterGrades();
         });
 
@@ -245,12 +281,14 @@ class Dashboard {
                 break;
             case 'grades':
                 await this.loadGradesData();
+                this.setupGradesFilters();
                 break;
             case 'teachers':
                 await this.loadTeachersData();
                 break;
             case 'students':
                 await this.loadStudentsData();
+                await this.loadStudentFilters();
                 break;
             case 'groups':
                 await this.loadGroupsData();
@@ -397,7 +435,9 @@ class Dashboard {
             }
 
             if (response?.success && Array.isArray(response.data)) {
+                this.allGrades = response.data; // Store all grades
                 this.renderGradesTable(response.data);
+                this.loadSubjectsForFilter(); // Load subjects for filter
             } else {
                 tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження оцінок</td></tr>';
             }
@@ -419,7 +459,7 @@ class Dashboard {
             // Use fields directly from API response
             const studentName = grade.studentName || 'N/A';
             const subjectName = grade.subjectName || 'N/A';
-            const gradeType = grade.gradeType || 'N/A';
+            const gradeType = this.translateGradeType(grade.gradeType) || 'N/A';
             const gradeValue = grade.gradeValue || 'N/A';
             const gradeDate = grade.gradeDate || grade.createdAt;
             const formattedDate = gradeDate ? new Date(gradeDate).toLocaleDateString('uk-UA') : 'N/A';
@@ -442,6 +482,70 @@ class Dashboard {
             </tr>
         `;
         }).join('');
+    }
+
+    // Load subjects for filter dropdown
+    async loadSubjectsForFilter() {
+        const select = document.getElementById('grade-filter-subject');
+        if (!select) return;
+
+        try {
+            const response = await apiClient.getPublicSubjects();
+            const subjects = Array.isArray(response) ? response : (response?.data || []);
+            
+            // Clear existing options except "Всі дисципліни"
+            select.innerHTML = '<option value="">Всі дисципліни</option>';
+            
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.subjectName;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading subjects for filter:', error);
+        }
+    }
+
+    // Filter grades based on current filter values
+    filterGrades() {
+        const subjectFilter = document.getElementById('grade-filter-subject')?.value || '';
+        const studentSearch = document.getElementById('grade-search-student')?.value.toLowerCase() || '';
+        const typeFilter = document.getElementById('grade-filter-type')?.value || '';
+
+        let filteredGrades = this.allGrades;
+
+        // Filter by subject
+        if (subjectFilter) {
+            filteredGrades = filteredGrades.filter(grade => 
+                grade.subjectId && grade.subjectId.toString() === subjectFilter
+            );
+        }
+
+        // Search by student name
+        if (studentSearch) {
+            filteredGrades = filteredGrades.filter(grade => 
+                grade.studentName && grade.studentName.toLowerCase().includes(studentSearch)
+            );
+        }
+
+        // Filter by grade type
+        if (typeFilter) {
+            filteredGrades = filteredGrades.filter(grade => 
+                grade.gradeType === typeFilter
+            );
+        }
+
+        this.renderGradesTable(filteredGrades);
+    }
+
+    setupGradesFilters() {
+        // Hide student search for STUDENT role since they only see their own grades
+        const studentSearchInput = document.getElementById('grade-search-student');
+        if (studentSearchInput) {
+            const isStudent = this.currentUser?.role === 'STUDENT';
+            studentSearchInput.style.display = isStudent ? 'none' : 'block';
+        }
     }
 
     async loadTeachersData() {
@@ -501,13 +605,29 @@ class Dashboard {
         tbody.innerHTML = '<tr><td colspan="6"><div class="loading"></div></td></tr>';
 
         try {
-            const response = await apiClient.getStudents();
+            let response;
+            
+            // Role-based student loading
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only students from their subjects
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getStudentsByTeacher(this.currentUser.teacherId);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6">Профіль викладача не знайдено</td></tr>';
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all students
+                response = await apiClient.getStudents();
+            }
+
             if (response?.success && Array.isArray(response.data)) {
                 this.renderStudentsTable(response.data);
             } else {
                 tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження студентів</td></tr>';
             }
         } catch (error) {
+            console.error('Помилка завантаження студентів:', error);
             tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження даних</td></tr>';
         }
     }
@@ -545,6 +665,98 @@ class Dashboard {
             </tr>
         `;
         }).join('');
+    }
+
+    async loadStudentFilters() {
+        // Load subjects for filter (only for teachers - their subjects, for others - all)
+        try {
+            let subjectResponse;
+            if (this.currentUser?.role === 'TEACHER' && this.currentUser.teacherId) {
+                subjectResponse = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
+            } else {
+                subjectResponse = await apiClient.getPublicSubjects();
+            }
+
+            const subjectSelect = document.getElementById('student-filter-subject');
+            if (subjectSelect && subjectResponse?.success) {
+                const subjects = subjectResponse.data || [];
+                subjectSelect.innerHTML = '<option value="">Всі дисципліни</option>' +
+                    subjects.map(subject => 
+                        `<option value="${subject.id}">${subject.subjectName || 'Без назви'}</option>`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error loading subjects filter:', error);
+        }
+
+        // Load groups for filter
+        try {
+            const groupResponse = await apiClient.getActiveGroups();
+            const groupSelect = document.getElementById('student-filter-group');
+            if (groupSelect && groupResponse?.success) {
+                const groups = groupResponse.data || [];
+                groupSelect.innerHTML = '<option value="">Всі групи</option>' +
+                    groups.map(group => 
+                        `<option value="${group.id}">${group.groupName || 'Без назви'}</option>`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error loading groups filter:', error);
+        }
+
+        // Add event listeners for filters
+        const filterButton = document.getElementById('filter-students');
+        if (filterButton) {
+            filterButton.addEventListener('click', () => this.filterStudents());
+        }
+
+        const searchInput = document.getElementById('student-search');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.filterStudents();
+                }
+            });
+        }
+    }
+
+    async filterStudents() {
+        const subjectFilter = document.getElementById('student-filter-subject')?.value || '';
+        const groupFilter = document.getElementById('student-filter-group')?.value || '';
+        const searchTerm = document.getElementById('student-search')?.value?.toLowerCase() || '';
+
+        const tbody = document.getElementById('students-tbody');
+        if (!tbody) return;
+
+        // Get all student rows
+        const rows = tbody.querySelectorAll('tr');
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 6) return; // Skip if not enough cells
+
+            const studentName = cells[0]?.textContent?.toLowerCase() || '';
+            const studentEmail = cells[1]?.textContent?.toLowerCase() || '';
+            const studentGroup = cells[2]?.textContent || '';
+            
+            // Apply filters
+            let showRow = true;
+
+            // Search filter (name or email)
+            if (searchTerm && !studentName.includes(searchTerm) && !studentEmail.includes(searchTerm)) {
+                showRow = false;
+            }
+
+            // Group filter
+            if (groupFilter && !studentGroup.includes(groupFilter)) {
+                showRow = false;
+            }
+
+            // Subject filter is already handled by loadStudentsData for teachers
+            // For others, we would need additional API endpoint to filter by subject
+
+            row.style.display = showRow ? '' : 'none';
+        });
     }
 
     // === GROUPS MANAGEMENT ===
@@ -669,10 +881,27 @@ class Dashboard {
 
     renderSubjectsTable(subjects) {
         const tbody = document.getElementById('subjects-tbody');
-        if (!tbody) return;
+        const table = document.getElementById('subjects-table');
+        if (!tbody || !table) return;
+
+        // Update table header based on user role
+        const thead = table.querySelector('thead tr');
+        if (thead) {
+            const isGuest = this.currentUser?.role === 'GUEST';
+            const colCount = isGuest ? 4 : 5;
+            
+            thead.innerHTML = `
+                <th>📚 Назва</th>
+                <th>👨‍🏫 Викладач</th>
+                <th>💳 Кредити</th>
+                <th>📅 Семестр</th>
+                ${!isGuest ? '<th>⚙️ Дії</th>' : ''}
+            `;
+        }
 
         if (!subjects.length) {
-            tbody.innerHTML = '<tr><td colspan="5">Дисципліни не знайдені</td></tr>';
+            const colCount = this.currentUser?.role === 'GUEST' ? 4 : 5;
+            tbody.innerHTML = `<tr><td colspan="${colCount}">Дисципліни не знайдені</td></tr>`;
             return;
         }
 
@@ -685,12 +914,15 @@ class Dashboard {
             const credits = subject.credits || 'N/A';
             const semester = subject.semester || 'N/A';
             
+            const isGuest = this.currentUser?.role === 'GUEST';
+            
             return `
             <tr>
                 <td>${subjectName}</td>
                 <td>${teacherName}</td>
                 <td>${credits}</td>
                 <td>${semester}</td>
+                ${!isGuest ? `
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-primary" onclick="dashboard.viewSubject(${subject.id})">Переглянути</button>
@@ -698,12 +930,11 @@ class Dashboard {
                         <button class="btn btn-sm btn-danger" onclick="dashboard.deleteSubject(${subject.id})">Видалити</button>
                     </div>
                 </td>
+                ` : ''}
             </tr>
         `;
         }).join('');
-    }
-
-    // Modal methods
+    }    // Modal methods
     showAddUserModal() {
         const modal = document.getElementById('modal');
         const title = document.getElementById('modal-title');
@@ -950,16 +1181,35 @@ class Dashboard {
 
     async loadStudentsForGrades(selectId = 'grade-student-select', selectedId = null) {
         try {
-            const response = await apiClient.getUsersByRole('STUDENT');
+            let response;
+            
+            // Role-based student loading for grades
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only students from their subjects
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getStudentsByTeacher(this.currentUser.teacherId);
+                } else {
+                    console.error('Teacher profile not found');
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all students
+                response = await apiClient.getUsersByRole('STUDENT');
+            }
+
             const select = document.getElementById(selectId);
             if (select && response?.success) {
                 const students = response.data || [];
                 select.innerHTML = '<option value="">Оберіть студента...</option>' +
-                    students.map(student => 
-                        `<option value="${student.id}" ${selectedId == student.id ? 'selected' : ''}>
-                            ${student.firstName} ${student.lastName}
-                        </option>`
-                    ).join('');
+                    students.map(student => {
+                        // Handle different response formats
+                        const studentId = student.id || student.userId;
+                        const firstName = student.firstName || student.user?.firstName;
+                        const lastName = student.lastName || student.user?.lastName;
+                        return `<option value="${studentId}" ${selectedId == studentId ? 'selected' : ''}>
+                            ${firstName} ${lastName}
+                        </option>`;
+                    }).join('');
             }
         } catch (error) {
             console.error('Error loading students:', error);
@@ -968,7 +1218,22 @@ class Dashboard {
 
     async loadSubjectsForGrades(selectId = 'grade-subject-select', selectedId = null) {
         try {
-            const response = await apiClient.getPublicSubjects();
+            let response;
+            
+            // Role-based subject loading for grades
+            if (this.currentUser?.role === 'TEACHER') {
+                // Teachers see only subjects they teach
+                if (this.currentUser.teacherId) {
+                    response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
+                } else {
+                    console.error('Teacher profile not found');
+                    return;
+                }
+            } else {
+                // ADMIN and MANAGER see all subjects
+                response = await apiClient.getPublicSubjects();
+            }
+            
             const select = document.getElementById(selectId);
             if (select && response?.success) {
                 const subjects = response.data || [];
@@ -1082,11 +1347,6 @@ class Dashboard {
         }
     }
 
-    filterGrades() {
-        // Implementation for grade filtering
-        this.loadGradesData();
-    }
-
     // Missing functions
     editUser(userId) {
         alert(`Редагування користувача ID: ${userId}. Функція буде реалізована пізніше.`);
@@ -1098,6 +1358,115 @@ class Dashboard {
 
     viewSubject(subjectId) {
         alert(`Перегляд предмету ID: ${subjectId}. Функція буде реалізована пізніше.`);
+    }
+
+    async viewStudentGrades(studentId) {
+        try {
+            // Get student grades
+            const response = await apiClient.getGradesByStudent(studentId);
+            const grades = response?.success ? response.data : (Array.isArray(response) ? response : []);
+            
+            // Get student info
+            const studentResponse = await apiClient.getStudent(studentId);
+            const student = studentResponse?.success ? studentResponse.data : studentResponse;
+            
+            this.showStudentGradesModal(student, grades);
+        } catch (error) {
+            console.error('Error loading student grades:', error);
+            alert('Помилка завантаження оцінок студента');
+        }
+    }
+
+    showStudentGradesModal(student, grades) {
+        const modalHtml = `
+            <div id="studentGradesModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="dashboard.closeStudentGradesModal()">&times;</span>
+                    <h2>Оцінки студента: ${student?.user?.firstName || ''} ${student?.user?.lastName || ''}</h2>
+                    <div class="grades-container">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>📚 Дисципліна</th>
+                                        <th>📋 Тип</th>
+                                        <th>⭐ Оцінка</th>
+                                        <th>📅 Дата</th>
+                                        ${this.currentUser?.role === 'TEACHER' ? '<th>⚙️ Дії</th>' : ''}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${grades.length ? grades.map(grade => `
+                                        <tr>
+                                            <td>${grade.subjectName || 'N/A'}</td>
+                                            <td>${this.translateGradeType(grade.gradeType) || 'N/A'}</td>
+                                            <td><strong>${grade.gradeValue || 'N/A'}</strong></td>
+                                            <td>${grade.gradeDate ? new Date(grade.gradeDate).toLocaleDateString('uk-UA') : 'N/A'}</td>
+                                            ${this.currentUser?.role === 'TEACHER' ? `
+                                                <td>
+                                                    ${this.canTeacherEditGrade(grade) ? `
+                                                        <button class="btn btn-sm btn-primary" onclick="dashboard.editGrade(${grade.id})">Редагувати</button>
+                                                    ` : '<span class="text-muted">—</span>'}
+                                                </td>
+                                            ` : ''}
+                                        </tr>
+                                    `).join('') : `
+                                        <tr><td colspan="${this.currentUser?.role === 'TEACHER' ? '5' : '4'}">Оцінки не знайдені</td></tr>
+                                    `}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('studentGradesModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Show modal and add scroll event handling
+        const modal = document.getElementById('studentGradesModal');
+        modal.style.display = 'block';
+        
+        // Allow closing modal by clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeStudentGradesModal();
+            }
+        });
+        
+        // Allow closing modal with Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeStudentGradesModal();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+        
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+
+    canTeacherEditGrade(grade) {
+        // Teacher can edit grade only if they teach this subject
+        return this.currentUser?.role === 'TEACHER' && 
+               grade.teacherId === this.currentUser.teacherId;
+    }
+
+    closeStudentGradesModal() {
+        const modal = document.getElementById('studentGradesModal');
+        if (modal) {
+            modal.remove();
+        }
+        // Restore body scroll
+        document.body.style.overflow = 'auto';
     }
 
     // Subject management methods

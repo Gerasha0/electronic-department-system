@@ -1,9 +1,12 @@
 package com.kursova.bll.services.impl;
 
+import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.dto.UserDto;
 import com.kursova.bll.mappers.TeacherMapper;
+import com.kursova.bll.services.StudentService;
 import com.kursova.bll.services.TeacherService;
+import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Teacher;
 import com.kursova.dal.entities.Subject;
 import com.kursova.dal.entities.User;
@@ -25,11 +28,13 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final UnitOfWork unitOfWork;
     private final TeacherMapper teacherMapper;
+    private final StudentService studentService;
 
     @Autowired
-    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper) {
+    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, StudentService studentService) {
         this.unitOfWork = unitOfWork;
         this.teacherMapper = teacherMapper;
+        this.studentService = studentService;
     }
 
     // Implementation of BaseService methods
@@ -239,5 +244,15 @@ public class TeacherServiceImpl implements TeacherService {
 
         Teacher updatedTeacher = unitOfWork.getTeacherRepository().save(teacher);
         return teacherMapper.toDto(updatedTeacher);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentDto> findStudentsByTeacherId(Long teacherId) {
+        // Find students who have grades from this teacher or study subjects taught by this teacher
+        List<Student> students = unitOfWork.getStudentRepository().findStudentsByTeacherId(teacherId);
+        return students.stream()
+                .map(student -> studentService.findById(student.getId()))
+                .collect(Collectors.toList());
     }
 }

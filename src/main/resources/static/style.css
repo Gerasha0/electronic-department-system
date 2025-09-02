@@ -312,6 +312,12 @@ textarea:hover:not(:focus) {
   border-color: var(--border-hover);
 }
 
+/* Search input styles */
+.search-input {
+  width: 300px !important;
+  min-width: 250px;
+}
+
 /* Button styles */
 button, .btn {
   background: var(--accent-primary);
@@ -386,6 +392,17 @@ button:active, .btn:active {
 
 .btn-secondary:hover {
   background: var(--text-secondary);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline:hover {
+  background: var(--primary);
+  color: white;
 }
 
 .btn-warning {

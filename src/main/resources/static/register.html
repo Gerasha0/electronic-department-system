@@ -44,13 +44,11 @@
       <div>
         <label for="role">Роль</label>
         <select id="role" name="role" required>
-          <option value="" disabled selected>Оберіть роль</option>
           <option value="STUDENT">🎓 Студент</option>
-          <option value="TEACHER">👨‍🏫 Викладач</option>
-          <option value="MANAGER">👥 Менеджер</option>
-          <option value="ADMIN">⚙️ Адміністратор</option>
-          <option value="GUEST">👤 Гість</option>
         </select>
+        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
+          💡 Самостійна реєстрація доступна тільки для студентів
+        </div>
       </div>
       <button type="submit" class="btn btn-primary">Зареєструватися</button>
       <button type="button" class="btn btn-secondary" onclick="location.href='/login.html'">Увійти</button>

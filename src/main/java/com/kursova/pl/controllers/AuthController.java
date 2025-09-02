@@ -152,6 +152,32 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/guest-login")
+    @Operation(summary = "Guest login", description = "Logs in as a guest user with read-only access")
+    public ResponseEntity<LoginResponse> guestLogin() {
+        try {
+            // Create a guest user DTO for the session
+            UserDto guestUser = new UserDto();
+            guestUser.setUsername("guest");
+            guestUser.setFirstName("Гість");
+            guestUser.setLastName("Система");
+            guestUser.setEmail("guest@example.com");
+            guestUser.setRole(com.kursova.dal.entities.UserRole.GUEST);
+            guestUser.setIsActive(true);
+
+            // Generate token for guest user
+            String token = jwtUtils.generateToken("guest", "GUEST");
+
+            // Return token in message field and guest user info
+            LoginResponse resp = new LoginResponse(true, token, guestUser);
+            return ResponseEntity.ok(resp);
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new LoginResponse(false, "Error creating guest session", null));
+        }
+    }
+
     @GetMapping("/current-user")
     @Operation(summary = "Get current user", description = "Gets information about the currently authenticated user")
     public ResponseEntity<UserDto> getCurrentUser() {
@@ -161,6 +187,18 @@ public class AuthController {
             !"anonymousUser".equals(authentication.getName())) {
 
             try {
+                // Handle guest user specially
+                if ("guest".equals(authentication.getName())) {
+                    UserDto guestUser = new UserDto();
+                    guestUser.setUsername("guest");
+                    guestUser.setFirstName("Гість");
+                    guestUser.setLastName("Система");
+                    guestUser.setEmail("guest@example.com");
+                    guestUser.setRole(com.kursova.dal.entities.UserRole.GUEST);
+                    guestUser.setIsActive(true);
+                    return ResponseEntity.ok(guestUser);
+                }
+                
                 UserDto user = userService.findByUsername(authentication.getName());
                 return ResponseEntity.ok(user);
             } catch (Exception e) {

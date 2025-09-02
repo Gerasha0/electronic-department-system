@@ -440,6 +440,7 @@ table tbody tr:last-child td {
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
     animation: fadeIn 0.3s ease;
+    overflow-y: auto;
 }
 
 @keyframes fadeIn {
@@ -453,13 +454,64 @@ table tbody tr:last-child td {
     padding: 2.5rem;
     border-radius: var(--radius-xl);
     width: 90%;
-    max-width: 600px;
+    max-width: 1200px;
     max-height: 90vh;
     position: relative;
-    overflow-y: auto;
+    overflow-y: auto; /* Added vertical scroll */
+    overflow-x: hidden;
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border-color);
     animation: slideUp 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Special styles for student grades modal */
+#studentGradesModal .modal-content {
+    max-width: 1400px;
+    width: 95%;
+    max-height: 95vh;
+}
+
+#studentGradesModal .grades-container {
+    flex: 1;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+#studentGradesModal .table-container {
+    height: 100%;
+    max-height: calc(90vh - 200px);
+    overflow: auto;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+}
+
+#studentGradesModal table {
+    width: 100%;
+    min-width: 800px; /* Ensures horizontal scroll if needed */
+}
+
+#studentGradesModal table th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 10;
+}
+
+/* Fix modal stacking order */
+#modal {
+    z-index: 2000; /* Higher than student grades modal */
+}
+
+#modal .modal-content {
+    max-height: 95vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#studentGradesModal {
+    z-index: 1500; /* Lower than edit modal */
 }
 
 @keyframes slideUp {

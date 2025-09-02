@@ -74,7 +74,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findAll() {
         return subjectRepository.findAll()
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
@@ -168,7 +168,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findByAssessmentType(AssessmentType assessmentType) {
         return subjectRepository.findByAssessmentTypeAndIsActiveTrueOrderBySubjectNameAsc(assessmentType)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
@@ -176,7 +176,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findBySemester(Integer semester) {
         return subjectRepository.findBySemesterAndIsActiveTrueOrderBySubjectNameAsc(semester)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
@@ -184,7 +184,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findByCredits(Integer credits) {
         return subjectRepository.findByCreditsAndIsActiveTrueOrderBySubjectNameAsc(credits)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
@@ -192,7 +192,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findByTeacherId(Long teacherId) {
         return subjectRepository.findByTeacherId(teacherId)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
@@ -205,7 +205,7 @@ public class SubjectServiceImpl implements SubjectService {
     public List<SubjectDto> findSubjectsWithGradesForStudent(Long studentId) {
         return subjectRepository.findSubjectsWithGradesForStudent(studentId)
             .stream()
-            .map(subjectMapper::toDto)
+            .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
     }
 
