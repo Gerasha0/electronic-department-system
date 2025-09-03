@@ -202,6 +202,10 @@ class ApiClient {
     async getActiveGroups() {
         return await this.apiCall('/api/groups/active');
     }
+
+    async getGroupsByTeacher(teacherId) {
+        return await this.apiCall(`/api/groups/teacher/${teacherId}`);
+    }
     
     async searchGroups(name) {
         return await this.apiCall(`/api/groups/search?name=${encodeURIComponent(name)}`);
@@ -233,6 +237,10 @@ class ApiClient {
     // Subject management methods
     async getSubjects() {
         return await this.apiCall('/api/subjects');
+    }
+    
+    async getSubject(subjectId) {
+        return await this.apiCall(`/api/subjects/${subjectId}`);
     }
     
     async createSubject(subjectData) {
@@ -269,6 +277,10 @@ class ApiClient {
 
     async getSubjectsByTeacher(teacherId) {
         return await this.apiCall(`/api/subjects/teacher/${teacherId}`);
+    }
+
+    async getSubjectById(id) {
+        return await this.apiCall(`/api/subjects/${id}`);
     }
 
     // User management methods
@@ -392,6 +404,10 @@ class ApiClient {
         return await this.apiCall('/api/public/department-info');
     }
 
+    async getEducationLevels() {
+        return await this.apiCall('/api/public/education-levels');
+    }
+
     // Archive management methods (Admin only)
     async getArchiveStatistics() {
         return await this.apiCall('/api/archive/statistics');
@@ -457,6 +473,53 @@ class ApiClient {
         return await this.apiCall(`/api/archive/grades/${archivedGradeId}`, {
             method: 'DELETE'
         });
+    }
+
+    // Subject Groups Management
+    async getSubjectGroups(subjectId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/groups`);
+    }
+
+    async getAvailableGroupsForSubject(subjectId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/available-groups`);
+    }
+
+    async addGroupToSubject(subjectId, groupId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/groups/${groupId}`, {
+            method: 'POST'
+        });
+    }
+
+    async removeGroupFromSubject(subjectId, groupId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/groups/${groupId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Subject Teachers Management
+    async getSubjectTeachers(subjectId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/teachers`);
+    }
+
+    async getAvailableTeachersForSubject(subjectId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/available-teachers`);
+    }
+
+    async addTeacherToSubject(subjectId, teacherId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/teachers/${teacherId}`, {
+            method: 'POST'
+        });
+    }
+
+    async removeTeacherFromSubject(subjectId, teacherId) {
+        return await this.apiCall(`/api/subjects/${subjectId}/teachers/${teacherId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Student search for groups
+    async searchStudentsForGroup(query, groupId) {
+        return await this.apiCall(`/api/students/search-for-group?query=${encodeURIComponent(query)}&groupId=${groupId}`);
     }
 }
 

@@ -66,6 +66,14 @@ public class Subject {
     )
     private Set<Teacher> teachers = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "subject_group",
+        joinColumns = @JoinColumn(name = "subject_id"),
+        inverseJoinColumns = @JoinColumn(name = "group_id")
+    )
+    private Set<StudentGroup> groups = new HashSet<>();
+
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Grade> grades = new HashSet<>();
 
@@ -220,6 +228,14 @@ public class Subject {
 
     public void setGrades(Set<Grade> grades) {
         this.grades = grades;
+    }
+
+    public Set<StudentGroup> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<StudentGroup> groups) {
+        this.groups = groups;
     }
 
     // Helper methods

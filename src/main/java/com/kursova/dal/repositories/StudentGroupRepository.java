@@ -102,4 +102,14 @@ public interface StudentGroupRepository extends BaseRepository<StudentGroup, Lon
      */
     @Query("SELECT DISTINCT g FROM StudentGroup g JOIN g.students s WHERE g.isActive = true ORDER BY g.groupName")
     List<StudentGroup> findGroupsWithStudents();
+
+    /**
+     * Find groups taught by a specific teacher (through subjects)
+     */
+    @Query("SELECT DISTINCT g FROM StudentGroup g " +
+           "JOIN g.subjects s " +
+           "JOIN s.teachers t " +
+           "WHERE t.id = :teacherId AND g.isActive = true " +
+           "ORDER BY g.groupName")
+    List<StudentGroup> findGroupsByTeacherId(@Param("teacherId") Long teacherId);
 }

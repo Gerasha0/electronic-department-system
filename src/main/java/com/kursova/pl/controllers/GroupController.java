@@ -76,6 +76,15 @@ public class GroupController {
         return ResponseEntity.ok(groups);
     }
 
+    @GetMapping("/teacher/{teacherId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or #teacherId == authentication.principal.teacherId")
+    @Operation(summary = "Get groups by teacher", description = "Retrieves groups taught by specific teacher")
+    public ResponseEntity<List<StudentGroupDto>> getGroupsByTeacher(
+            @PathVariable @Parameter(description = "Teacher ID") Long teacherId) {
+        List<StudentGroupDto> groups = groupService.findGroupsByTeacherId(teacherId);
+        return ResponseEntity.ok(groups);
+    }
+
     @GetMapping("/{id}/students")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Get students in group", description = "Retrieves all students in a specific group")

@@ -147,4 +147,14 @@ public class StudentController {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search-for-group")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Search students for group assignment", description = "Search students with group information for group assignment")
+    public ResponseEntity<List<Object>> searchStudentsForGroup(
+            @RequestParam @Parameter(description = "Search query") String query,
+            @RequestParam @Parameter(description = "Target group ID") Long groupId) {
+        List<Object> students = studentService.searchStudentsForGroup(query, groupId);
+        return ResponseEntity.ok(students);
+    }
 }

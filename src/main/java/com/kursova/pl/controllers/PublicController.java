@@ -6,6 +6,7 @@ import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.services.SubjectService;
 import com.kursova.bll.services.TeacherService;
 import com.kursova.bll.services.StudentService;
+import com.kursova.dal.entities.EducationLevel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * Public REST Controller for general information access
@@ -120,6 +125,22 @@ public class PublicController {
             @RequestParam @Parameter(description = "Search term") String q) {
         List<StudentDto> students = studentService.searchByName(q);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/education-levels")
+    @Operation(summary = "Get all education levels", description = "Retrieves all available education levels")
+    public ResponseEntity<List<Map<String, Object>>> getEducationLevels() {
+        List<Map<String, Object>> levels = Arrays.stream(EducationLevel.values())
+                .map(level -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("value", level.name());
+                    map.put("label", level.getDisplayName());
+                    map.put("minCourse", level.getMinCourse());
+                    map.put("maxCourse", level.getMaxCourse());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(levels);
     }
 
     /**

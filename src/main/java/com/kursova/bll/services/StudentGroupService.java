@@ -57,4 +57,9 @@ public interface StudentGroupService extends BaseService<StudentGroupDto, Long> 
      * Find groups with students
      */
     List<StudentGroupDto> findGroupsWithStudents();
+
+    /**
+     * Find groups taught by specific teacher
+     */
+    List<StudentGroupDto> findGroupsByTeacherId(Long teacherId);
 }

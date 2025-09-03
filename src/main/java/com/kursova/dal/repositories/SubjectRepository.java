@@ -26,6 +26,16 @@ public interface SubjectRepository extends BaseRepository<Subject, Long> {
     List<Subject> findByIsActiveTrueOrderBySubjectNameAsc();
 
     /**
+     * Find active subjects with groups loaded
+     */
+    @Query("SELECT DISTINCT s FROM Subject s " +
+           "LEFT JOIN FETCH s.groups " +
+           "LEFT JOIN FETCH s.teachers " +
+           "WHERE s.isActive = true " +
+           "ORDER BY s.subjectName ASC")
+    List<Subject> findActiveSubjectsWithGroups();
+
+    /**
      * Find subjects by assessment type
      */
     List<Subject> findByAssessmentTypeAndIsActiveTrueOrderBySubjectNameAsc(AssessmentType assessmentType);
@@ -45,6 +55,16 @@ public interface SubjectRepository extends BaseRepository<Subject, Long> {
      */
     @Query("SELECT DISTINCT s FROM Subject s JOIN s.teachers t WHERE t.id = :teacherId AND s.isActive = true")
     List<Subject> findByTeacherId(@Param("teacherId") Long teacherId);
+
+    /**
+     * Find subjects taught by teacher with groups loaded
+     */
+    @Query("SELECT DISTINCT s FROM Subject s " +
+           "LEFT JOIN FETCH s.groups " +
+           "LEFT JOIN FETCH s.teachers t " +
+           "WHERE t.id = :teacherId AND s.isActive = true " +
+           "ORDER BY s.subjectName ASC")
+    List<Subject> findByTeacherIdWithGroups(@Param("teacherId") Long teacherId);
 
     /**
      * Search subjects by name

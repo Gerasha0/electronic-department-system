@@ -43,6 +43,7 @@ public class SubjectDto {
     private String updatedAt;
 
     private List<TeacherDto> teachers;
+    private Integer groupCount; // Number of groups assigned to this subject
 
     // Constructors
     public SubjectDto() {}
@@ -174,6 +175,14 @@ public class SubjectDto {
 
     public void setTeachers(List<TeacherDto> teachers) {
         this.teachers = teachers;
+    }
+
+    public Integer getGroupCount() {
+        return groupCount;
+    }
+
+    public void setGroupCount(Integer groupCount) {
+        this.groupCount = groupCount;
     }
 
     // Helper methods

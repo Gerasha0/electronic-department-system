@@ -95,13 +95,19 @@ public interface StudentRepository extends BaseRepository<Student, Long> {
     Long countByGroupId(@Param("groupId") Long groupId);
 
     /**
-     * Find students taught by specific teacher
+     * Find students taught by specific teacher (either have grades or study subjects taught by teacher)
      */
-    @Query("SELECT s FROM Student s WHERE s.isActive = true AND s.id IN (" +
-           "SELECT DISTINCT g.student.id FROM Grade g " +
-           "JOIN g.subject sub " +
-           "JOIN sub.teachers t " +
-           "WHERE t.id = :teacherId) " +
-           "ORDER BY s.user.lastName, s.user.firstName")
+    @Query("SELECT s FROM Student s " +
+           "WHERE s.isActive = true AND (" +
+           "    s.id IN (SELECT DISTINCT g.student.id FROM Grade g " +
+           "             JOIN g.subject sub " +
+           "             JOIN sub.teachers t " +
+           "             WHERE t.id = :teacherId) " +
+           "    OR " +
+           "    s.group.id IN (SELECT DISTINCT sg.id FROM StudentGroup sg " +
+           "                   JOIN sg.subjects sub " +
+           "                   JOIN sub.teachers t " +
+           "                   WHERE t.id = :teacherId AND sg.isActive = true)" +
+           ")")
     List<Student> findStudentsByTeacherId(@Param("teacherId") Long teacherId);
 }

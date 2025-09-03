@@ -72,4 +72,9 @@ public interface StudentService extends BaseService<StudentDto, Long> {
      * Remove student from group
      */
     StudentDto removeFromGroup(Long studentId);
+
+    /**
+     * Search students with group information for group assignment
+     */
+    List<Object> searchStudentsForGroup(String query, Long groupId);
 }

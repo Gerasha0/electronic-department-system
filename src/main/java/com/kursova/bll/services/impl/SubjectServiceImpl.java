@@ -4,16 +4,21 @@ import com.kursova.bll.dto.SubjectDto;
 import com.kursova.bll.dto.TeacherDto;
 import com.kursova.bll.mappers.SubjectMapper;
 import com.kursova.bll.mappers.TeacherMapper;
+import com.kursova.bll.mappers.StudentGroupMapper;
 import com.kursova.bll.services.SubjectService;
 import com.kursova.dal.entities.Subject;
 import com.kursova.dal.entities.Teacher;
+import com.kursova.dal.entities.StudentGroup;
 import com.kursova.dal.entities.AssessmentType;
 import com.kursova.dal.repositories.SubjectRepository;
 import com.kursova.dal.repositories.TeacherRepository;
+import com.kursova.dal.repositories.StudentGroupRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -25,28 +30,44 @@ public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
+    private final StudentGroupRepository groupRepository;
     private final SubjectMapper subjectMapper;
     private final TeacherMapper teacherMapper;
+    private final StudentGroupMapper groupMapper;
 
     public SubjectServiceImpl(SubjectRepository subjectRepository,
                              TeacherRepository teacherRepository,
+                             StudentGroupRepository groupRepository,
                              SubjectMapper subjectMapper,
-                             TeacherMapper teacherMapper) {
+                             TeacherMapper teacherMapper,
+                             StudentGroupMapper groupMapper) {
         this.subjectRepository = subjectRepository;
         this.teacherRepository = teacherRepository;
+        this.groupRepository = groupRepository;
         this.subjectMapper = subjectMapper;
         this.teacherMapper = teacherMapper;
+        this.groupMapper = groupMapper;
     }
 
-    // Helper method to add teachers to SubjectDto
+    // Helper method to add teachers and group count to SubjectDto
     private SubjectDto enrichWithTeachers(Subject subject) {
         SubjectDto dto = subjectMapper.toDto(subject);
+        
+        // Add teachers
         if (subject.getTeachers() != null && !subject.getTeachers().isEmpty()) {
             List<TeacherDto> teacherDtos = subject.getTeachers().stream()
                 .map(teacherMapper::toDto)
                 .collect(Collectors.toList());
             dto.setTeachers(teacherDtos);
         }
+        
+        // Add group count
+        if (subject.getGroups() != null) {
+            dto.setGroupCount(subject.getGroups().size());
+        } else {
+            dto.setGroupCount(0);
+        }
+        
         return dto;
     }
 
@@ -150,7 +171,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public List<SubjectDto> findActiveSubjects() {
-        return subjectRepository.findByIsActiveTrueOrderBySubjectNameAsc()
+        return subjectRepository.findActiveSubjectsWithGroups()
             .stream()
             .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
@@ -190,7 +211,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public List<SubjectDto> findByTeacherId(Long teacherId) {
-        return subjectRepository.findByTeacherId(teacherId)
+        return subjectRepository.findByTeacherIdWithGroups(teacherId)
             .stream()
             .map(this::enrichWithTeachers)
             .collect(Collectors.toList());
@@ -259,5 +280,109 @@ public class SubjectServiceImpl implements SubjectService {
         subject.setIsActive(false);
         Subject savedSubject = subjectRepository.save(subject);
         return subjectMapper.toDto(savedSubject);
+    }
+
+    @Override
+    public List<Object> getAssignedGroups(Long subjectId) {
+        try {
+            Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+            
+            return subject.getGroups().stream()
+                .map(group -> {
+                    var dto = groupMapper.toDto(group);
+                    return (Object) dto;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<Object> getAvailableGroups(Long subjectId) {
+        try {
+            Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+            
+            // Get all groups except those already assigned to this subject
+            List<StudentGroup> allGroups = groupRepository.findAll();
+            Set<StudentGroup> assignedGroups = subject.getGroups();
+            
+            return allGroups.stream()
+                .filter(group -> !assignedGroups.contains(group))
+                .map(group -> {
+                    var dto = groupMapper.toDto(group);
+                    return (Object) dto;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    @Transactional
+    public void addGroupToSubject(Long subjectId, Long groupId) {
+        Subject subject = subjectRepository.findById(subjectId)
+            .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+        
+        StudentGroup group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new RuntimeException("Group not found with id: " + groupId));
+        
+        subject.getGroups().add(group);
+        subjectRepository.save(subject);
+    }
+
+    @Override
+    @Transactional
+    public void removeGroupFromSubject(Long subjectId, Long groupId) {
+        Subject subject = subjectRepository.findById(subjectId)
+            .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+        
+        StudentGroup group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new RuntimeException("Group not found with id: " + groupId));
+        
+        subject.getGroups().remove(group);
+        subjectRepository.save(subject);
+    }
+
+    @Override
+    public List<Object> getAssignedTeachers(Long subjectId) {
+        try {
+            Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+            
+            return subject.getTeachers().stream()
+                .map(teacher -> {
+                    var dto = teacherMapper.toDto(teacher);
+                    return (Object) dto;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public List<Object> getAvailableTeachers(Long subjectId) {
+        try {
+            Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new RuntimeException("Subject not found with id: " + subjectId));
+            
+            // Get all teachers except those already assigned
+            List<Teacher> allTeachers = teacherRepository.findAll();
+            List<Teacher> assignedTeachers = new ArrayList<>(subject.getTeachers());
+            
+            return allTeachers.stream()
+                .filter(teacher -> !assignedTeachers.contains(teacher))
+                .map(teacher -> {
+                    var dto = teacherMapper.toDto(teacher);
+                    return (Object) dto;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 }

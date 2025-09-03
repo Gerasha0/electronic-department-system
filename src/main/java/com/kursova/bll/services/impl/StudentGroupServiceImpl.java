@@ -198,4 +198,19 @@ public class StudentGroupServiceImpl implements StudentGroupService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentGroupDto> findGroupsByTeacherId(Long teacherId) {
+        // Find groups that are assigned to subjects taught by this teacher
+        return unitOfWork.getStudentGroupRepository().findGroupsByTeacherId(teacherId)
+                .stream()
+                .map(group -> {
+                    StudentGroupDto dto = groupMapper.toDto(group);
+                    long studentCount = unitOfWork.getStudentRepository().countByGroupId(group.getId());
+                    dto.setCurrentStudentCount((int) studentCount);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }

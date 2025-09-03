@@ -58,6 +58,9 @@ public class StudentGroup {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Student> students = new HashSet<>();
 
+    @ManyToMany(mappedBy = "groups", fetch = FetchType.LAZY)
+    private Set<Subject> subjects = new HashSet<>();
+
     // Constructors
     public StudentGroup() {}
 
@@ -193,6 +196,14 @@ public class StudentGroup {
 
     public void setStudents(Set<Student> students) {
         this.students = students;
+    }
+
+    public Set<Subject> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(Set<Subject> subjects) {
+        this.subjects = subjects;
     }
 
     // Helper methods

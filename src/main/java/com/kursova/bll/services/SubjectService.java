@@ -74,4 +74,34 @@ public interface SubjectService extends BaseService<SubjectDto, Long> {
      * Deactivate subject
      */
     SubjectDto deactivateSubject(Long subjectId);
+
+    /**
+     * Get groups assigned to subject
+     */
+    List<Object> getAssignedGroups(Long subjectId);
+
+    /**
+     * Get available groups for subject
+     */
+    List<Object> getAvailableGroups(Long subjectId);
+
+    /**
+     * Add group to subject
+     */
+    void addGroupToSubject(Long subjectId, Long groupId);
+
+    /**
+     * Remove group from subject
+     */
+    void removeGroupFromSubject(Long subjectId, Long groupId);
+
+    /**
+     * Get teachers assigned to subject
+     */
+    List<Object> getAssignedTeachers(Long subjectId);
+
+    /**
+     * Get available teachers for subject
+     */
+    List<Object> getAvailableTeachers(Long subjectId);
 }

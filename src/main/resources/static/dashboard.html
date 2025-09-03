@@ -84,22 +84,17 @@
                     <select id="grade-filter-group">
                         <option value="">Всі групи</option>
                     </select>
-                    <select id="grade-filter-type">
-                        <option value="">Всі типи</option>
-                        <option value="CURRENT">📝 Поточна</option>
-                        <option value="MODULE">📊 Модульна</option>
-                        <option value="MIDTERM">⚡ Проміжна</option>
-                        <option value="FINAL">🏆 Підсумкова</option>
+                    <select id="grade-filter-category">
+                        <option value="">Всі категорії</option>
+                        <option value="CURRENT">📝 Поточний контроль</option>
+                        <option value="FINAL">🏆 Підсумковий контроль</option>
                         <option value="RETAKE">🔄 Перездача</option>
                         <option value="MAKEUP">📝 Відпрацювання</option>
-                        <option value="EXAM">📝 Іспит</option>
-                        <option value="CREDIT">✅ Залік</option>
-                        <option value="COURSEWORK">📚 Курсова</option>
-                        <option value="LABORATORY">🔬 Лабораторна</option>
-                        <option value="PRACTICAL">🛠️ Практична</option>
-                        <option value="HOMEWORK">📖 Домашнє завдання</option>
                     </select>
-                    <button id="filter-grades" class="btn btn-primary">🔍 Фільтрувати</button>
+                    <select id="grade-filter-type">
+                        <option value="">Всі типи робіт</option>
+                        <!-- Динамічно заповнюється залежно від категорії -->
+                    </select>
                 </div>
                 <button id="add-grade-btn" class="btn btn-success">➕ Додати оцінку</button>
             </div>
@@ -109,15 +104,18 @@
                     <thead>
                         <tr>
                             <th>🎓 Студент</th>
-                            <th>📚 Дисципліна</th>
-                            <th>📋 Тип</th>
+                            <th>� Група</th>
+                            <th>�📚 Дисципліна</th>
+                            <th>📋 Категорія</th>
+                            <th>📝 Тип роботи</th>
                             <th>⭐ Оцінка</th>
                             <th>📅 Дата</th>
+                            <th>💬 Коментар</th>
                             <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="grades-tbody">
-                        <tr><td colspan="6"><div class="loading"></div></td></tr>
+                        <tr><td colspan="9"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -344,6 +342,7 @@
                             <th>👨‍🏫 Викладач</th>
                             <th>💳 Кредити</th>
                             <th>📅 Семестр</th>
+                            <th>👥 Кількість груп</th>
                             <th>⚙️ Дії</th>
                         </tr>
                     </thead>
@@ -388,6 +387,7 @@
                             <tr>
                                 <th>👥 Назва групи</th>
                                 <th>🏷️ Код групи</th>
+                                <th>🎓 Рівень освіти</th>
                                 <th>📖 Курс</th>
                                 <th>📚 Форма навчання</th>
                                 <th>📅 Дата архівації</th>
@@ -397,7 +397,7 @@
                             </tr>
                         </thead>
                         <tbody id="archive-groups-tbody">
-                            <tr><td colspan="8"><div class="loading"></div></td></tr>
+                            <tr><td colspan="9"><div class="loading"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -546,6 +546,138 @@
                     <button type="button" class="btn btn-secondary" onclick="dashboard.closeSubjectModal()">❌ Скасувати</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Subject Teachers Modal (Admin/Manager only) -->
+    <div id="subject-teachers-modal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="dashboard.closeSubjectTeachersModal()">&times;</span>
+            <h2 id="subject-teachers-modal-title">👨‍🏫 Управління викладачами предмета</h2>
+            
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-tab="assigned">✅ Призначені викладачі</button>
+                <button class="modal-tab-btn" data-tab="available">➕ Доступні викладачі</button>
+            </div>
+
+            <!-- Assigned Teachers Tab -->
+            <div id="assigned-teachers-tab" class="modal-tab-content active">
+                <h3>Викладачі, які ведуть цей предмет:</h3>
+                <div class="search-controls">
+                    <input type="text" id="assigned-teachers-search" placeholder="🔍 Пошук призначених викладачів...">
+                </div>
+                <div class="table-container" style="max-height: 300px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👤 Ім'я</th>
+                                <th>👤 Прізвище</th>
+                                <th>📧 Email</th>
+                                <th>🏢 Кафедра</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assigned-teachers-tbody">
+                            <tr><td colspan="5"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Available Teachers Tab -->
+            <div id="available-teachers-tab" class="modal-tab-content">
+                <h3>Доступні викладачі для призначення:</h3>
+                <div class="search-controls">
+                    <input type="text" id="available-teachers-search" placeholder="🔍 Пошук доступних викладачів...">
+                </div>
+                <div class="table-container" style="max-height: 300px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👤 Ім'я</th>
+                                <th>👤 Прізвище</th>
+                                <th>📧 Email</th>
+                                <th>🏢 Кафедра</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="available-teachers-tbody">
+                            <tr><td colspan="5"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Groups Modal (Admin/Manager only) -->
+    <div id="subject-groups-modal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="dashboard.closeSubjectGroupsModal()">&times;</span>
+            <h2 id="subject-groups-modal-title">📋 Управління групами предмета</h2>
+            
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-tab="assigned">✅ Призначені групи</button>
+                <button class="modal-tab-btn" data-tab="available">➕ Доступні групи</button>
+            </div>
+
+            <!-- Assigned Groups Tab -->
+            <div id="assigned-groups-tab" class="modal-tab-content active">
+                <h3>Групи, які вивчають цей предмет:</h3>
+                <div class="search-controls">
+                    <input type="text" id="assigned-groups-search" placeholder="🔍 Пошук призначених груп...">
+                </div>
+                <div class="table-container scrollable" style="max-height: 300px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👥 Назва групи</th>
+                                <th>🏷️ Код групи</th>
+                                <th>🎓 Рівень освіти</th>
+                                <th>📖 Курс</th>
+                                <th>📚 Форма навчання</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assigned-groups-tbody">
+                            <tr><td colspan="6"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Available Groups Tab -->
+            <div id="available-groups-tab" class="modal-tab-content">
+                <h3>Доступні групи для додавання:</h3>
+                <div class="search-controls">
+                    <input type="text" id="available-groups-search" placeholder="🔍 Пошук доступних груп...">
+                    <div class="filters">
+                        <select id="available-groups-education-filter">
+                            <option value="">🎓 Усі рівні освіти</option>
+                        </select>
+                        <select id="available-groups-course-filter">
+                            <option value="">📖 Усі курси</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container scrollable" style="max-height: 300px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👥 Назва групи</th>
+                                <th>🏷️ Код групи</th>
+                                <th>🎓 Рівень освіти</th>
+                                <th>📖 Курс</th>
+                                <th>📚 Форма навчання</th>
+                                <th>⚙️ Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="available-groups-tbody">
+                            <tr><td colspan="6"><div class="loading"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 

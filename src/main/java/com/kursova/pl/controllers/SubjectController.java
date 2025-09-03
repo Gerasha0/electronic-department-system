@@ -98,4 +98,62 @@ public class SubjectController {
         List<SubjectDto> subjects = subjectService.findActiveSubjects();
         return ResponseEntity.ok(subjects);
     }
+
+    // Subject Groups Management (Admin/Manager only)
+    @GetMapping("/{subjectId}/groups")
+    @Operation(summary = "Get groups assigned to subject", description = "Retrieve all groups assigned to a specific subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<Object>> getSubjectGroups(@PathVariable Long subjectId) {
+        List<Object> groups = subjectService.getAssignedGroups(subjectId);
+        return ResponseEntity.ok(groups);
+    }
+
+    @GetMapping("/{subjectId}/available-groups")
+    @Operation(summary = "Get available groups for subject", description = "Retrieve groups that can be assigned to a subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<Object>> getAvailableGroupsForSubject(@PathVariable Long subjectId) {
+        List<Object> groups = subjectService.getAvailableGroups(subjectId);
+        return ResponseEntity.ok(groups);
+    }
+
+    @PostMapping("/{subjectId}/groups/{groupId}")
+    @Operation(summary = "Add group to subject", description = "Assign a group to study a subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<String> addGroupToSubject(@PathVariable Long subjectId, @PathVariable Long groupId) {
+        try {
+            subjectService.addGroupToSubject(subjectId, groupId);
+            return ResponseEntity.ok("Group successfully added to subject");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error adding group to subject: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{subjectId}/groups/{groupId}")
+    @Operation(summary = "Remove group from subject", description = "Remove a group from studying a subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<String> removeGroupFromSubject(@PathVariable Long subjectId, @PathVariable Long groupId) {
+        try {
+            subjectService.removeGroupFromSubject(subjectId, groupId);
+            return ResponseEntity.ok("Group successfully removed from subject");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error removing group from subject: " + e.getMessage());
+        }
+    }
+
+    // Subject Teachers Management (Admin/Manager only)
+    @GetMapping("/{subjectId}/teachers")
+    @Operation(summary = "Get teachers assigned to subject", description = "Retrieve all teachers assigned to a specific subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<Object>> getSubjectTeachers(@PathVariable Long subjectId) {
+        List<Object> teachers = subjectService.getAssignedTeachers(subjectId);
+        return ResponseEntity.ok(teachers);
+    }
+
+    @GetMapping("/{subjectId}/available-teachers")
+    @Operation(summary = "Get available teachers for subject", description = "Retrieve teachers that can be assigned to a subject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<Object>> getAvailableTeachersForSubject(@PathVariable Long subjectId) {
+        List<Object> teachers = subjectService.getAvailableTeachers(subjectId);
+        return ResponseEntity.ok(teachers);
+    }
 }

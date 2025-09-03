@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -253,5 +256,62 @@ public class StudentServiceImpl implements StudentService {
         
         Student updatedStudent = unitOfWork.getStudentRepository().save(student);
         return mapStudentWithCalculatedData(updatedStudent);
+    }
+
+    @Override
+    public List<Object> searchStudentsForGroup(String query, Long groupId) {
+        try {
+            List<Student> allStudents = unitOfWork.getStudentRepository().findAll();
+            
+            return allStudents.stream()
+                .filter(student -> {
+                    if (student.getUser() == null) return false;
+                    
+                    String firstName = student.getUser().getFirstName() != null ? 
+                        student.getUser().getFirstName().toLowerCase() : "";
+                    String lastName = student.getUser().getLastName() != null ? 
+                        student.getUser().getLastName().toLowerCase() : "";
+                    String email = student.getUser().getEmail() != null ? 
+                        student.getUser().getEmail().toLowerCase() : "";
+                    String queryLower = query.toLowerCase();
+                    
+                    return firstName.contains(queryLower) || 
+                           lastName.contains(queryLower) || 
+                           email.contains(queryLower);
+                })
+                .map(student -> {
+                    StudentDto dto = mapStudentWithCalculatedData(student);
+                    
+                    // Add group information
+                    List<String> groupNames = new ArrayList<>();
+                    if (student.getGroup() != null) {
+                        groupNames.add(student.getGroup().getGroupName());
+                    }
+                    
+                    // Create a map with additional group info
+                    Map<String, Object> studentWithGroups = new HashMap<>();
+                    studentWithGroups.put("id", dto.getId());
+                    studentWithGroups.put("firstName", dto.getUser() != null ? dto.getUser().getFirstName() : "");
+                    studentWithGroups.put("lastName", dto.getUser() != null ? dto.getUser().getLastName() : "");
+                    studentWithGroups.put("email", dto.getUser() != null ? dto.getUser().getEmail() : "");
+                    studentWithGroups.put("user", dto.getUser());
+                    
+                    List<Map<String, Object>> groups = new ArrayList<>();
+                    if (student.getGroup() != null) {
+                        Map<String, Object> groupInfo = new HashMap<>();
+                        groupInfo.put("id", student.getGroup().getId());
+                        groupInfo.put("groupName", student.getGroup().getGroupName());
+                        groupInfo.put("name", student.getGroup().getGroupName());
+                        groups.add(groupInfo);
+                    }
+                    studentWithGroups.put("groups", groups);
+                    
+                    return (Object) studentWithGroups;
+                })
+                .collect(Collectors.toList());
+                
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 }
