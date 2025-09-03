@@ -19,6 +19,11 @@ public interface StudentGroupService extends BaseService<StudentGroupDto, Long> 
     List<StudentGroupDto> searchByName(String name);
 
     /**
+     * Search groups by name or group code
+     */
+    List<StudentGroupDto> searchByNameOrCode(String searchTerm);
+
+    /**
      * Find group by group code
      */
     StudentGroupDto findByGroupCode(String groupCode);

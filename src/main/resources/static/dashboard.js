@@ -138,7 +138,7 @@ class Dashboard {
             'students-nav': ['ADMIN', 'MANAGER', 'TEACHER'],         // ADMIN, MANAGER, TEACHER
             'groups-nav': ['ADMIN', 'MANAGER', 'TEACHER'],           // ADMIN, MANAGER, TEACHER
             'subjects-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT', 'GUEST'], // All users
-            'grades-nav': ['ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'],           // All except GUEST
+            'grades-nav': ['ADMIN', 'MANAGER', 'STUDENT'],           // All except GUEST and TEACHER
             'archive-nav': ['ADMIN']                                  // Only ADMIN
         };
 
@@ -290,10 +290,6 @@ class Dashboard {
             this.filterStudents();
         });
 
-        document.getElementById('student-filter-course')?.addEventListener('change', () => {
-            this.filterStudents();
-        });
-
         document.getElementById('student-filter-grade-min')?.addEventListener('input', () => {
             this.filterStudents();
         });
@@ -321,6 +317,23 @@ class Dashboard {
             if (e.key === 'Enter') {
                 this.searchGroups();
             }
+        });
+
+        // Group filters
+        document.getElementById('education-level-filter')?.addEventListener('change', () => {
+            this.filterGroups();
+        });
+
+        document.getElementById('course-filter')?.addEventListener('change', () => {
+            this.filterGroups();
+        });
+
+        document.getElementById('study-form-filter')?.addEventListener('change', () => {
+            this.filterGroups();
+        });
+
+        document.getElementById('enrollment-year-filter')?.addEventListener('change', () => {
+            this.filterGroups();
         });
 
         // Subject search
@@ -441,8 +454,6 @@ class Dashboard {
                 await this.loadUsersData();
                 break;
             case 'grades':
-                // Update section title for students
-                this.updateGradesSectionTitle();
                 await this.loadGradesData();
                 this.setupGradesFilters();
                 break;
@@ -709,7 +720,7 @@ class Dashboard {
             groups.forEach(group => {
                 const option = document.createElement('option');
                 option.value = group.id;
-                option.textContent = group.groupName || group.name || `Група ${group.id}`;
+                option.textContent = group.name;
                 select.appendChild(option);
             });
         } catch (error) {
@@ -786,21 +797,6 @@ class Dashboard {
         if (studentSearchInput) {
             const isStudent = this.currentUser?.role === 'STUDENT';
             studentSearchInput.style.display = isStudent ? 'none' : 'block';
-        }
-        
-        // Hide group filter for STUDENT role since they only see their own grades
-        const groupFilter = document.getElementById('grade-filter-group');
-        if (groupFilter) {
-            const isStudent = this.currentUser?.role === 'STUDENT';
-            groupFilter.style.display = isStudent ? 'none' : 'block';
-        }
-    }
-
-    updateGradesSectionTitle() {
-        const sectionTitle = document.querySelector('#grades-section h2');
-        if (sectionTitle) {
-            const isStudent = this.currentUser?.role === 'STUDENT';
-            sectionTitle.textContent = isStudent ? 'Мої оцінки' : 'Управління оцінками';
         }
     }
 
@@ -1022,18 +1018,18 @@ class Dashboard {
         const tbody = document.getElementById('groups-tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = '<tr><td colspan="7"><div class="loading"></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8"><div class="loading"></div></td></tr>';
 
         try {
             const response = await apiClient.getGroups();
             if (response?.success && Array.isArray(response.data)) {
                 this.renderGroupsTable(response.data);
             } else {
-                tbody.innerHTML = '<tr><td colspan="7">Помилка завантаження груп</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження груп</td></tr>';
             }
         } catch (error) {
             console.error('Помилка завантаження груп:', error);
-            tbody.innerHTML = '<tr><td colspan="7">Помилка завантаження даних</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження даних</td></tr>';
         }
     }
 
@@ -1042,13 +1038,14 @@ class Dashboard {
         if (!tbody) return;
 
         if (!groups.length) {
-            tbody.innerHTML = '<tr><td colspan="7">Групи не знайдені</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Групи не знайдені</td></tr>';
             return;
         }
 
         tbody.innerHTML = groups.map(group => {
             const groupName = group.groupName || 'N/A';
             const groupCode = group.groupCode || 'N/A';
+            const educationLevel = this.translateEducationLevel(group.educationLevel) || 'N/A';
             const courseYear = group.courseYear || 'N/A';
             const studyForm = this.translateStudyForm(group.studyForm) || 'N/A';
             const studentCount = group.currentStudentCount || 0;
@@ -1073,6 +1070,7 @@ class Dashboard {
             <tr>
                 <td>${groupName}</td>
                 <td>${groupCode}</td>
+                <td>${educationLevel}</td>
                 <td>${courseYear}</td>
                 <td>${studyForm}</td>
                 <td>${studentCount}</td>
@@ -1125,6 +1123,7 @@ class Dashboard {
                         <div class="info-row">
                             <span><strong>🏷️ Код групи:</strong> ${group.groupCode}</span>
                             <span><strong>📖 Курс:</strong> ${group.courseYear}</span>
+                            <span><strong>🎓 Рівень освіти:</strong> ${this.translateEducationLevel(group.educationLevel)}</span>
                             <span><strong>📚 Форма навчання:</strong> ${this.translateStudyForm(group.studyForm)}</span>
                         </div>
                         <div class="info-row">
@@ -1612,28 +1611,13 @@ class Dashboard {
         tbody.innerHTML = subjects.map(subject => {
             // Extract proper fields from subject object
             const subjectName = subject.subjectName || 'N/A';
-            
-            // Extract teacher information properly
-            let teacherName = 'N/A';
-            if (subject.teacher && subject.teacher.user) {
-                teacherName = `${subject.teacher.user.firstName} ${subject.teacher.user.lastName}`;
-            } else if (subject.teachers && subject.teachers.length > 0) {
-                teacherName = subject.teachers.map(t => {
-                    if (t.user) {
-                        return `${t.user.firstName} ${t.user.lastName}`;
-                    } else if (t.fullName) {
-                        return t.fullName;
-                    } else {
-                        return 'N/A';
-                    }
-                }).join(', ');
-            }
-            
+            const teacherName = subject.teachers && subject.teachers.length > 0 
+                ? subject.teachers.map(t => t.user ? `${t.user.firstName} ${t.user.lastName}` : t.fullName).join(', ')
+                : 'N/A';
             const credits = subject.credits || 'N/A';
             const semester = subject.semester || 'N/A';
             
             const isGuest = this.currentUser?.role === 'GUEST';
-            const isTeacher = this.currentUser?.role === 'TEACHER';
             
             return `
             <tr>
@@ -1645,8 +1629,8 @@ class Dashboard {
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-primary" onclick="dashboard.viewSubject(${subject.id})">Переглянути</button>
-                        ${!isTeacher ? `<button class="btn btn-sm btn-warning" onclick="dashboard.editSubject(${subject.id})">Редагувати</button>` : ''}
-                        ${!isTeacher ? `<button class="btn btn-sm btn-danger" onclick="dashboard.deleteSubject(${subject.id})">Видалити</button>` : ''}
+                        <button class="btn btn-sm btn-warning" onclick="dashboard.editSubject(${subject.id})">Редагувати</button>
+                        <button class="btn btn-sm btn-danger" onclick="dashboard.deleteSubject(${subject.id})">Видалити</button>
                     </div>
                 </td>
                 ` : ''}
@@ -1684,7 +1668,7 @@ class Dashboard {
                 </div>
                 <div class="form-group">
                     <label>Роль:</label>
-                    <select name="role" id="user-role-select" required>
+                    <select name="role" required>
                         <option value="STUDENT">Студент</option>
                         <option value="TEACHER">Викладач</option>
                         <option value="MANAGER">Менеджер</option>
@@ -1692,90 +1676,12 @@ class Dashboard {
                         <option value="GUEST">Гість</option>
                     </select>
                 </div>
-                <!-- Student specific fields -->
-                <div id="student-fields" style="display: none;">
-                    <div class="form-group">
-                        <label>Номер студента:</label>
-                        <input type="text" name="studentNumber" placeholder="Наприклад: S2024001">
-                    </div>
-                    <div class="form-group">
-                        <label>Рік вступу:</label>
-                        <input type="number" name="enrollmentYear" min="2000" max="2030" value="2024">
-                    </div>
-                    <div class="form-group">
-                        <label>Рівень освіти:</label>
-                        <select name="educationLevel">
-                            <option value="BACHELOR">Бакалавр</option>
-                            <option value="MASTER">Магістр</option>
-                            <option value="PHD">Аспірант</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Курс:</label>
-                        <select name="courseYear" id="course-year-select">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Форма навчання:</label>
-                        <select name="studyForm">
-                            <option value="FULL_TIME">Денна</option>
-                            <option value="PART_TIME">Заочна</option>
-                            <option value="DISTANCE">Дистанційна</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Телефон:</label>
-                        <input type="text" name="phoneNumber" placeholder="+380...">
-                    </div>
-                    <div class="form-group">
-                        <label>Адреса:</label>
-                        <textarea name="address" placeholder="Адреса проживання"></textarea>
-                    </div>
-                </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success">Створити</button>
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').style.display='none'">Скасувати</button>
                 </div>
             </form>
         `;
-
-        // Add event listeners for role change and education level change
-        const roleSelect = document.getElementById('user-role-select');
-        const studentFields = document.getElementById('student-fields');
-        const educationLevelSelect = document.querySelector('select[name="educationLevel"]');
-        const courseYearSelect = document.getElementById('course-year-select');
-
-        // Toggle student fields based on role
-        roleSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'STUDENT') {
-                studentFields.style.display = 'block';
-            } else {
-                studentFields.style.display = 'none';
-            }
-        });
-
-        // Update course options based on education level
-        educationLevelSelect.addEventListener('change', (e) => {
-            const level = e.target.value;
-            courseYearSelect.innerHTML = '';
-            
-            let maxCourses = 4;
-            if (level === 'BACHELOR') maxCourses = 5;
-            else if (level === 'MASTER') maxCourses = 2;
-            else if (level === 'PHD') maxCourses = 4;
-            
-            for (let i = 1; i <= maxCourses; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i;
-                courseYearSelect.appendChild(option);
-            }
-        });
 
         // Handle form submission
         document.getElementById('add-user-form').addEventListener('submit', async (e) => {
@@ -1785,39 +1691,15 @@ class Dashboard {
             const password = userData.password;
             delete userData.password;
 
-            try {
-                const response = await apiClient.createUserWithPassword(userData, password);
-                if (response?.success && userData.role === 'STUDENT') {
-                    // If user is a student, create student record
-                    const studentData = {
-                        userId: response.data.id,
-                        studentNumber: userData.studentNumber,
-                        enrollmentYear: parseInt(userData.enrollmentYear),
-                        courseYear: parseInt(userData.courseYear),
-                        educationLevel: userData.educationLevel,
-                        studyForm: userData.studyForm,
-                        phoneNumber: userData.phoneNumber || null,
-                        address: userData.address || null
-                    };
-                    
-                    try {
-                        await apiClient.createStudent(studentData);
-                    } catch (studentError) {
-                        console.error('Error creating student record:', studentError);
-                        alert('Користувача створено, але виникла помилка при створенні запису студента');
-                    }
-                }
-                
-                if (response?.success) {
-                    modal.style.display = 'none';
-                    this.loadUsersData();
-                    alert('Користувача створено успішно!');
-                } else {
-                    throw new Error(response?.data?.message || response?.error || 'Невідома помилка');
-                }
-            } catch (error) {
-                console.error('Error creating user:', error);
-                const errorMessage = error.message || 'Невідома помилка';
+            const response = await apiClient.createUserWithPassword(userData, password);
+            if (response?.success) {
+                modal.style.display = 'none';
+                this.loadUsersData();
+                alert('Користувача створено успішно!');
+            } else {
+                const errorMessage = typeof response?.data === 'string' 
+                    ? response.data 
+                    : (response?.data?.message || response?.error || 'Невідома помилка');
                 alert('Помилка створення користувача: ' + errorMessage);
             }
         });
@@ -2237,106 +2119,8 @@ class Dashboard {
         alert(`Перегляд викладача ID: ${teacherId}. Функція буде реалізована пізніше.`);
     }
 
-    async viewSubject(subjectId) {
-        try {
-            // Get subject details
-            const subjectResponse = await apiClient.getSubjectById(subjectId);
-            const subject = subjectResponse?.success ? subjectResponse.data : subjectResponse;
-            
-            if (!subject) {
-                alert('Помилка завантаження інформації про дисципліну');
-                return;
-            }
-
-            // Get groups for this subject
-            const groupsResponse = await apiClient.getGroups();
-            const allGroups = groupsResponse?.success ? groupsResponse.data : (Array.isArray(groupsResponse) ? groupsResponse : []);
-            
-            // Filter groups that study this subject (for now show all groups)
-            const subjectGroups = allGroups;
-
-            this.showSubjectModal(subject, subjectGroups);
-        } catch (error) {
-            console.error('Error loading subject details:', error);
-            alert('Помилка завантаження інформації про дисципліну');
-        }
-    }
-
-    showSubjectModal(subject, groups) {
-        const teacherName = subject.teacher && subject.teacher.user 
-            ? `${subject.teacher.user.firstName} ${subject.teacher.user.lastName}` 
-            : 'N/A';
-
-        const modalHtml = `
-            <div id="subjectViewModal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="dashboard.closeSubjectModal()">&times;</span>
-                    <h2>📚 ${subject.subjectName}</h2>
-                    
-                    <div class="subject-info">
-                        <div class="info-section">
-                            <h3>Інформація про дисципліну</h3>
-                            <p><strong>Назва:</strong> ${subject.subjectName}</p>
-                            <p><strong>Викладач:</strong> ${teacherName}</p>
-                            <p><strong>Кредити:</strong> ${subject.credits || 'N/A'}</p>
-                            <p><strong>Семестр:</strong> ${subject.semester || 'N/A'}</p>
-                            ${subject.description ? `<p><strong>Опис:</strong> ${subject.description}</p>` : ''}
-                        </div>
-                        
-                        <div class="groups-section">
-                            <h3>Групи, що вивчають дисципліну</h3>
-                            ${groups.length > 0 ? `
-                                <div class="table-container">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>📚 Група</th>
-                                                <th>👥 Кількість студентів</th>
-                                                <th>📖 Курс</th>
-                                                <th>📚 Форма навчання</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${groups.map(group => `
-                                                <tr>
-                                                    <td>${group.groupName || 'N/A'}</td>
-                                                    <td>${group.currentStudentCount || 0}</td>
-                                                    <td>${group.courseYear || 'N/A'}</td>
-                                                    <td>${this.translateStudyForm(group.studyForm) || 'N/A'}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ` : '<p>Немає груп, що вивчають цю дисципліну</p>'}
-                        </div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button class="btn btn-secondary" onclick="dashboard.closeSubjectModal()">Закрити</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove existing modal if any
-        const existingModal = document.getElementById('subjectViewModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Add new modal
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Show modal
-        document.getElementById('subjectViewModal').style.display = 'block';
-    }
-
-    closeSubjectModal() {
-        const modal = document.getElementById('subjectViewModal');
-        if (modal) {
-            modal.remove();
-        }
+    viewSubject(subjectId) {
+        alert(`Перегляд предмету ID: ${subjectId}. Функція буде реалізована пізніше.`);
     }
 
     async viewStudentGrades(studentId) {
@@ -2590,10 +2374,10 @@ class Dashboard {
             }
 
             if (response?.success || response?.id) {
-                const subjectId = response.id || this.currentSubject.id;
+                const subjectId = response?.data?.id || response?.id || this.currentSubject?.id;
                 
                 // Assign teacher if selected
-                if (teacherId) {
+                if (teacherId && subjectId) {
                     try {
                         await apiClient.assignTeacherToSubject(subjectId, teacherId);
                     } catch (error) {
@@ -2717,7 +2501,6 @@ class Dashboard {
     // Filter students based on current filter values
     filterStudents() {
         const groupFilter = document.getElementById('student-filter-group')?.value || '';
-        const courseFilter = document.getElementById('student-filter-course')?.value || '';
         const gradeMin = parseFloat(document.getElementById('student-filter-grade-min')?.value) || 0;
         const gradeMax = parseFloat(document.getElementById('student-filter-grade-max')?.value) || 100;
 
@@ -2728,28 +2511,6 @@ class Dashboard {
             filteredStudents = filteredStudents.filter(student => 
                 student.group && student.group.id && student.group.id.toString() === groupFilter
             );
-        }
-
-        // Filter by course
-        if (courseFilter) {
-            filteredStudents = filteredStudents.filter(student => {
-                const [level, courseNum] = courseFilter.split('-');
-                const studentEducationLevel = student.educationLevel;
-                const studentCourse = student.course || student.courseYear || 0;
-                
-                if (level === 'bachelor' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return studentEducationLevel === 'BACHELOR' && studentCourse === targetCourse;
-                } else if (level === 'master' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return studentEducationLevel === 'MASTER' && studentCourse === targetCourse;
-                } else if (level === 'phd' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return studentEducationLevel === 'PHD' && studentCourse === targetCourse;
-                }
-                
-                return true;
-            });
         }
 
         // Filter by average grade
@@ -2770,7 +2531,6 @@ class Dashboard {
         
         // Get filtered students from the table (or refilter)
         const groupFilter = document.getElementById('student-filter-group')?.value || '';
-        const courseFilter = document.getElementById('student-filter-course')?.value || '';
         const gradeMin = parseFloat(document.getElementById('student-filter-grade-min')?.value) || 0;
         const gradeMax = parseFloat(document.getElementById('student-filter-grade-max')?.value) || 100;
 
@@ -2781,27 +2541,6 @@ class Dashboard {
             filteredStudents = filteredStudents.filter(student => 
                 student.group && student.group.id && student.group.id.toString() === groupFilter
             );
-        }
-
-        // Filter by course
-        if (courseFilter) {
-            filteredStudents = filteredStudents.filter(student => {
-                const course = student.course || 0;
-                const [level, courseNum] = courseFilter.split('-');
-                
-                if (level === 'bachelor' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return course === targetCourse && course >= 1 && course <= 5;
-                } else if (level === 'master' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return course === targetCourse && course >= 1 && course <= 2;
-                } else if (level === 'phd' && courseNum) {
-                    const targetCourse = parseInt(courseNum);
-                    return course === targetCourse && course >= 1 && course <= 4;
-                }
-                
-                return true;
-            });
         }
 
         filteredStudents = filteredStudents.filter(student => {
@@ -2824,10 +2563,6 @@ class Dashboard {
                     return (b.averageGrade || 0) - (a.averageGrade || 0);
                 case 'grade-asc':
                     return (a.averageGrade || 0) - (b.averageGrade || 0);
-                case 'course-asc':
-                    return (a.course || 0) - (b.course || 0);
-                case 'course-desc':
-                    return (b.course || 0) - (a.course || 0);
                 default:
                     return 0;
             }
@@ -2837,21 +2572,71 @@ class Dashboard {
     }
 
     async searchGroups() {
+        await this.filterGroups();
+    }
+
+    async filterGroups() {
         const searchInput = document.getElementById('group-search');
-        const searchTerm = searchInput?.value?.trim();
+        const educationLevelFilter = document.getElementById('education-level-filter');
+        const courseFilter = document.getElementById('course-filter');
+        const studyFormFilter = document.getElementById('study-form-filter');
+        const enrollmentYearFilter = document.getElementById('enrollment-year-filter');
         
-        if (!searchTerm) {
+        const searchTerm = searchInput?.value?.trim();
+        const educationLevel = educationLevelFilter?.value;
+        const course = courseFilter?.value;
+        const studyForm = studyFormFilter?.value;
+        const enrollmentYear = enrollmentYearFilter?.value;
+        
+        // If no filters applied, load all groups
+        if (!searchTerm && !educationLevel && !course && !studyForm && !enrollmentYear) {
             await this.loadGroupsData();
             return;
         }
         
         try {
-            const response = await apiClient.searchGroups(searchTerm);
-            if (response?.success && Array.isArray(response.data)) {
-                this.renderGroupsTable(response.data);
+            let groups = [];
+            
+            // If search term is provided, use search API
+            if (searchTerm) {
+                const response = await apiClient.searchGroups(searchTerm);
+                groups = response?.success ? response.data : [];
+            } else {
+                // Otherwise load all groups for filtering
+                const response = await apiClient.getGroups();
+                groups = response?.success ? response.data : [];
             }
+            
+            // Apply client-side filters
+            let filteredGroups = groups.filter(group => {
+                let matches = true;
+                
+                // Education level filter
+                if (educationLevel && group.educationLevel !== educationLevel) {
+                    matches = false;
+                }
+                
+                // Course filter
+                if (course && group.courseYear !== parseInt(course)) {
+                    matches = false;
+                }
+                
+                // Study form filter
+                if (studyForm && group.studyForm !== studyForm) {
+                    matches = false;
+                }
+                
+                // Enrollment year filter
+                if (enrollmentYear && group.enrollmentYear !== parseInt(enrollmentYear)) {
+                    matches = false;
+                }
+                
+                return matches;
+            });
+            
+            this.renderGroupsTable(filteredGroups);
         } catch (error) {
-            console.error('Помилка пошуку груп:', error);
+            console.error('Помилка фільтрації груп:', error);
         }
     }
 
@@ -2894,39 +2679,33 @@ class Dashboard {
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="group-education-level">🎓 Освітній рівень:</label>
+                        <label for="group-education-level">🎓 Рівень освіти:</label>
                         <select id="group-education-level" name="educationLevel" required>
-                            <option value="">Оберіть освітній рівень</option>
+                            <option value="">Оберіть рівень освіти</option>
                             <option value="BACHELOR" ${group?.educationLevel === 'BACHELOR' ? 'selected' : ''}>🎓 Бакалавр (1-5 курс)</option>
                             <option value="MASTER" ${group?.educationLevel === 'MASTER' ? 'selected' : ''}>🎯 Магістр (1-2 курс)</option>
-                            <option value="PHD" ${group?.educationLevel === 'PHD' ? 'selected' : ''}>🔬 Аспірант (1-4 рік)</option>
+                            <option value="PHD" ${group?.educationLevel === 'PHD' ? 'selected' : ''}>👨‍🔬 Аспірант (1-4 курс)</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="group-course">📖 Курс:</label>
                         <select id="group-course" name="courseYear" required>
-                            <option value="">Оберіть курс</option>
-                            <option value="1" ${group?.courseYear === 1 ? 'selected' : ''}>1 курс</option>
-                            <option value="2" ${group?.courseYear === 2 ? 'selected' : ''}>2 курс</option>
-                            <option value="3" ${group?.courseYear === 3 ? 'selected' : ''}>3 курс</option>
-                            <option value="4" ${group?.courseYear === 4 ? 'selected' : ''}>4 курс</option>
-                            <option value="5" ${group?.courseYear === 5 ? 'selected' : ''}>5 курс</option>
-                        </select>
-                    </div>
-                </div>
-                    <div class="form-group">
-                        <label for="group-study-form">📚 Форма навчання:</label>
-                        <select id="group-study-form" name="studyForm" required>
-                            <option value="">Оберіть форму навчання</option>
-                            <option value="FULL_TIME" ${group?.studyForm === 'FULL_TIME' ? 'selected' : ''}>🎓 Денна</option>
-                            <option value="PART_TIME" ${group?.studyForm === 'PART_TIME' ? 'selected' : ''}>🌙 Вечірня</option>
-                            <option value="CORRESPONDENCE" ${group?.studyForm === 'CORRESPONDENCE' ? 'selected' : ''}>📮 Заочна</option>
-                            <option value="DISTANCE" ${group?.studyForm === 'DISTANCE' ? 'selected' : ''}>💻 Дистанційна</option>
+                            <option value="">Спочатку оберіть рівень освіти</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="group-study-form">📚 Форма навчання:</label>
+                        <select id="group-study-form" name="studyForm" required>
+                            <option value="">Оберіть форму навчання</option>
+                            <option value="FULL_TIME" ${group?.studyForm === 'FULL_TIME' ? 'selected' : ''}>🎓 Денна</option>
+                            <option value="EVENING" ${group?.studyForm === 'EVENING' ? 'selected' : ''}>🌙 Вечірня</option>
+                            <option value="PART_TIME" ${group?.studyForm === 'PART_TIME' ? 'selected' : ''}>📮 Заочна</option>
+                            <option value="DISTANCE" ${group?.studyForm === 'DISTANCE' ? 'selected' : ''}>💻 Дистанційна</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="group-enrollment-year">📅 Рік вступу:</label>
                         <input type="number" id="group-enrollment-year" name="enrollmentYear" 
@@ -2934,6 +2713,9 @@ class Dashboard {
                                value="${group?.enrollmentYear || new Date().getFullYear()}" 
                                required>
                     </div>
+                </div>
+                
+                <div class="form-row">
                     <div class="form-group">
                         <label for="group-max-students">👥 Максимум студентів (необов'язково):</label>
                         <input type="number" id="group-max-students" name="maxStudents" 
@@ -2941,14 +2723,13 @@ class Dashboard {
                                value="${group?.maxStudents || ''}" 
                                placeholder="Наприклад: 25">
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="group-specialization">📚 Спеціалізація (необов'язково):</label>
-                    <input type="text" id="group-specialization" name="specialization" 
-                           value="${group?.specialization || ''}" 
-                           placeholder="Наприклад: Комп'ютерні науки" 
-                           maxlength="200">
+                    <div class="form-group">
+                        <label for="group-specialization">📚 Спеціалізація (необов'язково):</label>
+                        <input type="text" id="group-specialization" name="specialization" 
+                               value="${group?.specialization || ''}" 
+                               placeholder="Наприклад: Комп'ютерні науки" 
+                               maxlength="200">
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -2977,19 +2758,7 @@ class Dashboard {
         await this.loadStudentsForGroup(group);
 
         // Setup education level change handler
-        const educationLevelSelect = document.getElementById('group-education-level');
-        const courseSelect = document.getElementById('group-course');
-        
-        if (educationLevelSelect && courseSelect) {
-            educationLevelSelect.addEventListener('change', () => {
-                this.updateCourseOptions(educationLevelSelect.value, courseSelect);
-            });
-            
-            // Initialize course options based on current selection
-            if (educationLevelSelect.value) {
-                this.updateCourseOptions(educationLevelSelect.value, courseSelect);
-            }
-        }
+        this.setupEducationLevelHandler(group);
 
         // Handle form submission
         document.getElementById('group-form').addEventListener('submit', async (e) => {
@@ -3000,28 +2769,46 @@ class Dashboard {
         modal.style.display = 'block';
     }
 
-    updateCourseOptions(educationLevel, courseSelect) {
-        let options = '<option value="">Оберіть курс</option>';
-        
-        switch (educationLevel) {
-            case 'BACHELOR':
-                for (let i = 1; i <= 5; i++) {
-                    options += `<option value="${i}">${i} курс</option>`;
+    setupEducationLevelHandler(group = null) {
+        const educationLevelSelect = document.getElementById('group-education-level');
+        const courseSelect = document.getElementById('group-course');
+
+        if (!educationLevelSelect || !courseSelect) return;
+
+        // Education level course mapping
+        const courseMappings = {
+            'BACHELOR': { min: 1, max: 5, label: 'Бакалавр' },
+            'MASTER': { min: 1, max: 2, label: 'Магістр' },
+            'PHD': { min: 1, max: 4, label: 'Аспірант' }
+        };
+
+        const updateCourseOptions = (educationLevel) => {
+            courseSelect.innerHTML = '<option value="">Оберіть курс</option>';
+            
+            if (educationLevel && courseMappings[educationLevel]) {
+                const mapping = courseMappings[educationLevel];
+                for (let i = mapping.min; i <= mapping.max; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} курс`;
+                    // Preserve selected course if editing existing group
+                    if (group?.courseYear === i && group?.educationLevel === educationLevel) {
+                        option.selected = true;
+                    }
+                    courseSelect.appendChild(option);
                 }
-                break;
-            case 'MASTER':
-                for (let i = 1; i <= 2; i++) {
-                    options += `<option value="${i}">${i} курс</option>`;
-                }
-                break;
-            case 'PHD':
-                for (let i = 1; i <= 4; i++) {
-                    options += `<option value="${i}">${i} рік</option>`;
-                }
-                break;
+            }
+        };
+
+        // Handle education level change
+        educationLevelSelect.addEventListener('change', (e) => {
+            updateCourseOptions(e.target.value);
+        });
+
+        // Initialize course options if editing existing group
+        if (group?.educationLevel) {
+            updateCourseOptions(group.educationLevel);
         }
-        
-        courseSelect.innerHTML = options;
     }
 
     async loadStudentsForGroup(group = null) {
@@ -3116,6 +2903,7 @@ class Dashboard {
             groupName: formData.get('groupName'),
             groupCode: formData.get('groupCode'),
             courseYear: parseInt(formData.get('courseYear')),
+            educationLevel: formData.get('educationLevel'),
             studyForm: formData.get('studyForm'),
             enrollmentYear: parseInt(formData.get('enrollmentYear')),
             maxStudents: formData.get('maxStudents') ? parseInt(formData.get('maxStudents')) : null,
@@ -3266,11 +3054,33 @@ class Dashboard {
     translateStudyForm(studyForm) {
         const translations = {
             'FULL_TIME': '🎓 Денна',
-            'PART_TIME': '🌙 Вечірня',
-            'CORRESPONDENCE': '📮 Заочна',
+            'EVENING': '🌙 Вечірня',
+            'PART_TIME': '📮 Заочна',
             'DISTANCE': '💻 Дистанційна'
         };
         return translations[studyForm] || studyForm;
+    }
+    
+    translateEducationLevel(educationLevel) {
+        const translations = {
+            'BACHELOR': '🎓 Бакалавр',
+            'MASTER': '🎯 Магістр',
+            'PHD': '👨‍🔬 Аспірант'
+        };
+        return translations[educationLevel] || educationLevel;
+    }
+    
+    translateAssessmentType(assessmentType) {
+        const translations = {
+            'EXAM': '📝 Екзамен',
+            'TEST': '✅ Залік', 
+            'DIFFERENTIATED_CREDIT': '📊 Диференційований залік',
+            'COURSE_WORK': '📄 Курсова робота',
+            'QUALIFICATION_WORK': '🎓 Кваліфікаційна робота',
+            'ATTESTATION': '📋 Атестація',
+            'STATE_EXAM': '🏛️ Державний іспит'
+        };
+        return translations[assessmentType] || assessmentType;
     }
     
     showLoadingSpinner(buttonElement, originalText) {
@@ -3670,12 +3480,6 @@ class Dashboard {
                 button.style.display = visible ? 'inline-block' : 'none';
             }
         });
-
-        // Hide filter button for teachers in grades section
-        const filterGradesBtn = document.getElementById('filter-grades');
-        if (filterGradesBtn && role === 'TEACHER') {
-            filterGradesBtn.style.display = 'none';
-        }
     }
 }
 

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,16 +34,18 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final UnitOfWork unitOfWork;
     private final TeacherMapper teacherMapper;
-    private final SubjectMapper subjectMapper;
     private final GradeMapper gradeMapper;
+    private final SubjectMapper subjectMapper;
     private final StudentService studentService;
 
     @Autowired
-    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, SubjectMapper subjectMapper, GradeMapper gradeMapper, StudentService studentService) {
+    public TeacherServiceImpl(UnitOfWork unitOfWork, TeacherMapper teacherMapper, 
+                             GradeMapper gradeMapper, SubjectMapper subjectMapper, 
+                             StudentService studentService) {
         this.unitOfWork = unitOfWork;
         this.teacherMapper = teacherMapper;
-        this.subjectMapper = subjectMapper;
         this.gradeMapper = gradeMapper;
+        this.subjectMapper = subjectMapper;
         this.studentService = studentService;
     }
 
@@ -257,23 +260,12 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StudentDto> findStudentsByTeacherId(Long teacherId) {
-        // Find students who have grades from this teacher or study subjects taught by this teacher
-        List<Student> students = unitOfWork.getStudentRepository().findStudentsByTeacherId(teacherId);
-        return students.stream()
-                .map(student -> studentService.findById(student.getId()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<SubjectDto> findSubjectsByTeacherId(Long teacherId) {
         Teacher teacher = unitOfWork.getTeacherRepository().findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
         
-        return teacher.getSubjects().stream()
-                .map(subjectMapper::toDto)
-                .collect(Collectors.toList());
+        List<Subject> subjects = new ArrayList<>(teacher.getSubjects());
+        return subjectMapper.toDtoList(subjects);
     }
 
     @Override
@@ -283,10 +275,17 @@ public class TeacherServiceImpl implements TeacherService {
         Teacher teacher = unitOfWork.getTeacherRepository().findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
         
-        List<Grade> grades = unitOfWork.getGradeRepository().findGradesByTeacherId(teacherId);
-        
-        return grades.stream()
-                .map(gradeMapper::toDto)
+        List<Grade> grades = unitOfWork.getGradeRepository().findByTeacherIdOrderByGradeDateDesc(teacherId);
+        return gradeMapper.toDtoList(grades);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentDto> findStudentsByTeacherId(Long teacherId) {
+        // Find students who have grades from this teacher or study subjects taught by this teacher
+        List<Student> students = unitOfWork.getStudentRepository().findStudentsByTeacherId(teacherId);
+        return students.stream()
+                .map(student -> studentService.findById(student.getId()))
                 .collect(Collectors.toList());
     }
 }

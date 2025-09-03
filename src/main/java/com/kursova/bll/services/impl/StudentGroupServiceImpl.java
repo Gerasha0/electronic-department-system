@@ -115,6 +115,16 @@ public class StudentGroupServiceImpl implements StudentGroupService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<StudentGroupDto> searchByNameOrCode(String searchTerm) {
+        return unitOfWork.getStudentGroupRepository()
+                .findByGroupNameContainingIgnoreCaseOrGroupCodeContainingIgnoreCase(searchTerm, searchTerm)
+                .stream()
+                .map(groupMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public StudentGroupDto findByGroupCode(String groupCode) {
         StudentGroup group = unitOfWork.getStudentGroupRepository().findByGroupCode(groupCode)
                 .orElseThrow(() -> new RuntimeException("StudentGroup not found with code: " + groupCode));

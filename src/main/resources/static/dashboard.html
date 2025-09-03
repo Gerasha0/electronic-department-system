@@ -208,39 +208,11 @@
                     <select id="student-filter-group">
                         <option value="">Всі групи</option>
                     </select>
-                    <select id="student-filter-course">
-                        <option value="">Всі курси</option>
-                        <optgroup label="🎓 Бакалавр">
-                            <option value="bachelor-1">1 курс</option>
-                            <option value="bachelor-2">2 курс</option>
-                            <option value="bachelor-3">3 курс</option>
-                            <option value="bachelor-4">4 курс</option>
-                            <option value="bachelor-5">5 курс</option>
-                        </optgroup>
-                        <optgroup label="🎯 Магістр">
-                            <option value="master-1">1 курс</option>
-                            <option value="master-2">2 курс</option>
-                        </optgroup>
-                        <optgroup label="🔬 Аспірант">
-                            <option value="phd-1">1 рік</option>
-                            <option value="phd-2">2 рік</option>
-                            <option value="phd-3">3 рік</option>
-                            <option value="phd-4">4 рік</option>
-                        </optgroup>
-                    </select>
-                    <div class="grade-filter-container">
-                        <label class="filter-label">⭐ Середній бал:</label>
-                        <div class="grade-range-filter">
-                            <div class="range-input-group">
-                                <label for="student-filter-grade-min">від:</label>
-                                <input type="number" id="student-filter-grade-min" min="0" max="100" value="0" class="grade-range-input">
-                            </div>
-                            <div class="range-separator">—</div>
-                            <div class="range-input-group">
-                                <label for="student-filter-grade-max">до:</label>
-                                <input type="number" id="student-filter-grade-max" min="0" max="100" value="100" class="grade-range-input">
-                            </div>
-                        </div>
+                    <div class="grade-filter-group">
+                        <label for="student-filter-grade-min">Середній бал від:</label>
+                        <input type="number" id="student-filter-grade-min" min="0" max="100" placeholder="0" class="grade-input">
+                        <label for="student-filter-grade-max">до:</label>
+                        <input type="number" id="student-filter-grade-max" min="0" max="100" placeholder="100" class="grade-input">
                     </div>
                     <div class="sort-group">
                         <label for="student-sort">Сортування:</label>
@@ -249,8 +221,6 @@
                             <option value="name-desc">👤 Ім'я (Я-А)</option>
                             <option value="grade-desc">⭐ Середній бал (↓)</option>
                             <option value="grade-asc">⭐ Середній бал (↑)</option>
-                            <option value="course-asc">📖 Курс (↑)</option>
-                            <option value="course-desc">📖 Курс (↓)</option>
                         </select>
                     </div>
                 </div>
@@ -282,8 +252,50 @@
             <div class="section-controls">
                 <div class="filters">
                     <div class="search-group">
-                        <input type="text" id="group-search" placeholder="🔍 Пошук груп...">
+                        <input type="text" id="group-search" placeholder="🔍 Пошук груп (назва або код)...">
                         <button id="search-groups" class="btn-icon" title="Пошук">🔍</button>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="education-level-filter">
+                            <option value="">🎓 Всі рівні освіти</option>
+                            <option value="BACHELOR">🎓 Бакалавр</option>
+                            <option value="MASTER">🎯 Магістр</option>
+                            <option value="PHD">👨‍🔬 Аспірант</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="course-filter">
+                            <option value="">📖 Всі курси</option>
+                            <option value="1">1 курс</option>
+                            <option value="2">2 курс</option>
+                            <option value="3">3 курс</option>
+                            <option value="4">4 курс</option>
+                            <option value="5">5 курс</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="study-form-filter">
+                            <option value="">📚 Всі форми навчання</option>
+                            <option value="FULL_TIME">🎓 Денна</option>
+                            <option value="EVENING">🌙 Вечірня</option>
+                            <option value="PART_TIME">📮 Заочна</option>
+                            <option value="DISTANCE">💻 Дистанційна</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="enrollment-year-filter">
+                            <option value="">📅 Всі роки вступу</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                        </select>
                     </div>
                 </div>
                 <button id="add-group" class="btn btn-success">➕ Додати групу</button>
@@ -295,6 +307,7 @@
                         <tr>
                             <th>👥 Назва групи</th>
                             <th>🏷️ Код групи</th>
+                            <th>🎓 Рівень освіти</th>
                             <th>📖 Курс</th>
                             <th>📚 Форма навчання</th>
                             <th>🎓 Кількість студентів</th>
@@ -474,12 +487,12 @@
                 
                 <div class="form-group">
                     <label for="subject-credits">💳 Кредити:</label>
-                    <input type="number" id="subject-credits" name="credits" min="1" max="10" required placeholder="1-10">
+                    <input type="number" id="subject-credits" name="credits" min="1" max="30" required placeholder="1-30">
                 </div>
                 
                 <div class="form-group">
                     <label for="subject-semester">📅 Семестр:</label>
-                    <input type="number" id="subject-semester" name="semester" min="1" max="8" required placeholder="1-8">
+                    <input type="number" id="subject-semester" name="semester" min="1" max="10" required placeholder="1-10">
                 </div>
                 
                 <div class="form-group">
@@ -508,9 +521,11 @@
                         <option value="">Оберіть тип оцінювання</option>
                         <option value="EXAM">📝 Екзамен</option>
                         <option value="TEST">✅ Залік</option>
-                        <option value="CREDIT">💳 Кредит</option>
-                        <option value="DIFFERENTIATED_CREDIT">📊 Диференційований залік</option>
-                        <option value="COURSE_WORK">📄 Курсова робота</option>
+                        <option value="DIFFERENTIATED_CREDIT">� Диференційований залік</option>
+                        <option value="COURSE_WORK">� Курсова робота</option>
+                        <option value="QUALIFICATION_WORK">🎓 Кваліфікаційна робота</option>
+                        <option value="ATTESTATION">📋 Атестація</option>
+                        <option value="STATE_EXAM">🏛️ Державний іспит</option>
                     </select>
                 </div>
                 

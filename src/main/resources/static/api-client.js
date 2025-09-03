@@ -159,13 +159,6 @@ class ApiClient {
         return await this.apiCall(`/api/students/${studentId}`);
     }
 
-    async createStudent(studentData) {
-        return await this.apiCall('/api/students', {
-            method: 'POST',
-            body: JSON.stringify(studentData)
-        });
-    }
-
     async getStudentsByTeacher(teacherId) {
         return await this.apiCall(`/api/teachers/${teacherId}/students`);
     }
@@ -240,10 +233,6 @@ class ApiClient {
     // Subject management methods
     async getSubjects() {
         return await this.apiCall('/api/subjects');
-    }
-    
-    async getSubjectById(id) {
-        return await this.apiCall(`/api/subjects/${id}`);
     }
     
     async createSubject(subjectData) {
@@ -468,19 +457,6 @@ class ApiClient {
         return await this.apiCall(`/api/archive/grades/${archivedGradeId}`, {
             method: 'DELETE'
         });
-    }
-
-    // Teacher-specific methods
-    async getStudentsByTeacher(teacherId) {
-        return await this.apiCall(`/api/teachers/${teacherId}/students`);
-    }
-
-    async getSubjectsByTeacher(teacherId) {
-        return await this.apiCall(`/api/teachers/${teacherId}/subjects`);
-    }
-
-    async getGradesByTeacher(teacherId) {
-        return await this.apiCall(`/api/teachers/${teacherId}/grades`);
     }
 }
 

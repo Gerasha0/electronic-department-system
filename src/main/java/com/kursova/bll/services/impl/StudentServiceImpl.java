@@ -175,10 +175,8 @@ public class StudentServiceImpl implements StudentService {
     private StudentDto mapStudentWithCalculatedData(Student student) {
         StudentDto dto = studentMapper.toDto(student);
 
-        // Use courseYear if available, otherwise calculate based on enrollment year
-        if (student.getCourseYear() != null) {
-            dto.setCourse(student.getCourseYear());
-        } else if (student.getEnrollmentYear() != null) {
+        // Calculate course based on enrollment year
+        if (student.getEnrollmentYear() != null) {
             int currentYear = LocalDateTime.now().getYear();
             int course = currentYear - student.getEnrollmentYear() + 1;
             // Course should be between 1 and 6 years

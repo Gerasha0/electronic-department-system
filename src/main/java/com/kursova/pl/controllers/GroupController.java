@@ -69,10 +69,10 @@ public class GroupController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
-    @Operation(summary = "Search groups by name", description = "Searches groups by name")
+    @Operation(summary = "Search groups by name or code", description = "Searches groups by name or group code")
     public ResponseEntity<List<StudentGroupDto>> searchGroupsByName(
             @RequestParam @Parameter(description = "Search term") String name) {
-        List<StudentGroupDto> groups = groupService.searchByName(name);
+        List<StudentGroupDto> groups = groupService.searchByNameOrCode(name);
         return ResponseEntity.ok(groups);
     }
 

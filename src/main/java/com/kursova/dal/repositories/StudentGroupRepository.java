@@ -93,6 +93,11 @@ public interface StudentGroupRepository extends BaseRepository<StudentGroup, Lon
     List<StudentGroup> findByGroupNameContainingIgnoreCase(String name);
 
     /**
+     * Search groups by name or group code (case insensitive)
+     */
+    List<StudentGroup> findByGroupNameContainingIgnoreCaseOrGroupCodeContainingIgnoreCase(String name, String code);
+
+    /**
      * Find groups that have students
      */
     @Query("SELECT DISTINCT g FROM StudentGroup g JOIN g.students s WHERE g.isActive = true ORDER BY g.groupName")

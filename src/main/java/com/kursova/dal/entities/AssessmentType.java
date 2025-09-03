@@ -5,10 +5,12 @@ package com.kursova.dal.entities;
  */
 public enum AssessmentType {
     EXAM("Екзамен"),
-    CREDIT("Залік"),
+    TEST("Залік"),
     DIFFERENTIATED_CREDIT("Диференційований залік"),
     COURSE_WORK("Курсова робота"),
-    COURSE_PROJECT("Курсовий проект");
+    QUALIFICATION_WORK("Кваліфікаційна робота"),
+    ATTESTATION("Атестація"),
+    STATE_EXAM("Державний іспит");
 
     private final String displayName;
 
