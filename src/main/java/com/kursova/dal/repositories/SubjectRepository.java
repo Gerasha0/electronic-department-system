@@ -67,6 +67,22 @@ public interface SubjectRepository extends BaseRepository<Subject, Long> {
     List<Subject> findByTeacherIdWithGroups(@Param("teacherId") Long teacherId);
 
     /**
+     * Find subjects studied by group with all related data
+     */
+    @Query("SELECT DISTINCT s FROM Subject s " +
+           "LEFT JOIN FETCH s.groups g " +
+           "LEFT JOIN FETCH s.teachers " +
+           "WHERE g.id = :groupId AND s.isActive = true " +
+           "ORDER BY s.subjectName ASC")
+    List<Subject> findByGroupId(@Param("groupId") Long groupId);
+
+    /**
+     * Count groups for a specific subject
+     */
+    @Query("SELECT COUNT(g) FROM Subject s JOIN s.groups g WHERE s.id = :subjectId")
+    Long countGroupsBySubjectId(@Param("subjectId") Long subjectId);
+
+    /**
      * Search subjects by name
      */
     @Query("SELECT s FROM Subject s WHERE " +

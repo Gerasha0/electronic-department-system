@@ -4,6 +4,7 @@ import com.kursova.bll.dto.GradeDto;
 import com.kursova.bll.mappers.GradeMapper;
 import com.kursova.bll.services.GradeService;
 import com.kursova.dal.entities.Grade;
+import com.kursova.dal.entities.ArchivedGrade;
 import com.kursova.dal.entities.GradeType;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Subject;
@@ -12,6 +13,8 @@ import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class GradeServiceImpl implements GradeService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GradeServiceImpl.class);
+
     private final UnitOfWork unitOfWork;
     private final GradeMapper gradeMapper;
     private static final Logger log = LoggerFactory.getLogger(GradeServiceImpl.class);
@@ -34,6 +39,68 @@ public class GradeServiceImpl implements GradeService {
     public GradeServiceImpl(UnitOfWork unitOfWork, GradeMapper gradeMapper) {
         this.unitOfWork = unitOfWork;
         this.gradeMapper = gradeMapper;
+    }
+
+    private String getCurrentUserName() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getName() != null) {
+                var userOpt = unitOfWork.getUserRepository().findByUsername(authentication.getName());
+                if (userOpt.isPresent()) {
+                    return userOpt.get().getFullName();
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not get current user name", e);
+        }
+        return "SYSTEM";
+    }
+
+    private String getGradeCategory(GradeType gradeType) {
+        if (gradeType == null) return "Інше";
+        
+        switch (gradeType) {
+            case CURRENT:
+            case HOMEWORK:
+            case INDIVIDUAL_WORK:
+                return "Поточна робота";
+            case MODULE:
+            case MODULE_WORK:
+            case MIDTERM:
+                return "Модульна робота";
+            case LABORATORY:
+            case PRACTICAL:
+                return "Лабораторна робота";
+            case CONTROL_WORK:
+            case SEMINAR:
+                return "Контрольна робота";
+            case EXAM:
+            case FINAL:
+                return "Іспит";
+            case CREDIT:
+            case DIFF_CREDIT:
+                return "Залік";
+            case COURSEWORK:
+            case QUALIFICATION_WORK:
+                return "Курсова робота";
+            case STATE_EXAM:
+                return "Державний іспит";
+            case RETAKE:
+            case RETAKE_EXAM:
+            case RETAKE_CREDIT:
+            case RETAKE_WORK:
+                return "Перездача";
+            case MAKEUP:
+            case MAKEUP_WORK:
+            case MAKEUP_LESSON:
+                return "Відпрацювання";
+            case ATTESTATION:
+                return "Атестація";
+            case ADDITIONAL_TASK:
+                return "Додаткове завдання";
+            default:
+                return "Інше";
+        }
     }
 
     // Implementation of BaseService methods
@@ -93,8 +160,11 @@ public class GradeServiceImpl implements GradeService {
         grade.setStudent(student);
         grade.setTeacher(teacher);
         grade.setSubject(subject);
+        
+        // Set grade category based on grade type
+        grade.setGradeCategory(getGradeCategory(grade.getGradeType()));
 
-    Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
+        Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
     // Reload saved grade with relations to ensure mapper can access nested user/subject fields
     Grade savedWithRelations = unitOfWork.getGradeRepository().findByIdWithRelations(savedGrade.getId())
         .orElse(savedGrade);
@@ -114,6 +184,23 @@ public class GradeServiceImpl implements GradeService {
         Grade existingGrade = unitOfWork.getGradeRepository().findById(id)
                 .orElseThrow(() -> new RuntimeException("Grade not found with id: " + id));
 
+        // Create a copy of the existing grade for archiving
+        Grade originalGradeForArchive = new Grade();
+        originalGradeForArchive.setId(existingGrade.getId());
+        originalGradeForArchive.setStudent(existingGrade.getStudent());
+        originalGradeForArchive.setSubject(existingGrade.getSubject());
+        originalGradeForArchive.setTeacher(existingGrade.getTeacher());
+        originalGradeForArchive.setGradeValue(existingGrade.getGradeValue());
+        originalGradeForArchive.setGradeType(existingGrade.getGradeType());
+        originalGradeForArchive.setGradeCategory(existingGrade.getGradeCategory());
+        originalGradeForArchive.setComments(existingGrade.getComments());
+        originalGradeForArchive.setCreatedAt(existingGrade.getCreatedAt());
+        originalGradeForArchive.setUpdatedAt(existingGrade.getUpdatedAt());
+
+        // Archive the original grade
+        ArchivedGrade archivedGrade = new ArchivedGrade(originalGradeForArchive, getCurrentUserName(), "Відредаговано");
+        unitOfWork.getArchivedGradeRepository().save(archivedGrade);
+
         gradeMapper.updateEntityFromDto(gradeDto, existingGrade);
         existingGrade.setUpdatedAt(LocalDateTime.now());
 
@@ -123,9 +210,13 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public void delete(Long id) {
-        if (!unitOfWork.getGradeRepository().existsById(id)) {
-            throw new RuntimeException("Grade not found with id: " + id);
-        }
+        Grade existingGrade = unitOfWork.getGradeRepository().findById(id)
+                .orElseThrow(() -> new RuntimeException("Grade not found with id: " + id));
+        
+        // Archive the grade before deleting
+        ArchivedGrade archivedGrade = new ArchivedGrade(existingGrade, getCurrentUserName(), "Видалено");
+        unitOfWork.getArchivedGradeRepository().save(archivedGrade);
+        
         unitOfWork.getGradeRepository().deleteById(id);
     }
 
@@ -271,6 +362,7 @@ public class GradeServiceImpl implements GradeService {
         grade.setSubject(subject);
         grade.setGradeValue(gradeValue);
         grade.setGradeType(gradeType);
+        grade.setGradeCategory(getGradeCategory(gradeType));
         grade.setComments(comments);
         grade.setIsFinal(false);
         grade.setGradeDate(LocalDateTime.now());
@@ -296,6 +388,23 @@ public class GradeServiceImpl implements GradeService {
 
         Grade grade = unitOfWork.getGradeRepository().findById(gradeId)
                 .orElseThrow(() -> new RuntimeException("Grade not found with id: " + gradeId));
+
+        // Create a copy of the existing grade for archiving
+        Grade originalGradeForArchive = new Grade();
+        originalGradeForArchive.setId(grade.getId());
+        originalGradeForArchive.setStudent(grade.getStudent());
+        originalGradeForArchive.setSubject(grade.getSubject());
+        originalGradeForArchive.setTeacher(grade.getTeacher());
+        originalGradeForArchive.setGradeValue(grade.getGradeValue());
+        originalGradeForArchive.setGradeType(grade.getGradeType());
+        originalGradeForArchive.setGradeCategory(grade.getGradeCategory());
+        originalGradeForArchive.setComments(grade.getComments());
+        originalGradeForArchive.setCreatedAt(grade.getCreatedAt());
+        originalGradeForArchive.setUpdatedAt(grade.getUpdatedAt());
+
+        // Archive the original grade
+        ArchivedGrade archivedGrade = new ArchivedGrade(originalGradeForArchive, getCurrentUserName(), "Відредаговано");
+        unitOfWork.getArchivedGradeRepository().save(archivedGrade);
 
         grade.setGradeValue(gradeValue);
         grade.setComments(comments);

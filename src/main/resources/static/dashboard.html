@@ -87,9 +87,9 @@
                     <select id="grade-filter-category">
                         <option value="">Всі категорії</option>
                         <option value="CURRENT">📝 Поточний контроль</option>
-                        <option value="FINAL">🏆 Підсумковий контроль</option>
+                        <option value="FINAL">� Підсумковий контроль</option>
                         <option value="RETAKE">🔄 Перездача</option>
-                        <option value="MAKEUP">📝 Відпрацювання</option>
+                        <option value="MAKEUP">�️ Відпрацювання</option>
                     </select>
                     <select id="grade-filter-type">
                         <option value="">Всі типи робіт</option>
@@ -101,18 +101,8 @@
 
             <div class="table-container">
                 <table id="grades-table">
-                    <thead>
-                        <tr>
-                            <th>🎓 Студент</th>
-                            <th>� Група</th>
-                            <th>�📚 Дисципліна</th>
-                            <th>📋 Категорія</th>
-                            <th>📝 Тип роботи</th>
-                            <th>⭐ Оцінка</th>
-                            <th>📅 Дата</th>
-                            <th>💬 Коментар</th>
-                            <th>⚙️ Дії</th>
-                        </tr>
+                    <thead id="grades-table-header">
+                        <!-- Header will be dynamically generated -->
                     </thead>
                     <tbody id="grades-tbody">
                         <tr><td colspan="9"><div class="loading"></div></td></tr>
@@ -463,7 +453,8 @@
                             <tr>
                                 <th>🎓 Студент</th>
                                 <th>📚 Дисципліна</th>
-                                <th>📋 Тип оцінки</th>
+                                <th>📋 Категорія</th>
+                                <th>📝 Тип оцінки</th>
                                 <th>⭐ Оцінка</th>
                                 <th>📅 Дата оцінки</th>
                                 <th>📅 Дата архівації</th>
@@ -472,7 +463,7 @@
                             </tr>
                         </thead>
                         <tbody id="archive-grades-tbody">
-                            <tr><td colspan="8"><div class="loading"></div></td></tr>
+                            <tr><td colspan="9"><div class="loading"></div></td></tr>
                         </tbody>
                     </table>
                 </div>

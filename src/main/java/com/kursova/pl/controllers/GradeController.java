@@ -188,6 +188,7 @@ public class GradeController {
         System.out.println("DEBUG: Found student ID: " + studentId);
         
         List<GradeDto> grades = gradeService.findByStudentId(studentId);
+        System.out.println("DEBUG: Found " + grades.size() + " grades for student");
         return ResponseEntity.ok(grades);
     }
 

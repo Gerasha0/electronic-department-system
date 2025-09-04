@@ -61,11 +61,13 @@ public class SubjectServiceImpl implements SubjectService {
             dto.setTeachers(teacherDtos);
         }
         
-        // Add group count
-        if (subject.getGroups() != null) {
-            dto.setGroupCount(subject.getGroups().size());
-        } else {
-            dto.setGroupCount(0);
+        // Add REAL group count from database
+        try {
+            Long groupCount = subjectRepository.countGroupsBySubjectId(subject.getId());
+            dto.setGroupCount(groupCount != null ? groupCount.intValue() : 0);
+        } catch (Exception e) {
+            // Fallback to loaded groups if query fails
+            dto.setGroupCount(subject.getGroups() != null ? subject.getGroups().size() : 0);
         }
         
         return dto;
@@ -212,6 +214,14 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public List<SubjectDto> findByTeacherId(Long teacherId) {
         return subjectRepository.findByTeacherIdWithGroups(teacherId)
+            .stream()
+            .map(this::enrichWithTeachers)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SubjectDto> findByGroupId(Long groupId) {
+        return subjectRepository.findByGroupId(groupId)
             .stream()
             .map(this::enrichWithTeachers)
             .collect(Collectors.toList());

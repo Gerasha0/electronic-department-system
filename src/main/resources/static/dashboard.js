@@ -514,6 +514,14 @@ class Dashboard {
         if (section) {
             section.classList.add('active');
             this.currentSection = sectionName;
+            
+            // Update section title for students in grades section
+            if (sectionName === 'grades' && this.currentUser?.role === 'STUDENT') {
+                const sectionTitle = section.querySelector('h2');
+                if (sectionTitle) {
+                    sectionTitle.textContent = 'Мої оцінки';
+                }
+            }
         }
         
         if (navBtn) {
@@ -669,7 +677,15 @@ class Dashboard {
         const tbody = document.getElementById('grades-tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = '<tr><td colspan="9"><div class="loading"></div></td></tr>';
+        // Render table header based on role
+        this.renderGradesTableHeader();
+
+        // Determine column count based on role
+        const role = this.currentUser?.role;
+        const showActions = role === 'TEACHER';
+        const colCount = showActions ? 9 : 8;
+
+        tbody.innerHTML = `<tr><td colspan="${colCount}"><div class="loading"></div></td></tr>`;
 
         try {
             let response;
@@ -683,7 +699,7 @@ class Dashboard {
                 if (this.currentUser.teacherId) {
                     response = await apiClient.getGradesByTeacher(this.currentUser.teacherId);
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="9">Профіль викладача не знайдено</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="${colCount}">Профіль викладача не знайдено</td></tr>`;
                     return;
                 }
             } else {
@@ -695,8 +711,10 @@ class Dashboard {
                 this.allGrades = response.data; // Store all grades
                 this.gradesData = response.data; // Also store for compatibility
                 this.renderGradesTable(response.data);
-                // Load filter data for teachers and admins
-                if (this.currentUser?.role === 'TEACHER') {
+                // Load filter data based on role
+                if (this.currentUser?.role === 'STUDENT') {
+                    this.loadSubjectsForStudentFilter();
+                } else if (this.currentUser?.role === 'TEACHER') {
                     this.loadSubjectsForTeacherFilter();
                     this.loadGroupsForTeacherFilter();
                 } else {
@@ -704,12 +722,38 @@ class Dashboard {
                     this.loadGroupsForFilter();
                 }
             } else {
-                tbody.innerHTML = '<tr><td colspan="9">Помилка завантаження оцінок</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="${colCount}">Помилка завантаження оцінок</td></tr>`;
             }
         } catch (error) {
             console.error('Error loading grades:', error);
-            tbody.innerHTML = '<tr><td colspan="9">Помилка завантаження даних</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="${colCount}">Помилка завантаження даних</td></tr>`;
         }
+    }
+
+    renderGradesTableHeader() {
+        const thead = document.getElementById('grades-table-header');
+        if (!thead) return;
+
+        const role = this.currentUser?.role;
+        const showActions = role === 'TEACHER';
+        
+        let headerHtml = `
+            <tr>
+                <th>🎓 Студент</th>
+                <th>👥 Група</th>
+                <th>📚 Дисципліна</th>
+                <th>📋 Категорія</th>
+                <th>📝 Тип роботи</th>
+                <th>⭐ Оцінка</th>
+                <th>📅 Дата</th>
+                <th>💬 Коментар</th>`;
+        
+        if (showActions) {
+            headerHtml += `<th>⚙️ Дії</th>`;
+        }
+        
+        headerHtml += `</tr>`;
+        thead.innerHTML = headerHtml;
     }
 
     renderGradesTable(grades) {
@@ -717,10 +761,26 @@ class Dashboard {
         const table = document.getElementById('grades-table');
         if (!tbody || !table) return;
 
-        // Check if admin/manager should see actions column
+        // Check if teacher should see actions column
         const role = this.currentUser?.role;
         const showActions = role === 'TEACHER'; // Only teachers can edit/delete grades
         const colCount = showActions ? 9 : 8;
+
+        // Update table header based on user role
+        const thead = table.querySelector('thead tr');
+        if (thead) {
+            thead.innerHTML = `
+                <th>🎓 Студент</th>
+                <th>👥 Група</th>
+                <th>📚 Дисципліна</th>
+                <th>📋 Категорія</th>
+                <th>📝 Тип роботи</th>
+                <th>⭐ Оцінка</th>
+                <th>📅 Дата</th>
+                <th>💬 Коментар</th>
+                ${showActions ? '<th>⚙️ Дії</th>' : ''}
+            `;
+        }
 
         if (!grades.length) {
             tbody.innerHTML = `<tr><td colspan="${colCount}">Оцінки не знайдені</td></tr>`;
@@ -773,6 +833,43 @@ class Dashboard {
     }
 
     // Load subjects for filter dropdown
+    // Load subjects for student filter dropdown (only student's subjects from their group)
+    async loadSubjectsForStudentFilter() {
+        const select = document.getElementById('grade-filter-subject');
+        if (!select) return;
+
+        try {
+            // For students, we get their grades and extract unique subjects
+            const response = await apiClient.getMyGrades();
+            const grades = Array.isArray(response) ? response : (response?.data || []);
+            
+            // Extract unique subjects from grades
+            const subjectMap = new Map();
+            grades.forEach(grade => {
+                if (grade.subjectId && grade.subjectName) {
+                    subjectMap.set(grade.subjectId, {
+                        id: grade.subjectId,
+                        subjectName: grade.subjectName
+                    });
+                }
+            });
+            
+            const subjects = Array.from(subjectMap.values());
+            
+            // Clear existing options except "Всі дисципліни"
+            select.innerHTML = '<option value="">Всі дисципліни</option>';
+            
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.subjectName;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading student subjects for filter:', error);
+        }
+    }
+
     async loadSubjectsForFilter() {
         const select = document.getElementById('grade-filter-subject');
         if (!select) return;
@@ -942,31 +1039,68 @@ class Dashboard {
     }
 
     setupGradesFilters() {
+        const isStudent = this.currentUser?.role === 'STUDENT';
+        
         // Hide student search for STUDENT role since they only see their own grades
         const studentSearchInput = document.getElementById('grade-search-student');
         if (studentSearchInput) {
-            const isStudent = this.currentUser?.role === 'STUDENT';
             studentSearchInput.style.display = isStudent ? 'none' : 'block';
+        }
+        
+        // Hide group filter for STUDENT role since they only see their group's subjects
+        const groupFilterSelect = document.getElementById('grade-filter-group');
+        if (groupFilterSelect) {
+            groupFilterSelect.style.display = isStudent ? 'none' : 'block';
         }
     }
 
     updateGradeTypeFilter(selectedCategory = '') {
-        const gradeTypeSelect = document.getElementById('grade-type-filter');
+        const gradeTypeSelect = document.getElementById('grade-filter-type');
         if (!gradeTypeSelect) return;
 
         // Clear current options except the default
-        gradeTypeSelect.innerHTML = '<option value="">Всі типи</option>';
+        gradeTypeSelect.innerHTML = '<option value="">Всі типи робіт</option>';
 
-        if (selectedCategory && this.gradeCategories) {
-            const category = this.gradeCategories.find(cat => cat.name === selectedCategory);
-            if (category && category.types) {
-                category.types.forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = type;
-                    gradeTypeSelect.appendChild(option);
-                });
-            }
+        // Define grade types by category
+        const gradeTypesByCategory = {
+            'CURRENT': [
+                { value: 'LABORATORY', text: '🧪 Лабораторна' },
+                { value: 'PRACTICAL', text: '⚙️ Практична' },
+                { value: 'SEMINAR', text: '💭 Семінар' },
+                { value: 'CONTROL_WORK', text: '📃 Контрольна робота' },
+                { value: 'MODULE_WORK', text: '📊 Модульна робота' },
+                { value: 'HOMEWORK', text: '🏠 Домашнє завдання' },
+                { value: 'INDIVIDUAL_WORK', text: '👤 Індивідуальна робота' },
+                { value: 'MAKEUP_WORK', text: '🛠️ Відпрацювання' }
+            ],
+            'FINAL': [
+                { value: 'EXAM', text: '📚 Іспит' },
+                { value: 'CREDIT', text: '✅ Залік' },
+                { value: 'DIFF_CREDIT', text: '📈 Диференційований залік' },
+                { value: 'COURSEWORK', text: '📖 Курсова робота' },
+                { value: 'QUALIFICATION_WORK', text: '🎓 Кваліфікаційна робота' },
+                { value: 'STATE_EXAM', text: '🏛️ Державний іспит' },
+                { value: 'ATTESTATION', text: '📄 Атестація' }
+            ],
+            'RETAKE': [
+                { value: 'RETAKE_EXAM', text: '🔄 Перездача іспиту' },
+                { value: 'RETAKE_CREDIT', text: '🔄 Перездача заліку' },
+                { value: 'RETAKE_WORK', text: '🔄 Перездача роботи' }
+            ],
+            'MAKEUP': [
+                { value: 'MAKEUP_LESSON', text: '🛠️ Відпрацювання заняття' },
+                { value: 'MAKEUP_WORK', text: '🛠️ Відпрацювання роботи' },
+                { value: 'ADDITIONAL_TASK', text: '➕ Додаткове завдання' }
+            ]
+        };
+
+        if (selectedCategory && gradeTypesByCategory[selectedCategory]) {
+            gradeTypesByCategory[selectedCategory].forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.value;
+                option.textContent = type.text;
+                gradeTypeSelect.appendChild(option);
+            });
         }
     }
 
@@ -1852,20 +1986,31 @@ class Dashboard {
         try {
             let response;
             
+            console.log('loadSubjectsData called, user role:', this.currentUser?.role);
+            
             // Role-based subject loading
-            if (this.currentUser?.role === 'TEACHER') {
+            if (this.currentUser?.role === 'STUDENT') {
+                // Students see only subjects from their grades/group
+                console.log('Loading student subjects...');
+                response = await this.getStudentSubjects();
+                console.log('Student subjects response:', response);
+            } else if (this.currentUser?.role === 'TEACHER') {
                 // Teachers see only their own subjects
+                console.log('Loading teacher subjects...');
                 response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
             } else {
                 // Everyone else sees public subjects
+                console.log('Loading public subjects...');
                 response = await apiClient.getPublicSubjects();
             }
+            
+            console.log('Final response before render:', response);
                 
             // Check if response is successful and has data
             if (response?.success && Array.isArray(response.data)) {
                 this.renderSubjectsTable(response.data);
             } else if (Array.isArray(response)) {
-                // Direct array response from public API
+                // Direct array response from public API or student subjects
                 this.renderSubjectsTable(response);
             } else {
                 tbody.innerHTML = '<tr><td colspan="5">Помилка завантаження дисциплін</td></tr>';
@@ -1873,6 +2018,69 @@ class Dashboard {
         } catch (error) {
             console.error('Помилка завантаження дисциплін:', error);
             tbody.innerHTML = '<tr><td colspan="5">Помилка завантаження даних</td></tr>';
+        }
+    }
+
+    // Get subjects for student based on their group
+    async getStudentSubjects() {
+        try {
+            console.log('Loading student subjects...');
+            
+            // Get current student to find their group
+            const studentResponse = await apiClient.getCurrentStudent();
+            console.log('Current student response:', studentResponse);
+            
+            // Handle both direct object and wrapped response
+            const currentStudent = studentResponse?.data || studentResponse;
+            console.log('Current student data:', currentStudent);
+            
+            if (currentStudent && currentStudent.group && currentStudent.group.id) {
+                console.log('Student group ID:', currentStudent.group.id);
+                const subjectsByGroup = await apiClient.getSubjectsByGroup(currentStudent.group.id);
+                console.log('Subjects by group response:', subjectsByGroup);
+                
+                // Handle both direct array and wrapped response
+                const subjectsArray = subjectsByGroup?.data || subjectsByGroup;
+                
+                if (subjectsArray && Array.isArray(subjectsArray) && subjectsArray.length > 0) {
+                    console.log('Using subjects from group:', subjectsArray.length);
+                    return subjectsArray;
+                }
+            }
+            
+            // Fallback: get subjects from grades only if group method completely failed
+            console.log('Fallback: getting subjects from student grades...');
+            const gradesResponse = await apiClient.getMyGrades();
+            const grades = Array.isArray(gradesResponse) ? gradesResponse : (gradesResponse?.data || []);
+            
+            if (grades && grades.length > 0) {
+                const subjectMap = new Map();
+                grades.forEach(grade => {
+                    if (grade.subjectId && grade.subjectName) {
+                        const subject = {
+                            id: grade.subjectId,
+                            subjectName: grade.subjectName,
+                            teachers: grade.teacherName ? [{fullName: grade.teacherName}] : [],
+                            credits: grade.credits || 'N/A',
+                            semester: grade.semester || 'N/A',
+                            groupCount: 1
+                        };
+                        subjectMap.set(grade.subjectId, subject);
+                    }
+                });
+                
+                if (subjectMap.size > 0) {
+                    console.log('Using subjects from grades:', subjectMap.size);
+                    return Array.from(subjectMap.values());
+                }
+            }
+            
+            console.log('No subjects found for student');
+            return [];
+            
+        } catch (error) {
+            console.error('Error loading student subjects:', error);
+            return [];
         }
     }
 
@@ -1884,8 +2092,8 @@ class Dashboard {
         // Update table header based on user role
         const thead = table.querySelector('thead tr');
         if (thead) {
-            const isGuest = this.currentUser?.role === 'GUEST';
-            const colCount = isGuest ? 5 : 6; // Updated column count
+            const hideActions = this.currentUser?.role === 'GUEST';
+            const colCount = hideActions ? 5 : 6;
             
             thead.innerHTML = `
                 <th>📚 Назва</th>
@@ -1893,13 +2101,18 @@ class Dashboard {
                 <th>💳 Кредити</th>
                 <th>📅 Семестр</th>
                 <th>👥 Кількість груп</th>
-                ${!isGuest ? '<th>⚙️ Дії</th>' : ''}
+                ${!hideActions ? '<th>⚙️ Дії</th>' : ''}
             `;
         }
 
         if (!subjects.length) {
-            const colCount = this.currentUser?.role === 'GUEST' ? 5 : 6; // Updated column count
-            tbody.innerHTML = `<tr><td colspan="${colCount}">Дисципліни не знайдені</td></tr>`;
+            const hideActions = this.currentUser?.role === 'GUEST';
+            const colCount = hideActions ? 5 : 6;
+            if (this.currentUser?.role === 'STUDENT') {
+                tbody.innerHTML = `<tr><td colspan="${colCount}">У вас поки немає дисциплін в системі</td></tr>`;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="${colCount}">Дисципліни не знайдені</td></tr>`;
+            }
             return;
         }
 
@@ -1911,10 +2124,12 @@ class Dashboard {
                 : 'N/A';
             const credits = subject.credits || 'N/A';
             const semester = subject.semester || 'N/A';
-            const groupCount = subject.groupCount || 0; // New field for group count
+            const groupCount = subject.groupCount || 0;
             const groupCountClass = groupCount === 0 ? 'group-count-badge zero' : 'group-count-badge';
             
-            const isGuest = this.currentUser?.role === 'GUEST';
+            const hideActions = this.currentUser?.role === 'GUEST';
+            const isAdminOrManager = this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER';
+            const canEditDelete = isAdminOrManager; // Only ADMIN and MANAGER can edit/delete
             
             return `
             <tr>
@@ -1923,16 +2138,16 @@ class Dashboard {
                 <td>${credits}</td>
                 <td>${semester}</td>
                 <td><span class="${groupCountClass}">${groupCount}</span></td>
-                ${!isGuest ? `
+                ${!hideActions ? `
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-primary" onclick="dashboard.viewSubject(${subject.id})">Переглянути</button>
-                        <button class="btn btn-sm btn-warning" onclick="dashboard.editSubject(${subject.id})">Редагувати</button>
-                        ${(this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER') ? 
+                        ${canEditDelete ? `<button class="btn btn-sm btn-warning" onclick="dashboard.editSubject(${subject.id})">Редагувати</button>` : ''}
+                        ${isAdminOrManager ? 
                             `<button class="btn btn-sm btn-success" onclick="dashboard.showSubjectTeachersModal(${subject.id}, '${subjectName}')">👨‍🏫 Викладачі</button>` : ''}
-                        ${(this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER') ? 
+                        ${isAdminOrManager ? 
                             `<button class="btn btn-sm btn-info" onclick="dashboard.showSubjectGroupsModal(${subject.id}, '${subjectName}')">📋 Список груп</button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="dashboard.deleteSubject(${subject.id})">Видалити</button>
+                        ${canEditDelete ? `<button class="btn btn-sm btn-danger" onclick="dashboard.deleteSubject(${subject.id})">Видалити</button>` : ''}
                     </div>
                 </td>
                 ` : ''}
@@ -2314,6 +2529,38 @@ class Dashboard {
         });
     }
 
+    getGradeTypeDisplayName(gradeType) {
+        const gradeTypeNames = {
+            'CURRENT': '📝 Поточна',
+            'MODULE': '📊 Модульна',
+            'MIDTERM': '📋 Проміжна',
+            'FINAL': '🎯 Підсумкова',
+            'RETAKE': '🔄 Перездача',
+            'MAKEUP': '🛠️ Відпрацювання',
+            'LABORATORY': '🧪 Лабораторна',
+            'PRACTICAL': '⚙️ Практична',
+            'SEMINAR': '💭 Семінар',
+            'CONTROL_WORK': '📃 Контрольна робота',
+            'MODULE_WORK': '📊 Модульна робота',
+            'HOMEWORK': '🏠 Домашнє завдання',
+            'INDIVIDUAL_WORK': '👤 Індивідуальна робота',
+            'MAKEUP_WORK': '🛠️ Відпрацювання',
+            'EXAM': '📚 Іспит',
+            'CREDIT': '✅ Залік',
+            'DIFF_CREDIT': '📈 Диференційований залік',
+            'COURSEWORK': '📖 Курсова робота',
+            'QUALIFICATION_WORK': '🎓 Кваліфікаційна робота',
+            'STATE_EXAM': '🏛️ Державний іспит',
+            'ATTESTATION': '📄 Атестація',
+            'RETAKE_EXAM': '🔄 Перездача іспиту',
+            'RETAKE_CREDIT': '🔄 Перездача заліку',
+            'RETAKE_WORK': '🔄 Перездача роботи',
+            'MAKEUP_LESSON': '🛠️ Відпрацювання заняття',
+            'ADDITIONAL_TASK': '➕ Додаткове завдання'
+        };
+        return gradeTypeNames[gradeType] || gradeType;
+    }
+
     showEditGradeModal(grade) {
         const modal = document.getElementById('modal');
         const title = document.getElementById('modal-title');
@@ -2324,72 +2571,70 @@ class Dashboard {
             <form id="edit-grade-form">
                 <div class="form-group">
                     <label>Студент:</label>
-                    <select name="studentId" id="edit-grade-student-select" required>
-                        <option value="">Оберіть студента...</option>
-                    </select>
+                    <div class="readonly-field">
+                        ${grade.studentName || grade.student?.fullName || 'Невідомий студент'}
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Дисципліна:</label>
-                    <select name="subjectId" id="edit-grade-subject-select" required>
-                        <option value="">Оберіть дисципліну...</option>
-                    </select>
+                    <div class="readonly-field">
+                        ${grade.subjectName || grade.subject?.name || 'Невідома дисципліна'}
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Тип оцінки:</label>
-                    <select name="gradeType" required>
-                        <option value="">Оберіть тип...</option>
-                        <option value="CURRENT">Поточна</option>
-                        <option value="MODULE">Модульна</option>
-                        <option value="MIDTERM">Проміжна</option>
-                        <option value="FINAL">Підсумкова</option>
-                        <option value="RETAKE">Перездача</option>
-                        <option value="MAKEUP">Відпрацювання</option>
-                    </select>
+                    <div class="readonly-field">
+                        ${this.getGradeTypeDisplayName(grade.gradeType)}
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Оцінка:</label>
-                    <input type="number" name="value" min="1" max="100" value="${grade.value || ''}" required>
+                    <label>Поточна оцінка:</label>
+                    <div class="readonly-field current-grade">
+                        ${grade.value || grade.gradeValue || 'Не встановлено'}
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Коментар (необов'язково):</label>
-                    <textarea name="comment" rows="3">${grade.comment || ''}</textarea>
+                    <label>Нова оцінка:</label>
+                    <input type="number" name="value" min="1" max="100" value="${grade.value || grade.gradeValue || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label>Коментар:</label>
+                    <textarea name="comment" rows="3" placeholder="Опишіть причину редагування...">${grade.comment || ''}</textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    <button type="submit" class="btn btn-primary">Оновити оцінку</button>
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').style.display='none'">Скасувати</button>
                 </div>
             </form>
         `;
 
-        // Load students and subjects for dropdowns, then set current values
-        this.loadStudentsForGrades('edit-grade-student-select', grade.studentUserId || grade.studentId);
-        this.loadSubjectsForGrades('edit-grade-subject-select', grade.subjectId);
-        
-        // Set current grade type
-        setTimeout(() => {
-            const gradeTypeSelect = document.querySelector('#edit-grade-form select[name="gradeType"]');
-            if (gradeTypeSelect && grade.gradeType) {
-                gradeTypeSelect.value = grade.gradeType;
-            }
-        }, 100);
-
         // Handle form submission
         document.getElementById('edit-grade-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
+            const newValue = parseInt(formData.get('value'));
+            const currentValue = grade.value || grade.gradeValue;
+            
+            // Check if grade actually changed
+            if (newValue === currentValue && formData.get('comment') === (grade.comment || '')) {
+                alert('Зміни не виявлено. Оцінка та коментар залишились незмінними.');
+                return;
+            }
+
             const gradeData = {
-                studentId: grade.studentId, // Use original studentId (Student entity ID) for backend
-                subjectId: parseInt(formData.get('subjectId')),
-                gradeType: formData.get('gradeType'),
-                gradeValue: parseInt(formData.get('value')),
-                comments: formData.get('comment') || null
+                studentId: grade.studentId,
+                subjectId: grade.subjectId,
+                gradeType: grade.gradeType,
+                gradeValue: newValue,
+                comments: formData.get('comment') || null,
+                originalGradeId: grade.id // For archiving the old grade
             };
 
             const response = await apiClient.updateGrade(grade.id, gradeData);
             if (response?.success) {
                 modal.style.display = 'none';
                 this.loadGradesData();
-                alert('Оцінку оновлено успішно!');
+                alert('Оцінку оновлено успішно! Попередня оцінка збережена в архіві.');
             } else {
                 const errorMessage = typeof response?.data === 'string' 
                     ? response.data 
@@ -2923,6 +3168,9 @@ class Dashboard {
         document.getElementById('subjectForm').reset();
         this.currentSubject = null;
         this.showModal('subjectModal');
+        
+        // Load teachers for selection
+        this.loadTeachersForSubject();
     }
 
     async createSubject() {
@@ -3955,18 +4203,18 @@ class Dashboard {
         const tbody = document.getElementById('archive-grades-tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = '<tr><td colspan="8"><div class="loading"></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9"><div class="loading"></div></td></tr>';
 
         try {
             const response = await apiClient.getArchivedGrades();
             if (response?.success && Array.isArray(response.data)) {
                 this.renderArchivedGradesTable(response.data);
             } else {
-                tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження архівних оцінок</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9">Помилка завантаження архівних оцінок</td></tr>';
             }
         } catch (error) {
             console.error('Error loading archived grades:', error);
-            tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження даних</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9">Помилка завантаження даних</td></tr>';
         }
     }
 
@@ -4032,17 +4280,18 @@ class Dashboard {
         if (!tbody) return;
 
         if (!grades.length) {
-            tbody.innerHTML = '<tr><td colspan="8"><div class="archive-empty"><div class="archive-empty-icon">📭</div><p>Архівних оцінок не знайдено</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9"><div class="archive-empty"><div class="archive-empty-icon">📭</div><p>Архівних оцінок не знайдено</p></div></td></tr>';
             return;
         }
 
         tbody.innerHTML = grades.map(grade => `
             <tr>
-                <td>${grade.studentNumber || 'N/A'}</td>
+                <td>${grade.studentName || grade.studentNumber || 'N/A'}</td>
                 <td>${grade.subjectName || 'N/A'}</td>
+                <td>${grade.gradeCategory || 'N/A'}</td>
                 <td>${this.translateGradeType(grade.gradeType) || 'N/A'}</td>
                 <td><strong>${grade.gradeValue || 'N/A'}</strong></td>
-                <td class="archive-date">${grade.originalGradeDate ? new Date(grade.originalGradeDate).toLocaleDateString('uk-UA') : 'N/A'}</td>
+                <td class="archive-date">${grade.originalCreatedAt ? new Date(grade.originalCreatedAt).toLocaleDateString('uk-UA') : 'N/A'}</td>
                 <td class="archive-date">${grade.archivedAt ? new Date(grade.archivedAt).toLocaleString('uk-UA') : 'N/A'}</td>
                 <td>${grade.archivedBy || 'N/A'}</td>
                 <td>
@@ -4945,7 +5194,7 @@ class Dashboard {
         
         const addButtons = {
             'add-group': role === 'ADMIN' || role === 'MANAGER', // ADMIN and MANAGER can create groups
-            'add-subject': this.rolePermissions?.canCreate,
+            'add-subject': this.rolePermissions?.canCreate, // Only ADMIN and MANAGER can create subjects
             'add-user-btn': this.rolePermissions?.canCreate,
             'add-grade-btn': role === 'TEACHER' // Only teachers can add grades
         };

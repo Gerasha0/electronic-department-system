@@ -77,4 +77,9 @@ public interface StudentService extends BaseService<StudentDto, Long> {
      * Search students with group information for group assignment
      */
     List<Object> searchStudentsForGroup(String query, Long groupId);
+
+    /**
+     * Find student by username (used for current authenticated student)
+     */
+    StudentDto findByEmail(String username); // Parameter name kept as 'email' for API compatibility
 }

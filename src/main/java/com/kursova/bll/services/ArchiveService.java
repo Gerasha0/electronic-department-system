@@ -3,6 +3,7 @@ package com.kursova.bll.services;
 import com.kursova.dal.entities.ArchivedGrade;
 import com.kursova.dal.entities.ArchivedStudent;
 import com.kursova.dal.entities.ArchivedStudentGroup;
+import com.kursova.dal.entities.Grade;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +12,16 @@ import java.util.List;
  * Service interface for archive operations
  */
 public interface ArchiveService {
+
+    /**
+     * Archive a grade and all related data
+     */
+    void archiveGrade(Long gradeId, String archivedBy, String reason);
+
+    /**
+     * Archive a specific grade
+     */
+    ArchivedGrade archiveSpecificGrade(Grade grade, String archivedBy, String reason);
 
     /**
      * Archive a student group and all related data

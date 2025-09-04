@@ -46,6 +46,11 @@ public interface SubjectService extends BaseService<SubjectDto, Long> {
     List<SubjectDto> findByTeacherId(Long teacherId);
 
     /**
+     * Find subjects studied by group
+     */
+    List<SubjectDto> findByGroupId(Long groupId);
+
+    /**
      * Check if subject code exists
      */
     boolean existsBySubjectCode(String subjectCode);

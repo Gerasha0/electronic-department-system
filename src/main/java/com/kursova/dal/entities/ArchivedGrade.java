@@ -23,14 +23,27 @@ public class ArchivedGrade {
     @Column(name = "student_number")
     private String studentNumber;
 
+    @Column(name = "student_name")
+    private String studentName;
+
     @Column(name = "original_subject_id")
     private Long originalSubjectId;
 
     @Column(name = "subject_name")
     private String subjectName;
 
+    @Column(name = "grade_category")
+    private String gradeCategory;
+
     @Column(name = "grade_value")
     private Integer gradeValue;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grade_type")
+    private GradeType gradeType;
+
+    @Column(name = "comments", columnDefinition = "TEXT")
+    private String comments;
 
     @Column(name = "original_group_id")
     private Long originalGroupId;
@@ -61,12 +74,20 @@ public class ArchivedGrade {
         this.originalStudentId = originalGrade.getStudent().getId();
         this.studentNumber = originalGrade.getStudent().getStudentNumber();
         
+        // Set student full name
+        if (originalGrade.getStudent().getUser() != null) {
+            this.studentName = originalGrade.getStudent().getUser().getFullName();
+        }
+        
         if (originalGrade.getSubject() != null) {
             this.originalSubjectId = originalGrade.getSubject().getId();
             this.subjectName = originalGrade.getSubject().getSubjectName();
         }
         
         this.gradeValue = originalGrade.getGradeValue();
+        this.gradeType = originalGrade.getGradeType();
+        this.gradeCategory = originalGrade.getGradeCategory();
+        this.comments = originalGrade.getComments();
         
         if (originalGrade.getStudent().getGroup() != null) {
             this.originalGroupId = originalGrade.getStudent().getGroup().getId();
@@ -113,6 +134,14 @@ public class ArchivedGrade {
         this.studentNumber = studentNumber;
     }
 
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
+    }
+
     public Long getOriginalSubjectId() {
         return originalSubjectId;
     }
@@ -129,12 +158,36 @@ public class ArchivedGrade {
         this.subjectName = subjectName;
     }
 
+    public String getGradeCategory() {
+        return gradeCategory;
+    }
+
+    public void setGradeCategory(String gradeCategory) {
+        this.gradeCategory = gradeCategory;
+    }
+
     public Integer getGradeValue() {
         return gradeValue;
     }
 
     public void setGradeValue(Integer gradeValue) {
         this.gradeValue = gradeValue;
+    }
+
+    public GradeType getGradeType() {
+        return gradeType;
+    }
+
+    public void setGradeType(GradeType gradeType) {
+        this.gradeType = gradeType;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public Long getOriginalGroupId() {

@@ -92,6 +92,14 @@ public class SubjectController {
         return ResponseEntity.ok(subjects);
     }
 
+    @GetMapping("/group/{groupId}")
+    @Operation(summary = "Get subjects by group", description = "Retrieve subjects studied by a specific group")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<List<SubjectDto>> getSubjectsByGroup(@PathVariable Long groupId) {
+        List<SubjectDto> subjects = subjectService.findByGroupId(groupId);
+        return ResponseEntity.ok(subjects);
+    }
+
     @GetMapping("/public")
     @Operation(summary = "Get public subjects info", description = "Get basic info about subjects for public view")
     public ResponseEntity<List<SubjectDto>> getPublicSubjects() {

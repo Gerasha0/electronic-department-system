@@ -26,6 +26,22 @@ public class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     @Transactional
+    public void archiveGrade(Long gradeId, String archivedBy, String reason) {
+        Grade grade = unitOfWork.getGradeRepository().findById(gradeId)
+                .orElseThrow(() -> new RuntimeException("Grade not found with id: " + gradeId));
+        
+        archiveSpecificGrade(grade, archivedBy, reason);
+    }
+
+    @Override
+    @Transactional
+    public ArchivedGrade archiveSpecificGrade(Grade grade, String archivedBy, String reason) {
+        ArchivedGrade archivedGrade = new ArchivedGrade(grade, archivedBy, reason);
+        return unitOfWork.getArchivedGradeRepository().save(archivedGrade);
+    }
+
+    @Override
+    @Transactional
     public void archiveStudentGroup(Long groupId, String archivedBy, String reason) {
         // Get the group to archive
         StudentGroup group = unitOfWork.getStudentGroupRepository().findById(groupId)

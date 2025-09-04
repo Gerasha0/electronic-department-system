@@ -6,6 +6,7 @@ import com.kursova.bll.mappers.StudentMapper;
 import com.kursova.bll.services.StudentService;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Grade;
+import com.kursova.dal.entities.User;
 import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -313,5 +314,20 @@ public class StudentServiceImpl implements StudentService {
         } catch (Exception e) {
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public StudentDto findByEmail(String email) {
+        // Note: This method name is misleading - it's actually called with username from JWT authentication
+        // The 'email' parameter contains username from Authentication.getName()
+        String username = email; // Authentication.getName() returns username, not actual email
+        
+        User user = unitOfWork.getUserRepository().findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        
+        Student student = unitOfWork.getStudentRepository().findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Student not found for user with username: " + username));
+        
+        return mapStudentWithCalculatedData(student);
     }
 }

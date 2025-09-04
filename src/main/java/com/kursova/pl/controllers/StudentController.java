@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -156,5 +157,21 @@ public class StudentController {
             @RequestParam @Parameter(description = "Target group ID") Long groupId) {
         List<Object> students = studentService.searchStudentsForGroup(query, groupId);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/current")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Get current student", description = "Get current student information for authenticated student user")
+    public ResponseEntity<StudentDto> getCurrentStudent(Authentication authentication) {
+        System.out.println("DEBUG: getCurrentStudent called");
+        System.out.println("DEBUG: Authentication: " + authentication);
+        if (authentication != null) {
+            System.out.println("DEBUG: Authentication name: " + authentication.getName());
+        }
+        
+        String email = authentication.getName();
+        StudentDto student = studentService.findByEmail(email);
+        System.out.println("DEBUG: Found student: " + student.getId());
+        return ResponseEntity.ok(student);
     }
 }

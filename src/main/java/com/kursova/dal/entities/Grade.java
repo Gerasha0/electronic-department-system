@@ -23,6 +23,9 @@ public class Grade {
     @Column(name = "grade_type", nullable = false)
     private GradeType gradeType;
 
+    @Column(name = "grade_category")
+    private String gradeCategory;
+
     @Column(name = "grade_date", nullable = false)
     private LocalDateTime gradeDate;
 
@@ -104,6 +107,14 @@ public class Grade {
 
     public void setGradeType(GradeType gradeType) {
         this.gradeType = gradeType;
+    }
+
+    public String getGradeCategory() {
+        return gradeCategory;
+    }
+
+    public void setGradeCategory(String gradeCategory) {
+        this.gradeCategory = gradeCategory;
     }
 
     public LocalDateTime getGradeDate() {
