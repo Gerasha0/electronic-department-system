@@ -206,6 +206,26 @@
                     <select id="student-filter-group">
                         <option value="">Всі групи</option>
                     </select>
+                    
+                    <div class="filter-group">
+                        <select id="student-education-level-filter">
+                            <option value="">🎓 Всі рівні освіти</option>
+                            <option value="BACHELOR">🎓 Бакалавр</option>
+                            <option value="MASTER">🎯 Магістр</option>
+                            <option value="PHD">👨‍🔬 Аспірант</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="student-study-form-filter">
+                            <option value="">📚 Всі форми навчання</option>
+                            <option value="FULL_TIME">🎓 Денна</option>
+                            <option value="EVENING">🌙 Вечірня</option>
+                            <option value="PART_TIME">📮 Заочна</option>
+                            <option value="DISTANCE">💻 Дистанційна</option>
+                        </select>
+                    </div>
+                    
                     <div class="grade-filter-group">
                         <label for="student-filter-grade-min">Середній бал від:</label>
                         <input type="number" id="student-filter-grade-min" min="0" max="100" placeholder="0" class="grade-input">
@@ -231,13 +251,15 @@
                             <th>🎓 Ім'я</th>
                             <th>📧 Email</th>
                             <th>👥 Група</th>
-                            <th>📖 Курс</th>
+                            <th>🎓 Рівень освіти</th>
+                            <th>� Форма навчання</th>
+                            <th>�📖 Курс</th>
                             <th>⭐ Середній бал</th>
                             <th>⚙️ Дії</th>
                         </tr>
                     </thead>
                     <tbody id="students-tbody">
-                        <tr><td colspan="6"><div class="loading"></div></td></tr>
+                        <tr><td colspan="8"><div class="loading"></div></td></tr>
                     </tbody>
                 </table>
             </div>

@@ -157,7 +157,7 @@ public class GradeServiceImpl implements GradeService {
     @Override
     @Transactional(readOnly = true)
     public List<GradeDto> findByTeacherId(Long teacherId) {
-        return unitOfWork.getGradeRepository().findByTeacherIdOrderByGradeDateDesc(teacherId)
+        return unitOfWork.getGradeRepository().findGradesByTeacherId(teacherId)
                 .stream()
                 .map(gradeMapper::toDto)
                 .collect(Collectors.toList());

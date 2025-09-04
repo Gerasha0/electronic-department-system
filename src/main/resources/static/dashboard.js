@@ -21,10 +21,50 @@ class Dashboard {
         const translations = {
             'CURRENT': '📝 Поточний контроль',
             'FINAL': '🏆 Підсумковий контроль',
-            'RETAKE': '🔄 Перездача',
+            'RETAKE': '🔄 Перeздача',
             'MAKEUP': '📝 Відпрацювання'
         };
         return translations[category] || category;
+    }
+
+    // Determine category based on grade type
+    getCategoryByGradeType(gradeType) {
+        const currentTypes = ['LABORATORY', 'PRACTICAL', 'SEMINAR', 'CONTROL_WORK', 'MODULE_WORK', 'HOMEWORK', 'INDIVIDUAL_WORK', 'CURRENT'];
+        const finalTypes = ['EXAM', 'CREDIT', 'DIFF_CREDIT', 'COURSEWORK', 'QUALIFICATION_WORK', 'STATE_EXAM', 'ATTESTATION', 'FINAL'];
+        const retakeTypes = ['RETAKE_EXAM', 'RETAKE_CREDIT', 'RETAKE_WORK', 'RETAKE'];
+        const makeupTypes = ['MAKEUP_WORK', 'MAKEUP_LESSON', 'ADDITIONAL_TASK', 'MAKEUP'];
+
+        if (currentTypes.includes(gradeType)) {
+            return '📝 Поточний контроль';
+        } else if (finalTypes.includes(gradeType)) {
+            return '🏆 Підсумковий контроль';
+        } else if (retakeTypes.includes(gradeType)) {
+            return '🔄 Перездача';
+        } else if (makeupTypes.includes(gradeType)) {
+            return '📝 Відпрацювання';
+        }
+        return 'N/A';
+    }
+
+    // Translate education level to Ukrainian with icons
+    translateEducationLevel(level) {
+        const translations = {
+            'BACHELOR': '🎓 Бакалавр',
+            'MASTER': '🎯 Магістр',
+            'PHD': '👨‍🔬 Аспірант'
+        };
+        return translations[level] || level;
+    }
+
+    // Translate study form to Ukrainian with icons
+    translateStudyForm(form) {
+        const translations = {
+            'FULL_TIME': '🎓 Денна',
+            'EVENING': '🌙 Вечірня',
+            'PART_TIME': '📮 Заочна',
+            'DISTANCE': '💻 Дистанційна'
+        };
+        return translations[form] || form;
     }
 
     translateGradeType(gradeType) {
@@ -318,6 +358,14 @@ class Dashboard {
 
         // Student filters
         document.getElementById('student-filter-group')?.addEventListener('change', () => {
+            this.filterStudents();
+        });
+
+        document.getElementById('student-education-level-filter')?.addEventListener('change', () => {
+            this.filterStudents();
+        });
+
+        document.getElementById('student-study-form-filter')?.addEventListener('change', () => {
             this.filterStudents();
         });
 
@@ -684,12 +732,17 @@ class Dashboard {
             const studentName = grade.studentName || 'N/A';
             const groupName = grade.groupName || 'N/A';
             const subjectName = grade.subjectName || 'N/A';
-            const gradeCategory = this.translateGradeCategory(grade.gradeCategory) || 'N/A';
+            
+            // Determine category based on grade type if gradeCategory is not available
+            const gradeCategory = grade.gradeCategory ? 
+                this.translateGradeCategory(grade.gradeCategory) : 
+                this.getCategoryByGradeType(grade.gradeType);
+                
             const gradeType = this.translateGradeType(grade.gradeType) || 'N/A';
             const gradeValue = grade.gradeValue || 'N/A';
             const gradeDate = grade.gradeDate || grade.createdAt;
             const formattedDate = gradeDate ? new Date(gradeDate).toLocaleDateString('uk-UA') : 'N/A';
-            const comment = grade.comment || '';
+            const comment = grade.comments || grade.comment || '';
 
             // Check if this grade belongs to current teacher
             const canEdit = role === 'TEACHER' && grade.teacherId === this.currentUser?.teacherId;
@@ -971,7 +1024,7 @@ class Dashboard {
         const tbody = document.getElementById('students-tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = '<tr><td colspan="6"><div class="loading"></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8"><div class="loading"></div></td></tr>';
 
         try {
             let response;
@@ -982,7 +1035,7 @@ class Dashboard {
                 if (this.currentUser.teacherId) {
                     response = await apiClient.getStudentsByTeacher(this.currentUser.teacherId);
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="6">Профіль викладача не знайдено</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8">Профіль викладача не знайдено</td></tr>';
                     return;
                 }
             } else {
@@ -995,11 +1048,11 @@ class Dashboard {
                 this.renderStudentsTable(response.data);
                 this.loadGroupsForStudentFilter(); // Load groups for filter
             } else {
-                tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження студентів</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження студентів</td></tr>';
             }
         } catch (error) {
             console.error('Помилка завантаження студентів:', error);
-            tbody.innerHTML = '<tr><td colspan="6">Помилка завантаження даних</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження даних</td></tr>';
         }
     }
 
@@ -1008,7 +1061,7 @@ class Dashboard {
         if (!tbody) return;
 
         if (!students.length) {
-            tbody.innerHTML = '<tr><td colspan="6">Студенти не знайдені</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Студенти не знайдені</td></tr>';
             return;
         }
 
@@ -1017,6 +1070,15 @@ class Dashboard {
             const fullName = student.user ? `${student.user.firstName} ${student.user.lastName}` : (student.fullName || 'N/A');
             const email = student.user ? student.user.email : 'N/A';
             const groupName = student.group ? student.group.groupName : 'Не призначено';
+            
+            // Education level translation
+            const educationLevel = student.group && student.group.educationLevel ? 
+                this.translateEducationLevel(student.group.educationLevel) : 'N/A';
+            
+            // Study form translation
+            const studyForm = student.group && student.group.studyForm ? 
+                this.translateStudyForm(student.group.studyForm) : 'N/A';
+            
             const course = student.course || 'N/A';
             const averageGrade = student.averageGrade !== undefined ? 
                 (student.averageGrade > 0 ? student.averageGrade.toFixed(2) : '0.00') : 'N/A';
@@ -1026,6 +1088,8 @@ class Dashboard {
                 <td>${fullName}</td>
                 <td>${email}</td>
                 <td>${groupName}</td>
+                <td>${educationLevel}</td>
+                <td>${studyForm}</td>
                 <td>${course}</td>
                 <td>${averageGrade}</td>
                 <td>
@@ -1186,9 +1250,9 @@ class Dashboard {
             const studentCount = group.currentStudentCount || 0;
             const enrollmentYear = group.enrollmentYear || group.startYear || 'N/A';
             
-            // Check role permissions for action buttons - only MANAGER can edit/delete groups
+            // Check role permissions for action buttons - ADMIN and MANAGER can edit/delete groups
             const role = this.currentUser?.role;
-            const canEdit = role === 'MANAGER';
+            const canEdit = role === 'ADMIN' || role === 'MANAGER';
             const canDelete = role === 'ADMIN' || role === 'MANAGER'; // Both ADMIN and MANAGER can delete
             
             let actions = `<button class="btn btn-sm btn-info" onclick="dashboard.viewGroupStudents(${group.id})">Студенти</button>`;
@@ -1272,7 +1336,7 @@ class Dashboard {
                             <div class="search-box">
                                 <input type="text" id="students-search" placeholder="🔍 Пошук студентів за ім'ям або прізвищем..." class="search-input">
                             </div>
-                            ${this.currentUser?.role === 'MANAGER' ? `
+                            ${(this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER') ? `
                                 <div class="students-actions-side">
                                     <button class="btn btn-success btn-sm" onclick="dashboard.addStudentToGroup(${group.id})">➕ Додати студента</button>
                                     <button class="btn btn-warning btn-sm" onclick="dashboard.removeAllStudentsFromGroup(${group.id})">👥➖ Видалити всіх</button>
@@ -1342,7 +1406,7 @@ class Dashboard {
             const averageGrade = student.averageGrade !== undefined ? 
                 (student.averageGrade > 0 ? student.averageGrade.toFixed(2) : '0.00') : 'N/A';
             
-            const canEdit = this.currentUser?.role === 'MANAGER';
+            const canEdit = this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER';
             
             return `
                 <tr>
@@ -2002,17 +2066,31 @@ class Dashboard {
             </form>
         `;
 
-        // Load subjects for the current teacher
-        this.loadSubjectsForTeacherGrades();
-        
-        // Setup dynamic dropdowns
-        this.setupGradeFormDependencies();
+        // Show modal first
+        modal.style.display = 'block';
 
-        // Clear any existing event listeners
+        // Load subjects for the current teacher after DOM is ready
+        setTimeout(async () => {
+            console.log('Attempting to load subjects after timeout...');
+            const testElement = document.getElementById('grade-subject-select');
+            console.log('Subject select element found:', testElement);
+            if (testElement) {
+                await this.loadSubjectsForTeacherGrades();
+            } else {
+                console.error('Subject select element still not found after timeout');
+            }
+        }, 200);
+
+        // Clear any existing event listeners and reset form
         const existingForm = document.getElementById('add-grade-form');
         if (existingForm) {
             existingForm.replaceWith(existingForm.cloneNode(true));
         }
+        
+        // Setup dynamic dropdowns AFTER form is reset
+        setTimeout(() => {
+            this.setupGradeFormDependencies();
+        }, 250);
 
         // Handle form submission
         document.getElementById('add-grade-form').addEventListener('submit', async (e) => {
@@ -2041,22 +2119,30 @@ class Dashboard {
                 alert('Помилка додавання оцінки: ' + errorMessage);
             }
         });
-
-        modal.style.display = 'block';
     }
 
     // Load subjects for the current teacher
     async loadSubjectsForTeacherGrades() {
         const subjectSelect = document.getElementById('grade-subject-select');
-        if (!subjectSelect) return;
+        if (!subjectSelect) {
+            console.error('Subject select element not found');
+            return;
+        }
+
+        console.log('Loading subjects for teacher grades...');
+        console.log('Current user:', this.currentUser);
 
         try {
             let response;
             if (this.currentUser?.role === 'TEACHER' && this.currentUser.teacherId) {
+                console.log('Loading subjects for teacher ID:', this.currentUser.teacherId);
                 response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
             } else {
+                console.log('Loading public subjects (not a teacher or no teacherId)');
                 response = await apiClient.getPublicSubjects();
             }
+
+            console.log('Subjects response:', response);
 
             if (response?.success && Array.isArray(response.data)) {
                 subjectSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>';
@@ -2066,23 +2152,39 @@ class Dashboard {
                     option.textContent = subject.subjectName || subject.name;
                     subjectSelect.appendChild(option);
                 });
+                console.log('Loaded', response.data.length, 'subjects');
+            } else {
+                console.error('Invalid response format:', response);
+                subjectSelect.innerHTML = '<option value="">Помилка завантаження дисциплін</option>';
             }
         } catch (error) {
             console.error('Error loading subjects for grades:', error);
+            subjectSelect.innerHTML = '<option value="">Помилка завантаження дисциплін</option>';
         }
     }
 
     // Setup dependencies between form dropdowns
     setupGradeFormDependencies() {
+        console.log('Setting up grade form dependencies...');
+        
         const subjectSelect = document.getElementById('grade-subject-select');
         const groupSelect = document.getElementById('grade-group-select');
         const studentSelect = document.getElementById('grade-student-select');
         const categorySelect = document.getElementById('grade-category-select');
         const typeSelect = document.getElementById('grade-type-select');
 
+        console.log('Form elements found:', {
+            subjectSelect: !!subjectSelect,
+            groupSelect: !!groupSelect,
+            studentSelect: !!studentSelect,
+            categorySelect: !!categorySelect,
+            typeSelect: !!typeSelect
+        });
+
         // When subject changes, load groups for that subject
         subjectSelect?.addEventListener('change', async (e) => {
             const subjectId = e.target.value;
+            console.log('Subject selected:', subjectId);
             
             // Reset dependent dropdowns
             groupSelect.innerHTML = '<option value="">Оберіть групу...</option>';
@@ -2090,16 +2192,36 @@ class Dashboard {
             
             if (subjectId && this.currentUser?.teacherId) {
                 try {
+                    console.log('Loading groups for teacher:', this.currentUser.teacherId, 'and subject:', subjectId);
+                    
                     // Get groups that study this subject and are taught by current teacher
                     const response = await apiClient.getGroupsByTeacher(this.currentUser.teacherId);
+                    console.log('Teacher groups response:', response);
+                    
                     if (response?.success && Array.isArray(response.data)) {
                         // Filter groups that have this subject
                         const subjectResponse = await apiClient.getSubjectById(subjectId);
+                        console.log('Subject details response:', subjectResponse);
+                        
                         if (subjectResponse?.success) {
                             const subjectGroups = subjectResponse.data.groups || [];
-                            const teacherGroups = response.data.filter(group => 
-                                subjectGroups.some(sg => sg.id === group.id)
-                            );
+                            console.log('Subject groups:', subjectGroups);
+                            console.log('Teacher groups:', response.data);
+                            
+                            let teacherGroups;
+                            
+                            // If subject has no groups assigned, show all teacher's groups
+                            if (subjectGroups.length === 0) {
+                                console.log('Subject has no groups assigned, showing all teacher groups');
+                                teacherGroups = response.data;
+                            } else {
+                                // Filter groups that have this subject
+                                teacherGroups = response.data.filter(group => 
+                                    subjectGroups.some(sg => sg.id === group.id)
+                                );
+                            }
+                            
+                            console.log('Filtered teacher groups for this subject:', teacherGroups);
                             
                             teacherGroups.forEach(group => {
                                 const option = document.createElement('option');
@@ -2107,6 +2229,8 @@ class Dashboard {
                                 option.textContent = group.groupName || group.name;
                                 groupSelect.appendChild(option);
                             });
+                            
+                            console.log('Added', teacherGroups.length, 'groups to dropdown');
                         }
                     }
                 } catch (error) {
@@ -2128,7 +2252,7 @@ class Dashboard {
                     if (response?.success && Array.isArray(response.data)) {
                         response.data.forEach(student => {
                             const option = document.createElement('option');
-                            option.value = student.id;
+                            option.value = student.user ? student.user.id : student.id;
                             const fullName = student.user ? 
                                 `${student.user.firstName} ${student.user.lastName}` : 
                                 `${student.firstName} ${student.lastName}`;
@@ -2665,9 +2789,26 @@ class Dashboard {
 
     async viewStudentGrades(studentId) {
         try {
-            // Get student grades
-            const response = await apiClient.getGradesByStudent(studentId);
-            const grades = response?.success ? response.data : (Array.isArray(response) ? response : []);
+            let grades = [];
+            
+            if (this.currentUser?.role === 'TEACHER') {
+                // For teachers, get only grades from subjects they teach
+                const teacherGradesResponse = await apiClient.getGradesByTeacher(this.currentUser.teacherId);
+                const allTeacherGrades = teacherGradesResponse?.success ? teacherGradesResponse.data : 
+                                       (Array.isArray(teacherGradesResponse) ? teacherGradesResponse : []);
+                
+                // Filter to get only grades for this specific student
+                grades = allTeacherGrades.filter(grade => {
+                    // Check if grade belongs to the student we're viewing
+                    return grade.studentId === studentId || 
+                           (grade.student && grade.student.id === studentId) ||
+                           (grade.student && grade.student.user && grade.student.user.id === studentId);
+                });
+            } else {
+                // For admin/manager, get all student grades
+                const response = await apiClient.getGradesByStudent(studentId);
+                grades = response?.success ? response.data : (Array.isArray(response) ? response : []);
+            }
             
             // Get student info
             const studentResponse = await apiClient.getStudent(studentId);
@@ -2692,9 +2833,11 @@ class Dashboard {
                                 <thead>
                                     <tr>
                                         <th>📚 Дисципліна</th>
-                                        <th>📋 Тип</th>
+                                        <th>📋 Категорія</th>
+                                        <th>📝 Тип роботи</th>
                                         <th>⭐ Оцінка</th>
                                         <th>📅 Дата</th>
+                                        <th>💬 Коментар</th>
                                         ${this.currentUser?.role === 'TEACHER' ? '<th>⚙️ Дії</th>' : ''}
                                     </tr>
                                 </thead>
@@ -2702,9 +2845,11 @@ class Dashboard {
                                     ${grades.length ? grades.map(grade => `
                                         <tr>
                                             <td>${grade.subjectName || 'N/A'}</td>
+                                            <td>${grade.gradeCategory ? this.translateGradeCategory(grade.gradeCategory) : this.getCategoryByGradeType(grade.gradeType)}</td>
                                             <td>${this.translateGradeType(grade.gradeType) || 'N/A'}</td>
                                             <td><strong>${grade.gradeValue || 'N/A'}</strong></td>
                                             <td>${grade.gradeDate ? new Date(grade.gradeDate).toLocaleDateString('uk-UA') : 'N/A'}</td>
+                                            <td>${grade.comments || grade.comment || ''}</td>
                                             ${this.currentUser?.role === 'TEACHER' ? `
                                                 <td>
                                                     ${this.canTeacherEditGrade(grade) ? `
@@ -2714,7 +2859,7 @@ class Dashboard {
                                             ` : ''}
                                         </tr>
                                     `).join('') : `
-                                        <tr><td colspan="${this.currentUser?.role === 'TEACHER' ? '5' : '4'}">Оцінки не знайдені</td></tr>
+                                        <tr><td colspan="${this.currentUser?.role === 'TEACHER' ? '7' : '6'}">Оцінки не знайдені</td></tr>
                                     `}
                                 </tbody>
                             </table>
@@ -3041,6 +3186,8 @@ class Dashboard {
     // Filter students based on current filter values
     filterStudents() {
         const groupFilter = document.getElementById('student-filter-group')?.value || '';
+        const educationLevelFilter = document.getElementById('student-education-level-filter')?.value || '';
+        const studyFormFilter = document.getElementById('student-study-form-filter')?.value || '';
         const gradeMin = parseFloat(document.getElementById('student-filter-grade-min')?.value) || 0;
         const gradeMax = parseFloat(document.getElementById('student-filter-grade-max')?.value) || 100;
 
@@ -3050,6 +3197,20 @@ class Dashboard {
         if (groupFilter) {
             filteredStudents = filteredStudents.filter(student => 
                 student.group && student.group.id && student.group.id.toString() === groupFilter
+            );
+        }
+
+        // Filter by education level
+        if (educationLevelFilter) {
+            filteredStudents = filteredStudents.filter(student => 
+                student.group && student.group.educationLevel === educationLevelFilter
+            );
+        }
+
+        // Filter by study form
+        if (studyFormFilter) {
+            filteredStudents = filteredStudents.filter(student => 
+                student.group && student.group.studyForm === studyFormFilter
             );
         }
 
@@ -4783,7 +4944,7 @@ class Dashboard {
         const role = this.currentUser?.role;
         
         const addButtons = {
-            'add-group': role === 'MANAGER', // Only managers can create groups
+            'add-group': role === 'ADMIN' || role === 'MANAGER', // ADMIN and MANAGER can create groups
             'add-subject': this.rolePermissions?.canCreate,
             'add-user-btn': this.rolePermissions?.canCreate,
             'add-grade-btn': role === 'TEACHER' // Only teachers can add grades

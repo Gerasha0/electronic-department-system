@@ -19,8 +19,8 @@ public interface UserMapper {
 
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "teacherId", ignore = true)
-    @Mapping(target = "studentId", ignore = true)
+    @Mapping(target = "teacherId", source = "teacher.id")
+    @Mapping(target = "studentId", source = "student.id")
     UserDto toDto(User entity);
 
     @Mapping(target = "password", ignore = true) // Password should be handled separately
