@@ -5,6 +5,7 @@ package com.kursova.dal.entities;
  */
 public enum EducationLevel {
     BACHELOR("Бакалавр", 1, 5),
+    SPECIALIST("Спеціаліст", 1, 6),
     MASTER("Магістр", 1, 2),
     PHD("Аспірант", 1, 4);
 

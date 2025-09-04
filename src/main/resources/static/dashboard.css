@@ -2123,3 +2123,254 @@ table tbody tr:last-child td {
     font-size: 0.875rem;
     white-space: nowrap;
 }
+
+/* Edit Student Modal Styles */
+#editStudentModal .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    background: var(--bg-primary);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#editStudentModal .modal-header {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+    position: relative;
+}
+
+#editStudentModal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#editStudentModal .btn-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    opacity: 0.8;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+#editStudentModal .btn-close:hover {
+    opacity: 1;
+}
+
+#editStudentModal .modal-body {
+    padding: 2rem;
+    background: var(--bg-primary);
+}
+
+.student-info-section {
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Dark theme for info-card */
+[data-bs-theme="dark"] .info-card {
+    background: var(--bs-dark);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+.info-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--bs-info-bg-subtle);
+    border: 1px solid var(--bs-info-border-subtle);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--bs-info);
+}
+
+/* Dark theme for info-note */
+[data-bs-theme="dark"] .info-note {
+    background: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+.info-card h6 {
+    color: var(--accent-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.info-row span {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    background: rgba(69, 90, 120, 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.form-section {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Dark theme for form-section */
+[data-bs-theme="dark"] .form-section,
+.modal[data-bs-theme="dark"] .form-section,
+body[data-bs-theme="dark"] .form-section {
+    background: #2c2c2c !important;
+    border-color: #444 !important;
+    color: #ffffff !important;
+}
+
+/* Extra specific selector for modal form sections in dark theme */
+[data-bs-theme="dark"] .modal .modal-body .form-section {
+    background: #2c2c2c !important;
+    border-color: #444 !important;
+}
+
+/* Override any Bootstrap defaults */
+[data-bs-theme="dark"] .form-section * {
+    color: inherit !important;
+}
+
+.form-section h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--accent-primary);
+    padding-bottom: 0.5rem;
+}
+
+#editStudentModal .form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#editStudentModal .form-select {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#editStudentModal .form-select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(69, 90, 120, 0.1);
+    outline: none;
+}
+
+#editStudentModal .form-select:hover {
+    border-color: var(--accent-secondary);
+}
+
+#editStudentModal .modal-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+#editStudentModal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#editStudentModal .btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    box-shadow: 0 2px 4px rgba(69, 90, 120, 0.2);
+}
+
+#editStudentModal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(69, 90, 120, 0.3);
+}
+
+#editStudentModal .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+#editStudentModal .btn-secondary:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #editStudentModal .modal-dialog {
+        margin: 1rem;
+        max-width: none;
+    }
+    
+    .info-row {
+        grid-template-columns: 1fr;
+    }
+    
+    #editStudentModal .modal-header,
+    #editStudentModal .modal-body,
+    #editStudentModal .modal-footer {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+}

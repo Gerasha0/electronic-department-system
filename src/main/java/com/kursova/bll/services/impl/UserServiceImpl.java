@@ -66,6 +66,14 @@ public class UserServiceImpl implements UserService {
 
         User entity = userMapper.toEntity(userDto);
         entity.setPassword(passwordEncoder.encode(password));
+        
+        // Set active status based on role - Students are active by default, others require admin activation
+        if (entity.getRole() == UserRole.STUDENT) {
+            entity.setIsActive(true);  // Students get automatic activation
+        } else {
+            entity.setIsActive(false); // Other roles require manual admin activation
+        }
+        
         entity = unitOfWork.getUserRepository().save(entity);
 
         // If the user is a STUDENT, create a corresponding Student entity

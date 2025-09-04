@@ -1206,16 +1206,21 @@ class Dashboard {
             const groupName = student.group ? student.group.groupName : 'Не призначено';
             
             // Education level translation
-            const educationLevel = student.group && student.group.educationLevel ? 
-                this.translateEducationLevel(student.group.educationLevel) : 'N/A';
+            const educationLevel = (student.group && student.group.educationLevel) ? 
+                this.translateEducationLevel(student.group.educationLevel) : 
+                (student.educationLevel ? this.translateEducationLevel(student.educationLevel) : 'N/A');
             
             // Study form translation
-            const studyForm = student.group && student.group.studyForm ? 
-                this.translateStudyForm(student.group.studyForm) : 'N/A';
+            const studyForm = (student.group && student.group.studyForm) ? 
+                this.translateStudyForm(student.group.studyForm) : 
+                (student.studyForm ? this.translateStudyForm(student.studyForm) : 'N/A');
             
             const course = student.course || 'N/A';
             const averageGrade = student.averageGrade !== undefined ? 
                 (student.averageGrade > 0 ? student.averageGrade.toFixed(2) : '0.00') : 'N/A';
+            
+            // Check if current user can edit students (ADMIN or MANAGER)
+            const canEdit = this.currentUser?.role === 'ADMIN' || this.currentUser?.role === 'MANAGER';
             
             return `
             <tr>
@@ -1229,6 +1234,7 @@ class Dashboard {
                 <td>
                     <div class="table-actions">
                         <button class="btn btn-sm btn-primary" onclick="dashboard.viewStudentGrades(${student.id})">Оцінки</button>
+                        ${canEdit ? `<button class="btn btn-sm btn-warning" onclick="dashboard.editStudent(${student.id})">Редагувати</button>` : ''}
                     </div>
                 </td>
             </tr>
@@ -1854,8 +1860,6 @@ class Dashboard {
                     return;
                 }
 
-                console.log('Removing student', studentId, 'from group', groupId);
-                
                 const response = await apiClient.removeStudentFromGroup(groupId, studentId);
                 if (response?.success) {
                     alert('Студента видалено з групи успішно!');
@@ -1986,25 +1990,17 @@ class Dashboard {
         try {
             let response;
             
-            console.log('loadSubjectsData called, user role:', this.currentUser?.role);
-            
             // Role-based subject loading
             if (this.currentUser?.role === 'STUDENT') {
                 // Students see only subjects from their grades/group
-                console.log('Loading student subjects...');
                 response = await this.getStudentSubjects();
-                console.log('Student subjects response:', response);
             } else if (this.currentUser?.role === 'TEACHER') {
                 // Teachers see only their own subjects
-                console.log('Loading teacher subjects...');
                 response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
             } else {
                 // Everyone else sees public subjects
-                console.log('Loading public subjects...');
                 response = await apiClient.getPublicSubjects();
             }
-            
-            console.log('Final response before render:', response);
                 
             // Check if response is successful and has data
             if (response?.success && Array.isArray(response.data)) {
@@ -2024,32 +2020,24 @@ class Dashboard {
     // Get subjects for student based on their group
     async getStudentSubjects() {
         try {
-            console.log('Loading student subjects...');
-            
             // Get current student to find their group
             const studentResponse = await apiClient.getCurrentStudent();
-            console.log('Current student response:', studentResponse);
             
             // Handle both direct object and wrapped response
             const currentStudent = studentResponse?.data || studentResponse;
-            console.log('Current student data:', currentStudent);
             
             if (currentStudent && currentStudent.group && currentStudent.group.id) {
-                console.log('Student group ID:', currentStudent.group.id);
                 const subjectsByGroup = await apiClient.getSubjectsByGroup(currentStudent.group.id);
-                console.log('Subjects by group response:', subjectsByGroup);
                 
                 // Handle both direct array and wrapped response
                 const subjectsArray = subjectsByGroup?.data || subjectsByGroup;
                 
                 if (subjectsArray && Array.isArray(subjectsArray) && subjectsArray.length > 0) {
-                    console.log('Using subjects from group:', subjectsArray.length);
                     return subjectsArray;
                 }
             }
             
             // Fallback: get subjects from grades only if group method completely failed
-            console.log('Fallback: getting subjects from student grades...');
             const gradesResponse = await apiClient.getMyGrades();
             const grades = Array.isArray(gradesResponse) ? gradesResponse : (gradesResponse?.data || []);
             
@@ -2070,12 +2058,10 @@ class Dashboard {
                 });
                 
                 if (subjectMap.size > 0) {
-                    console.log('Using subjects from grades:', subjectMap.size);
                     return Array.from(subjectMap.values());
                 }
             }
             
-            console.log('No subjects found for student');
             return [];
             
         } catch (error) {
@@ -2286,9 +2272,7 @@ class Dashboard {
 
         // Load subjects for the current teacher after DOM is ready
         setTimeout(async () => {
-            console.log('Attempting to load subjects after timeout...');
             const testElement = document.getElementById('grade-subject-select');
-            console.log('Subject select element found:', testElement);
             if (testElement) {
                 await this.loadSubjectsForTeacherGrades();
             } else {
@@ -2344,20 +2328,13 @@ class Dashboard {
             return;
         }
 
-        console.log('Loading subjects for teacher grades...');
-        console.log('Current user:', this.currentUser);
-
         try {
             let response;
             if (this.currentUser?.role === 'TEACHER' && this.currentUser.teacherId) {
-                console.log('Loading subjects for teacher ID:', this.currentUser.teacherId);
                 response = await apiClient.getSubjectsByTeacher(this.currentUser.teacherId);
             } else {
-                console.log('Loading public subjects (not a teacher or no teacherId)');
                 response = await apiClient.getPublicSubjects();
             }
-
-            console.log('Subjects response:', response);
 
             if (response?.success && Array.isArray(response.data)) {
                 subjectSelect.innerHTML = '<option value="">Оберіть дисципліну...</option>';
@@ -2367,7 +2344,6 @@ class Dashboard {
                     option.textContent = subject.subjectName || subject.name;
                     subjectSelect.appendChild(option);
                 });
-                console.log('Loaded', response.data.length, 'subjects');
             } else {
                 console.error('Invalid response format:', response);
                 subjectSelect.innerHTML = '<option value="">Помилка завантаження дисциплін</option>';
@@ -2380,26 +2356,15 @@ class Dashboard {
 
     // Setup dependencies between form dropdowns
     setupGradeFormDependencies() {
-        console.log('Setting up grade form dependencies...');
-        
         const subjectSelect = document.getElementById('grade-subject-select');
         const groupSelect = document.getElementById('grade-group-select');
         const studentSelect = document.getElementById('grade-student-select');
         const categorySelect = document.getElementById('grade-category-select');
         const typeSelect = document.getElementById('grade-type-select');
 
-        console.log('Form elements found:', {
-            subjectSelect: !!subjectSelect,
-            groupSelect: !!groupSelect,
-            studentSelect: !!studentSelect,
-            categorySelect: !!categorySelect,
-            typeSelect: !!typeSelect
-        });
-
         // When subject changes, load groups for that subject
         subjectSelect?.addEventListener('change', async (e) => {
             const subjectId = e.target.value;
-            console.log('Subject selected:', subjectId);
             
             // Reset dependent dropdowns
             groupSelect.innerHTML = '<option value="">Оберіть групу...</option>';
@@ -3158,6 +3123,179 @@ class Dashboard {
         if (modal) {
             modal.remove();
         }
+        // Restore body scroll
+        document.body.style.overflow = 'auto';
+    }
+
+    // Student editing methods
+    async editStudent(studentId) {
+        try {
+            const response = await apiClient.getStudent(studentId);
+            
+            if (response.success) {
+                this.showEditStudentModal(response.data);
+            } else {
+                alert('Помилка при завантаженні даних студента');
+            }
+        } catch (error) {
+            alert('Помилка при завантаженні даних студента');
+        }
+    }
+
+    showEditStudentModal(student) {
+        const firstName = student.user?.firstName || student.firstName || '';
+        const lastName = student.user?.lastName || student.lastName || '';
+        const fullName = `${firstName} ${lastName}`.trim() || 'Невідомий студент';
+        
+        const modalHtml = `
+            <div class="modal fade" id="editStudentModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">👤 Редагувати студента: ${fullName}</h5>
+                            <button type="button" class="btn-close" onclick="dashboard.closeEditStudentModal()">&times;</button>
+                        </div>
+                        <form id="editStudentForm">
+                            <div class="modal-body">
+                                <div class="student-info-section">
+                                    <div class="info-card">
+                                        <h6>📋 Основна інформація</h6>
+                                        <div class="info-row">
+                                            <span><strong>📧 Email:</strong> ${student.user?.email || 'N/A'}</span>
+                                            <span><strong>🎓 Номер студента:</strong> ${student.studentNumber || 'N/A'}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span><strong>👥 Група:</strong> ${student.group?.groupName || 'Не призначено'}</span>
+                                            <span><strong>📅 Рік вступу:</strong> ${student.enrollmentYear || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h6>✏️ Редаговані поля</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="editEducationLevel" class="form-label">🎓 Рівень освіти</label>
+                                                <select class="form-select" id="editEducationLevel" required>
+                                                    <option value="BACHELOR" ${student.educationLevel === 'BACHELOR' ? 'selected' : ''}>Бакалавр</option>
+                                                    <option value="MASTER" ${student.educationLevel === 'MASTER' ? 'selected' : ''}>Магістр</option>
+                                                    <option value="PHD" ${student.educationLevel === 'PHD' ? 'selected' : ''}>Аспірант</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="editStudyForm" class="form-label">📚 Форма навчання</label>
+                                                <select class="form-select" id="editStudyForm" required>
+                                                    <option value="FULL_TIME" ${student.studyForm === 'FULL_TIME' ? 'selected' : ''}>Денна</option>
+                                                    <option value="PART_TIME" ${student.studyForm === 'PART_TIME' ? 'selected' : ''}>Заочна</option>
+                                                    <option value="DISTANCE" ${student.studyForm === 'DISTANCE' ? 'selected' : ''}>Дистанційна</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label for="editCourseYear" class="form-label">📖 Курс</label>
+                                                <select class="form-select" id="editCourseYear" required>
+                                                    <option value="1" ${student.courseYear === 1 ? 'selected' : ''}>1 курс</option>
+                                                    <option value="2" ${student.courseYear === 2 ? 'selected' : ''}>2 курс</option>
+                                                    <option value="3" ${student.courseYear === 3 ? 'selected' : ''}>3 курс</option>
+                                                    <option value="4" ${student.courseYear === 4 ? 'selected' : ''}>4 курс</option>
+                                                    <option value="5" ${student.courseYear === 5 ? 'selected' : ''}>5 курс</option>
+                                                    <option value="6" ${student.courseYear === 6 ? 'selected' : ''}>6 курс</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="dashboard.closeEditStudentModal()">❌ Скасувати</button>
+                                <button type="submit" class="btn btn-primary">💾 Зберегти зміни</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove any existing modal
+        const existingModal = document.getElementById('editStudentModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.body.style.overflow = 'hidden';
+        
+        // Store student data for update
+        this.currentEditStudent = student;
+        
+        // Show modal
+        const modal = document.getElementById('editStudentModal');
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        
+        // Handle form submission
+        document.getElementById('editStudentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateStudent();
+        });
+    }
+
+    async updateStudent() {
+        const studentId = this.currentEditStudent.id;
+        
+        // Prepare student data - only editable fields
+        const formData = {
+            id: studentId,
+            user: this.currentEditStudent.user, // Keep existing user data
+            studentNumber: this.currentEditStudent.studentNumber, // Keep existing
+            enrollmentYear: this.currentEditStudent.enrollmentYear, // Keep existing
+            phoneNumber: this.currentEditStudent.phoneNumber, // Keep existing
+            address: this.currentEditStudent.address, // Keep existing
+            group: this.currentEditStudent.group, // Keep existing group assignment
+            isActive: this.currentEditStudent.isActive, // Keep existing status
+            
+            // Update only these fields
+            educationLevel: document.getElementById('editEducationLevel').value,
+            studyForm: document.getElementById('editStudyForm').value,
+            courseYear: parseInt(document.getElementById('editCourseYear').value)
+        };
+        
+        try {
+            const response = await apiClient.updateStudent(studentId, formData);
+            
+            if (response && response.success !== false && response.status !== 403) {
+                alert('Дані студента успішно оновлено');
+                this.closeEditStudentModal();
+                // Refresh students list after a short delay to ensure data is committed
+                setTimeout(() => {
+                    this.loadStudentsData();
+                }, 500);
+            } else {
+                console.error('Update response error:', response);
+                if (response.status === 403) {
+                    alert('Помилка доступу: У вас недостатньо прав для редагування студента. Перевірте чи ви увійшли як MANAGER або ADMIN.');
+                } else {
+                    alert('Помилка при оновленні даних студента: ' + (response?.message || response?.data || 'Невідома помилка'));
+                }
+            }
+        } catch (error) {
+            console.error('Error updating student:', error);
+            alert('Помилка при оновленні даних студента: ' + error.message);
+        }
+    }
+
+    closeEditStudentModal() {
+        const modal = document.getElementById('editStudentModal');
+        if (modal) {
+            modal.remove();
+        }
+        this.currentEditStudent = null;
         // Restore body scroll
         document.body.style.overflow = 'auto';
     }

@@ -22,16 +22,21 @@ class ApiClient {
     async apiCall(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         const config = {
-            headers: this.getAuthHeaders(),
+            headers: {
+                ...this.getAuthHeaders(),
+                ...(options.headers || {})
+            },
             ...options
         };
+        // Ensure headers aren't overridden
+        delete config.headers.headers;
 
         try {
             const response = await fetch(url, config);
             
             if (response.status === 401) {
                 this.logout();
-                return null;
+                return { success: false, status: 401, error: 'Unauthorized' };
             }
 
             // Handle different response types
@@ -140,7 +145,8 @@ class ApiClient {
     }
     
     async getStudents() {
-        return await this.apiCall('/api/public/students');
+        // Use protected endpoint for authenticated users to get fresh data
+        return await this.apiCall('/api/students');
     }
 
     async getStudentsWithoutGroup() {
@@ -165,6 +171,13 @@ class ApiClient {
 
     async getCurrentStudent() {
         return await this.apiCall('/api/students/current');
+    }
+
+    async updateStudent(studentId, studentData) {
+        return await this.apiCall(`/api/students/${studentId}`, {
+            method: 'PUT',
+            body: JSON.stringify(studentData)
+        });
     }
     
     // Groups management methods
@@ -306,7 +319,6 @@ class ApiClient {
     }
 
     async createGrade(gradeData) {
-        console.log('OLD createGrade called with:', gradeData);
         return await this.apiCall('/api/grades', {
             method: 'POST',
             body: JSON.stringify(gradeData)
@@ -314,7 +326,6 @@ class ApiClient {
     }
 
     async createGradeByIds(studentId, subjectId, teacherId, gradeType, value, comments = null) {
-        console.log('createGradeByIds called with:', { studentId, subjectId, teacherId, gradeType, value, comments });
         return await this.apiCall('/api/grades/by-user-ids', {
             method: 'POST',
             body: JSON.stringify({
