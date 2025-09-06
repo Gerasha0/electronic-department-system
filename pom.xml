@@ -32,8 +32,11 @@
     <sonar.projectName>Electronic Department System</sonar.projectName>
     <sonar.projectVersion>${project.version}</sonar.projectVersion>
     <sonar.sources>src/main/java</sonar.sources>
+    <sonar.tests>src/test/java</sonar.tests>
     <sonar.java.binaries>target/classes</sonar.java.binaries>
-    <!-- Исключим тесты пока что -->
+    <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <!-- Исключим тесты из основного анализа -->
     <sonar.exclusions>src/test/**</sonar.exclusions>
   </properties>
 
@@ -195,6 +198,27 @@
             <version>8.0.33</version>
           </dependency>
         </dependencies>
+      </plugin>
+      
+      <!-- JaCoCo Maven plugin for code coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.10</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       
       <!-- SonarQube Maven plugin -->
