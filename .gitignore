@@ -48,6 +48,10 @@ buildNumber.properties
 .DS_Store
 .DS_Store?
 ._*
+
+# SonarQube credentials (security)
+.sonar-env
+sonar-analyze.sh
 .Spotlight-V100
 .Trashes
 ehthumbs.db

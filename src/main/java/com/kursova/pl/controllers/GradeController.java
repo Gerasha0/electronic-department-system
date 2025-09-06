@@ -27,6 +27,8 @@ import com.kursova.dal.entities.Grade;
 @Tag(name = "Grade Management", description = "Operations for managing student grades")
 public class GradeController {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GradeController.class);
+    
     private final GradeService gradeService;
     private final UnitOfWork unitOfWork;
 
@@ -46,18 +48,18 @@ public class GradeController {
         
         var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
         if (currentUser.isEmpty()) {
-            System.out.println("DEBUG: User not found for username: " + authentication.getName());
+            logger.debug("User not found for username: {}", authentication.getName());
             return false;
         }
         
         var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
         if (studentOpt.isEmpty()) {
-            System.out.println("DEBUG: Student not found for userId: " + currentUser.get().getId());
+            logger.debug("Student not found for userId: {}", currentUser.get().getId());
             return false;
         }
         
         Long currentStudentId = studentOpt.get().getId();
-        System.out.println("DEBUG: Current student ID: " + currentStudentId + ", Requested student ID: " + studentId);
+        logger.debug("Current student ID: {}, Requested student ID: {}", currentStudentId, studentId);
         return currentStudentId.equals(studentId);
     }
 
@@ -84,9 +86,8 @@ public class GradeController {
         try {
             GradeDto result = gradeService.createGradeWithValidation(studentId, teacherId, subjectId, gradeValue, gradeType, comments);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
-    } catch (Exception ex) {
+        } catch (Exception ex) {
         // log internal error and return a minimal, non-sensitive response
-        org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GradeController.class);
         logger.error("Error creating grade by ids", ex);
         java.util.Map<String, Object> err = java.util.Map.of(
             "error", "InternalServerError",
@@ -124,7 +125,6 @@ public class GradeController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception ex) {
             // log internal error and return a minimal, non-sensitive response
-            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GradeController.class);
             logger.error("Error creating grade by user ids", ex);
             java.util.Map<String, Object> err = java.util.Map.of(
                 "error", "InternalServerError",
@@ -164,31 +164,36 @@ public class GradeController {
     @Operation(summary = "Get my grades", description = "Retrieves grades for the current student")
     public ResponseEntity<List<GradeDto>> getMyGrades(Authentication authentication) {
         
-        System.out.println("DEBUG: getMyGrades called");
-        System.out.println("DEBUG: Authentication: " + authentication);
-        if (authentication != null) {
-            System.out.println("DEBUG: Authentication name: " + authentication.getName());
-            System.out.println("DEBUG: Authentication authorities: " + authentication.getAuthorities());
+        logger.debug("getMyGrades called");
+        logger.debug("Authentication: {}", authentication);
+        
+        // Check if authentication is null first
+        if (authentication == null) {
+            logger.debug("Authentication is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        
+        logger.debug("Authentication name: {}", authentication.getName());
+        logger.debug("Authentication authorities: {}", authentication.getAuthorities());
         
         // Get current user's student ID
         var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
         if (currentUser.isEmpty()) {
-            System.out.println("DEBUG: Current user not found");
+            logger.debug("Current user not found");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
         var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
         if (studentOpt.isEmpty()) {
-            System.out.println("DEBUG: Student record not found for user ID: " + currentUser.get().getId());
+            logger.debug("Student record not found for user ID: {}", currentUser.get().getId());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
         Long studentId = studentOpt.get().getId();
-        System.out.println("DEBUG: Found student ID: " + studentId);
+        logger.debug("Found student ID: {}", studentId);
         
         List<GradeDto> grades = gradeService.findByStudentId(studentId);
-        System.out.println("DEBUG: Found " + grades.size() + " grades for student");
+        logger.debug("Found {} grades for student", grades.size());
         return ResponseEntity.ok(grades);
     }
 
