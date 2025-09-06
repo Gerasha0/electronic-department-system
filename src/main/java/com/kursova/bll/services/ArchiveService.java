@@ -94,26 +94,9 @@ public interface ArchiveService {
     void deleteArchivedGrade(Long archivedGradeId);
 
     /**
-     * Inner class for archive statistics
-     */
-    class ArchiveStatistics {
-        private long totalArchivedGroups;
-        private long totalArchivedStudents;
-        private long totalArchivedGrades;
-        private LocalDateTime lastArchiveDate;
-
-        public ArchiveStatistics(long totalArchivedGroups, long totalArchivedStudents, 
-                               long totalArchivedGrades, LocalDateTime lastArchiveDate) {
-            this.totalArchivedGroups = totalArchivedGroups;
-            this.totalArchivedStudents = totalArchivedStudents;
-            this.totalArchivedGrades = totalArchivedGrades;
-            this.lastArchiveDate = lastArchiveDate;
-        }
-
-        // Getters
-        public long getTotalArchivedGroups() { return totalArchivedGroups; }
-        public long getTotalArchivedStudents() { return totalArchivedStudents; }
-        public long getTotalArchivedGrades() { return totalArchivedGrades; }
-        public LocalDateTime getLastArchiveDate() { return lastArchiveDate; }
+         * Inner class for archive statistics
+         */
+        record ArchiveStatistics(long totalArchivedGroups, long totalArchivedStudents, long totalArchivedGrades,
+                                 LocalDateTime lastArchiveDate) {
     }
 }

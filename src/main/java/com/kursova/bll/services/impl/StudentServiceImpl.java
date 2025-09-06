@@ -1,7 +1,6 @@
 package com.kursova.bll.services.impl;
 
 import com.kursova.bll.dto.StudentDto;
-import com.kursova.bll.dto.StudentGroupDto;
 import com.kursova.bll.mappers.StudentMapper;
 import com.kursova.bll.services.StudentService;
 import com.kursova.dal.entities.Student;
@@ -98,7 +97,7 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentDto> findActiveStudents() {
         return unitOfWork.getStudentRepository().findAll()
                 .stream()
-                .filter(student -> student.getIsActive())
+                .filter(Student::getIsActive)
                 .map(this::mapStudentWithCalculatedData)
                 .collect(Collectors.toList());
     }
@@ -327,7 +326,7 @@ public class StudentServiceImpl implements StudentService {
         // Note: This method name is misleading - it's actually called with username from JWT authentication
         // The 'email' parameter contains username from Authentication.getName()
         String username = email; // Authentication.getName() returns username, not actual email
-        
+
         User user = unitOfWork.getUserRepository().findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
         

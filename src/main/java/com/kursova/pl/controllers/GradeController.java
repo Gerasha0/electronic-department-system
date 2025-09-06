@@ -43,24 +43,24 @@ public class GradeController {
     private boolean canStudentAccessStudentId(Long studentId, Authentication authentication) {
         if (!authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_STUDENT"))) {
-            return true; // Not a student, let @PreAuthorize handle it
+            return false; // Not a student, let @PreAuthorize handle it
         }
         
         var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
         if (currentUser.isEmpty()) {
             logger.debug("User not found for username: {}", authentication.getName());
-            return false;
+            return true;
         }
         
         var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
         if (studentOpt.isEmpty()) {
             logger.debug("Student not found for userId: {}", currentUser.get().getId());
-            return false;
+            return true;
         }
         
         Long currentStudentId = studentOpt.get().getId();
         logger.debug("Current student ID: {}, Requested student ID: {}", currentStudentId, studentId);
-        return currentStudentId.equals(studentId);
+        return !currentStudentId.equals(studentId);
     }
 
     @PostMapping
@@ -223,7 +223,7 @@ public class GradeController {
             @PathVariable @Parameter(description = "Subject ID") Long subjectId,
             Authentication authentication) {
         
-        if (!canStudentAccessStudentId(studentId, authentication)) {
+        if (canStudentAccessStudentId(studentId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
@@ -238,7 +238,7 @@ public class GradeController {
             @PathVariable @Parameter(description = "Student ID") Long studentId,
             Authentication authentication) {
         
-        if (!canStudentAccessStudentId(studentId, authentication)) {
+        if (canStudentAccessStudentId(studentId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         List<GradeDto> grades = gradeService.findFinalGradesByStudent(studentId);
@@ -280,7 +280,7 @@ public class GradeController {
             @PathVariable @Parameter(description = "Student ID") Long studentId,
             Authentication authentication) {
         
-        if (!canStudentAccessStudentId(studentId, authentication)) {
+        if (canStudentAccessStudentId(studentId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
@@ -296,7 +296,7 @@ public class GradeController {
             @PathVariable @Parameter(description = "Subject ID") Long subjectId,
             Authentication authentication) {
         
-        if (!canStudentAccessStudentId(studentId, authentication)) {
+        if (canStudentAccessStudentId(studentId, authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         

@@ -14,7 +14,6 @@ import com.kursova.dal.entities.Grade;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Teacher;
 import com.kursova.dal.entities.Subject;
-import com.kursova.dal.entities.User;
 import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -134,7 +133,7 @@ public class TeacherServiceImpl implements TeacherService {
     public List<TeacherDto> findActiveTeachers() {
         List<Teacher> teachers = unitOfWork.getTeacherRepository().findAll()
                 .stream()
-                .filter(teacher -> teacher.getIsActive())
+                .filter(Teacher::getIsActive)
                 .collect(Collectors.toList());
 
         return teachers.stream()

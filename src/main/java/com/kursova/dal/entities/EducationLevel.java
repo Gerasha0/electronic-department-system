@@ -4,18 +4,18 @@ package com.kursova.dal.entities;
  * Enumeration for education levels
  */
 public enum EducationLevel {
-    BACHELOR("Бакалавр", 1, 5),
-    SPECIALIST("Спеціаліст", 1, 6),
-    MASTER("Магістр", 1, 2),
-    PHD("Аспірант", 1, 4);
+    BACHELOR("Бакалавр", 5),
+    SPECIALIST("Спеціаліст", 6),
+    MASTER("Магістр", 2),
+    PHD("Аспірант", 4);
 
     private final String displayName;
     private final int minCourse;
     private final int maxCourse;
 
-    EducationLevel(String displayName, int minCourse, int maxCourse) {
+    EducationLevel(String displayName, int maxCourse) {
         this.displayName = displayName;
-        this.minCourse = minCourse;
+        this.minCourse = 1;
         this.maxCourse = maxCourse;
     }
 

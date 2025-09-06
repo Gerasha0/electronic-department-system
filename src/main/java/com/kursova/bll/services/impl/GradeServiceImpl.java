@@ -58,49 +58,22 @@ public class GradeServiceImpl implements GradeService {
 
     private String getGradeCategory(GradeType gradeType) {
         if (gradeType == null) return "Інше";
-        
-        switch (gradeType) {
-            case CURRENT:
-            case HOMEWORK:
-            case INDIVIDUAL_WORK:
-                return "Поточна робота";
-            case MODULE:
-            case MODULE_WORK:
-            case MIDTERM:
-                return "Модульна робота";
-            case LABORATORY:
-            case PRACTICAL:
-                return "Лабораторна робота";
-            case CONTROL_WORK:
-            case SEMINAR:
-                return "Контрольна робота";
-            case EXAM:
-            case FINAL:
-                return "Іспит";
-            case CREDIT:
-            case DIFF_CREDIT:
-                return "Залік";
-            case COURSEWORK:
-            case QUALIFICATION_WORK:
-                return "Курсова робота";
-            case STATE_EXAM:
-                return "Державний іспит";
-            case RETAKE:
-            case RETAKE_EXAM:
-            case RETAKE_CREDIT:
-            case RETAKE_WORK:
-                return "Перездача";
-            case MAKEUP:
-            case MAKEUP_WORK:
-            case MAKEUP_LESSON:
-                return "Відпрацювання";
-            case ATTESTATION:
-                return "Атестація";
-            case ADDITIONAL_TASK:
-                return "Додаткове завдання";
-            default:
-                return "Інше";
-        }
+
+        return switch (gradeType) {
+            case CURRENT, HOMEWORK, INDIVIDUAL_WORK -> "Поточна робота";
+            case MODULE, MODULE_WORK, MIDTERM -> "Модульна робота";
+            case LABORATORY, PRACTICAL -> "Лабораторна робота";
+            case CONTROL_WORK, SEMINAR -> "Контрольна робота";
+            case EXAM, FINAL -> "Іспит";
+            case CREDIT, DIFF_CREDIT -> "Залік";
+            case COURSEWORK, QUALIFICATION_WORK -> "Курсова робота";
+            case STATE_EXAM -> "Державний іспит";
+            case RETAKE, RETAKE_EXAM, RETAKE_CREDIT, RETAKE_WORK -> "Перездача";
+            case MAKEUP, MAKEUP_WORK, MAKEUP_LESSON -> "Відпрацювання";
+            case ATTESTATION -> "Атестація";
+            case ADDITIONAL_TASK -> "Додаткове завдання";
+            default -> "Інше";
+        };
     }
 
     // Implementation of BaseService methods
@@ -390,17 +363,7 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow(() -> new RuntimeException("Grade not found with id: " + gradeId));
 
         // Create a copy of the existing grade for archiving
-        Grade originalGradeForArchive = new Grade();
-        originalGradeForArchive.setId(grade.getId());
-        originalGradeForArchive.setStudent(grade.getStudent());
-        originalGradeForArchive.setSubject(grade.getSubject());
-        originalGradeForArchive.setTeacher(grade.getTeacher());
-        originalGradeForArchive.setGradeValue(grade.getGradeValue());
-        originalGradeForArchive.setGradeType(grade.getGradeType());
-        originalGradeForArchive.setGradeCategory(grade.getGradeCategory());
-        originalGradeForArchive.setComments(grade.getComments());
-        originalGradeForArchive.setCreatedAt(grade.getCreatedAt());
-        originalGradeForArchive.setUpdatedAt(grade.getUpdatedAt());
+        Grade originalGradeForArchive = getGrade(grade);
 
         // Archive the original grade
         ArchivedGrade archivedGrade = new ArchivedGrade(originalGradeForArchive, getCurrentUserName(), "Відредаговано");
@@ -412,6 +375,21 @@ public class GradeServiceImpl implements GradeService {
 
         Grade updatedGrade = unitOfWork.getGradeRepository().save(grade);
         return gradeMapper.toDto(updatedGrade);
+    }
+
+    private static Grade getGrade(Grade grade) {
+        Grade originalGradeForArchive = new Grade();
+        originalGradeForArchive.setId(grade.getId());
+        originalGradeForArchive.setStudent(grade.getStudent());
+        originalGradeForArchive.setSubject(grade.getSubject());
+        originalGradeForArchive.setTeacher(grade.getTeacher());
+        originalGradeForArchive.setGradeValue(grade.getGradeValue());
+        originalGradeForArchive.setGradeType(grade.getGradeType());
+        originalGradeForArchive.setGradeCategory(grade.getGradeCategory());
+        originalGradeForArchive.setComments(grade.getComments());
+        originalGradeForArchive.setCreatedAt(grade.getCreatedAt());
+        originalGradeForArchive.setUpdatedAt(grade.getUpdatedAt());
+        return originalGradeForArchive;
     }
 
     @Override

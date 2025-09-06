@@ -20,12 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -132,7 +132,7 @@ class GradeServiceTest {
     @DisplayName("Should find all grades by student ID")
     void findByStudentId_ShouldReturnGrades_WhenStudentHasGrades() {
         // Arrange
-        List<Grade> grades = Arrays.asList(testGrade);
+        List<Grade> grades = Collections.singletonList(testGrade);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdOrderByGradeDateDesc(1L)).thenReturn(grades);
@@ -153,7 +153,7 @@ class GradeServiceTest {
     @DisplayName("Should find all grades by teacher ID")
     void findByTeacherId_ShouldReturnGrades_WhenTeacherHasGrades() {
         // Arrange
-        List<Grade> grades = Arrays.asList(testGrade);
+        List<Grade> grades = Collections.singletonList(testGrade);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findGradesByTeacherId(1L)).thenReturn(grades);
@@ -262,7 +262,7 @@ class GradeServiceTest {
     @DisplayName("Should find grades by student and subject")
     void findByStudentAndSubject_ShouldReturnGrades_WhenGradesExist() {
         // Arrange
-        List<Grade> grades = Arrays.asList(testGrade);
+        List<Grade> grades = Collections.singletonList(testGrade);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdAndSubjectIdOrderByGradeDateDesc(1L, 1L)).thenReturn(grades);
@@ -320,7 +320,7 @@ class GradeServiceTest {
         // Arrange
         testGrade.setIsFinal(true);
         testGradeDto.setIsFinal(true);
-        List<Grade> finalGrades = Arrays.asList(testGrade);
+        List<Grade> finalGrades = Collections.singletonList(testGrade);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         when(gradeRepository.findByStudentIdAndIsFinalTrueOrderBySubjectSubjectNameAsc(1L)).thenReturn(finalGrades);

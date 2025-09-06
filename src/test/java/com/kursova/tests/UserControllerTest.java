@@ -17,6 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -114,7 +115,7 @@ class UserControllerTest {
     @DisplayName("Should get all users successfully")
     void getAllUsers_ShouldReturnUsersList_WhenUsersExist() throws Exception {
         // Arrange
-        List<UserDto> users = Arrays.asList(testUserDto);
+        List<UserDto> users = Collections.singletonList(testUserDto);
         when(userService.findAll()).thenReturn(users);
 
         // Act & Assert
@@ -148,7 +149,7 @@ class UserControllerTest {
     @DisplayName("Should get users by role successfully")
     void getUsersByRole_ShouldReturnUsersList_WhenUsersExist() throws Exception {
         // Arrange
-        List<UserDto> students = Arrays.asList(testUserDto);
+        List<UserDto> students = Collections.singletonList(testUserDto);
         when(userService.findByRole(UserRole.STUDENT)).thenReturn(students);
 
         // Act & Assert
@@ -165,7 +166,7 @@ class UserControllerTest {
     @DisplayName("Should get active users by role successfully")
     void getActiveUsersByRole_ShouldReturnActiveUsersList_WhenUsersExist() throws Exception {
         // Arrange
-        List<UserDto> activeStudents = Arrays.asList(testUserDto);
+        List<UserDto> activeStudents = Collections.singletonList(testUserDto);
         when(userService.findActiveByRole(UserRole.STUDENT)).thenReturn(activeStudents);
 
         // Act & Assert

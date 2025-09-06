@@ -4,7 +4,6 @@ import com.kursova.bll.dto.StudentGroupDto;
 import com.kursova.bll.mappers.StudentGroupMapper;
 import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.StudentGroupService;
-import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.StudentGroup;
 import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;

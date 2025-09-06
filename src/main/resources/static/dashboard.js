@@ -2638,7 +2638,7 @@ class Dashboard {
                         const studentId = student.id || student.userId;
                         const firstName = student.firstName || student.user?.firstName;
                         const lastName = student.lastName || student.user?.lastName;
-                        return `<option value="${studentId}" ${selectedId == studentId ? 'selected' : ''}>
+                        return `<option value="${studentId}" ${selectedId === studentId ? 'selected' : ''}>
                             ${firstName} ${lastName}
                         </option>`;
                     }).join('');
@@ -2671,7 +2671,7 @@ class Dashboard {
                 const subjects = response.data || [];
                 select.innerHTML = '<option value="">Оберіть дисципліну...</option>' +
                     subjects.map(subject => 
-                        `<option value="${subject.id}" ${selectedId == subject.id ? 'selected' : ''}>
+                        `<option value="${subject.id}" ${selectedId === subject.id ? 'selected' : ''}>
                             ${subject.subjectName || 'Без назви'}
                         </option>`
                     ).join('');
@@ -3531,7 +3531,7 @@ class Dashboard {
                 const option = document.createElement('option');
                 option.value = teacher.id;
                 // Use fullName, displayTitle, or construct from user data
-                const name = teacher.fullName || teacher.displayTitle || 
+                const name = teacher.fullName || teacher.displayTitle ||
                            (teacher.user ? `${teacher.user.firstName} ${teacher.user.lastName}` : 'Невідомий викладач');
                 option.textContent = name;
                 teacherSelect.appendChild(option);

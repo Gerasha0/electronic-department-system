@@ -2,8 +2,6 @@ package com.kursova.dal.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User entity for authentication and authorization
@@ -46,10 +44,10 @@ public class User {
     private LocalDateTime updatedAt;
 
     // Relationships
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Teacher teacher;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Student student;
 
     // Constructors

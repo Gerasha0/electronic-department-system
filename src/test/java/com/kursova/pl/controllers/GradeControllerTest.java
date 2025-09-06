@@ -19,7 +19,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -217,7 +216,7 @@ class GradeControllerTest {
     @Test
     void getAllGrades_Success() {
         // Arrange
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findAll()).thenReturn(grades);
 
         // Act
@@ -232,7 +231,7 @@ class GradeControllerTest {
     @Test
     void getGradesByStudent_Success() {
         // Arrange
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findByStudentId(1L)).thenReturn(grades);
 
         // Act
@@ -253,7 +252,7 @@ class GradeControllerTest {
         when(authentication.getName()).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
         when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(sampleStudent));
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findByStudentId(1L)).thenReturn(grades);
 
         // Act
@@ -308,7 +307,7 @@ class GradeControllerTest {
     @Test
     void getGradesByTeacher_Success() {
         // Arrange
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findByTeacherId(1L)).thenReturn(grades);
 
         // Act
@@ -322,7 +321,7 @@ class GradeControllerTest {
     @Test
     void getGradesBySubject_Success() {
         // Arrange
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findBySubjectId(1L)).thenReturn(grades);
 
         // Act
@@ -336,9 +335,9 @@ class GradeControllerTest {
     @Test
     void getGradesByStudentAndSubject_Success() {
         // Arrange
-        when(authentication.getAuthorities()).thenAnswer(invocation -> 
-            Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findByStudentAndSubject(1L, 1L)).thenReturn(grades);
 
         // Act
@@ -355,8 +354,8 @@ class GradeControllerTest {
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
         when(unitOfWork.getStudentRepository()).thenReturn(studentRepository);
         
-        when(authentication.getAuthorities()).thenAnswer(invocation -> 
-            Arrays.asList(new SimpleGrantedAuthority("ROLE_STUDENT")));
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                List.of(new SimpleGrantedAuthority("ROLE_STUDENT")));
         when(authentication.getName()).thenReturn("testuser");
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
         when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(sampleStudent));
@@ -372,9 +371,9 @@ class GradeControllerTest {
     @Test
     void getFinalGradesByStudent_Success() {
         // Arrange
-        when(authentication.getAuthorities()).thenAnswer(invocation -> 
-            Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findFinalGradesByStudent(1L)).thenReturn(grades);
 
         // Act
@@ -388,7 +387,7 @@ class GradeControllerTest {
     @Test
     void getGradesByType_Success() {
         // Arrange
-        List<GradeDto> grades = Arrays.asList(sampleGradeDto);
+        List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
         when(gradeService.findByGradeType(GradeType.CURRENT)).thenReturn(grades);
 
         // Act
@@ -444,8 +443,8 @@ class GradeControllerTest {
     @Test
     void getStudentAverageGrade_Success() {
         // Arrange
-        when(authentication.getAuthorities()).thenAnswer(invocation -> 
-            Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
         when(gradeService.getOverallAverageGradeForStudent(1L)).thenReturn(85.5);
 
         // Act
@@ -460,8 +459,8 @@ class GradeControllerTest {
     @Test
     void getStudentSubjectAverage_Success() {
         // Arrange
-        when(authentication.getAuthorities()).thenAnswer(invocation -> 
-            Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(authentication.getAuthorities()).thenAnswer(invocation ->
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
         when(gradeService.getAverageGradeForStudentInSubject(1L, 1L)).thenReturn(88.0);
 
         // Act
@@ -482,7 +481,7 @@ class GradeControllerTest {
         // Arrange
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
         
-        List<Grade> grades = Arrays.asList(sampleGrade);
+        List<Grade> grades = Collections.singletonList(sampleGrade);
         when(gradeRepository.findAll()).thenReturn(grades);
 
         // Act

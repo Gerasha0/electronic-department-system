@@ -17,12 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -145,8 +145,8 @@ class UserServiceTest {
     @DisplayName("Should find users by role")
     void findByRole_ShouldReturnUsers_WhenUsersExist() {
         // Arrange
-        List<User> users = Arrays.asList(testUser);
-        List<UserDto> userDtos = Arrays.asList(testUserDto);
+        List<User> users = Collections.singletonList(testUser);
+        List<UserDto> userDtos = Collections.singletonList(testUserDto);
 
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
         when(userRepository.findByRole(UserRole.STUDENT)).thenReturn(users);
@@ -174,7 +174,7 @@ class UserServiceTest {
         when(userMapper.toEntity(testUserDto)).thenReturn(testUser);
         when(userRepository.save(testUser)).thenReturn(testUser);
         when(userMapper.toDto(testUser)).thenReturn(testUserDto);
-        when(studentRepository.findAll()).thenReturn(Arrays.asList()); // Empty list for student number generation
+        when(studentRepository.findAll()).thenReturn(List.of()); // Empty list for student number generation
 
         // Act
         UserDto result = userService.create(testUserDto);
@@ -226,7 +226,7 @@ class UserServiceTest {
         when(userMapper.toEntity(testUserDto)).thenReturn(testUser);
         when(userRepository.save(testUser)).thenReturn(testUser);
         when(userMapper.toDto(testUser)).thenReturn(testUserDto);
-        when(studentRepository.findAll()).thenReturn(Arrays.asList()); // Empty list for student number generation
+        when(studentRepository.findAll()).thenReturn(List.of()); // Empty list for student number generation
 
         // Act
         UserDto result = userService.createWithPassword(testUserDto, "password123");

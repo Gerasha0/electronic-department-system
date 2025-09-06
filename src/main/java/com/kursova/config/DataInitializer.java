@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 /**
  * Data initializer to populate the database with sample data
  */
@@ -29,7 +27,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         // Check if data already exists
         if (unitOfWork.getUserRepository().count() > 0) {
             return; // Data already initialized
