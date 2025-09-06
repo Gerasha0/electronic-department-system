@@ -25,7 +25,7 @@
     });
   }
   
-  function initializeApp() {
+  async function initializeApp() {
     const token = localStorage.getItem('jwt');
     
     // Setup logout functionality
@@ -40,13 +40,13 @@
     // Check if user is authenticated and redirect to dashboard
     if (token && window.location.pathname === '/') {
       // Verify token is still valid before redirecting
-      verifyTokenAndRedirect();
+        await verifyTokenAndRedirect();
       return;
     }
 
     // Show welcome message with role if authenticated
     if (token) {
-      showAuthenticatedUser();
+      await showAuthenticatedUser();
     }
   }
   

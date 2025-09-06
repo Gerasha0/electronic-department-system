@@ -911,8 +911,7 @@ mark {
 
 .search-group input {
     flex: 1;
-    padding: 0.75rem 1rem;
-    padding-right: 3rem;
+    padding: 0.75rem 3rem 0.75rem 1rem;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     font-size: 0.9375rem;
@@ -2019,8 +2018,7 @@ table tbody tr:last-child td {
 
 .students-search-container .search-input {
     width: 100%;
-    padding: 0.75rem 1rem;
-    padding-left: 2.5rem;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     font-size: 0.9375rem;

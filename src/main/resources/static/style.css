@@ -519,11 +519,9 @@ a:hover {
     }
 
     .card {
-        margin: 1rem auto;
         padding: 1.5rem;
         max-width: none;
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
+        margin: 1rem 0.5rem;
     }
 
     .card h2 {
