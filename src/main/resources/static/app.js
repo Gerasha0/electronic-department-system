@@ -4,8 +4,8 @@
   initializeTheme();
   
   // Main initialization
-  document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+  document.addEventListener('DOMContentLoaded', async function() {
+    await initializeApp();
   });
   
   function initializeTheme() {

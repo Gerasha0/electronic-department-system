@@ -1774,7 +1774,7 @@ class Dashboard {
             const lastName = student.user?.lastName || student.lastName || '';
             const email = student.user?.email || student.email || '';
             const fullName = `${firstName} ${lastName}`.trim();
-            
+
             // Check if student is already in groups
             const groupsText = student.groups && student.groups.length > 0 
                 ? `Групи: ${student.groups.map(g => g.groupName || g.name).join(', ')}`
@@ -4166,7 +4166,7 @@ class Dashboard {
     translateAssessmentType(assessmentType) {
         const translations = {
             'EXAM': '📝 Екзамен',
-            'TEST': '✅ Залік', 
+            'TEST': '✅ Залік',
             'DIFFERENTIATED_CREDIT': '📊 Диференційований залік',
             'COURSE_WORK': '📄 Курсова робота',
             'QUALIFICATION_WORK': '🎓 Кваліфікаційна робота',
@@ -4691,16 +4691,16 @@ class Dashboard {
     async showSubjectGroupsModal(subjectId, subjectName) {
         const modal = document.getElementById('subject-groups-modal');
         const title = document.getElementById('subject-groups-modal-title');
-        
+
         if (!modal || !title) return;
-        
+
         title.textContent = `📋 Управління групами: ${subjectName}`;
         modal.dataset.subjectId = subjectId;
         modal.style.display = 'block';
 
         // Setup modal tabs
         this.setupSubjectGroupsModalTabs();
-        
+
         // Load data for both tabs
         await this.loadAssignedGroups(subjectId);
         await this.loadAvailableGroups(subjectId);
@@ -4731,7 +4731,7 @@ class Dashboard {
         const assignedSearch = document.getElementById('assigned-groups-search');
         const availableSearch = document.getElementById('available-groups-search');
         const courseFilter = document.getElementById('available-groups-course-filter');
-        
+
         // Remove old listeners by cloning and replacing elements
         if (assignedSearch) {
             const newAssignedSearch = assignedSearch.cloneNode(true);
@@ -4740,7 +4740,7 @@ class Dashboard {
                 this.filterAssignedGroups();
             }, 300));
         }
-        
+
         if (availableSearch) {
             const newAvailableSearch = availableSearch.cloneNode(true);
             availableSearch.parentNode.replaceChild(newAvailableSearch, availableSearch);
@@ -4748,7 +4748,7 @@ class Dashboard {
                 this.filterAvailableGroups();
             }, 300));
         }
-        
+
         // Course filter event listener (education filter is handled in loadEducationLevelsForSubjectModal)
         if (courseFilter) {
             const newCourseFilter = courseFilter.cloneNode(true);
@@ -4777,10 +4777,10 @@ class Dashboard {
         try {
             const response = await apiClient.getAvailableGroupsForSubject(subjectId);
             const groups = response?.success ? response.data : (Array.isArray(response) ? response : []);
-            
+
             // Store the original data for filtering
             this.availableGroupsData = groups;
-            
+
             this.renderAvailableGroups(groups);
         } catch (error) {
             console.error('Error loading available groups:', error);
@@ -4796,7 +4796,7 @@ class Dashboard {
         try {
             const educationSelect = document.getElementById('available-groups-education-filter');
             const courseSelect = document.getElementById('available-groups-course-filter');
-            
+
             if (educationSelect) {
                 // Use predefined education levels instead of API call
                 const levels = [
@@ -4804,16 +4804,16 @@ class Dashboard {
                     { key: 'MASTER', label: '🎯 Магістр' },
                     { key: 'PHD', label: '👨‍🔬 Аспірант' }
                 ];
-                
+
                 educationSelect.innerHTML = '<option value="">🎓 Усі рівні освіти</option>';
                 levels.forEach(level => {
                     educationSelect.innerHTML += `<option value="${level.label}">${level.label}</option>`;
                 });
-                
+
                 // Clear existing event listeners by cloning and replacing
                 const newEducationSelect = educationSelect.cloneNode(true);
                 educationSelect.parentNode.replaceChild(newEducationSelect, educationSelect);
-                
+
                 // Setup education level change handler to update course options
                 newEducationSelect.addEventListener('change', (e) => {
                     const newCourseSelect = document.getElementById('available-groups-course-filter');
@@ -4828,7 +4828,7 @@ class Dashboard {
                     }, 50);
                 });
             }
-            
+
             if (courseSelect) {
                 courseSelect.innerHTML = '<option value="">📖 Усі курси</option>';
                 // Initialize with all possible courses
@@ -4841,9 +4841,9 @@ class Dashboard {
 
     updateCourseFilterOptions(educationLevel, courseSelect, levels = []) {
         if (!courseSelect) return;
-        
+
         courseSelect.innerHTML = '<option value="">📖 Усі курси</option>';
-        
+
         if (educationLevel) {
             // Map education level text back to enum value for lookup
             let levelEnum = educationLevel;
@@ -4854,14 +4854,14 @@ class Dashboard {
             } else if (educationLevel.includes('Аспірант')) {
                 levelEnum = 'PHD';
             }
-            
+
             // Define course ranges for each education level
             const courseRanges = {
                 'BACHELOR': { min: 1, max: 5 },
                 'MASTER': { min: 1, max: 2 },
                 'PHD': { min: 1, max: 4 }
             };
-            
+
             const range = courseRanges[levelEnum];
             if (range) {
                 for (let i = range.min; i <= range.max; i++) {
@@ -4929,13 +4929,13 @@ class Dashboard {
     filterAssignedGroups() {
         const searchTerm = document.getElementById('assigned-groups-search')?.value.toLowerCase() || '';
         const rows = document.querySelectorAll('#assigned-groups-tbody tr');
-        
+
         rows.forEach(row => {
             if (row.children.length === 1) return; // Skip "no data" rows
-            
+
             const groupName = row.children[0]?.textContent.toLowerCase() || '';
             const groupCode = row.children[1]?.textContent.toLowerCase() || '';
-            
+
             const matches = groupName.includes(searchTerm) || groupCode.includes(searchTerm);
             row.style.display = matches ? '' : 'none';
         });
@@ -4945,33 +4945,33 @@ class Dashboard {
         const searchTerm = document.getElementById('available-groups-search')?.value.toLowerCase() || '';
         const educationFilter = document.getElementById('available-groups-education-filter')?.value || '';
         const courseFilter = document.getElementById('available-groups-course-filter')?.value || '';
-        
+
         // If we don't have the original data, don't filter
         if (!this.availableGroupsData) {
             console.warn('No available groups data to filter');
             return;
         }
-        
+
         // Filter the original data
         let filteredGroups = this.availableGroupsData.filter(group => {
             // Search filter
             const groupName = (group.groupName || '').toLowerCase();
             const groupCode = (group.groupCode || '').toLowerCase();
             const matchesSearch = !searchTerm || groupName.includes(searchTerm) || groupCode.includes(searchTerm);
-            
+
             // Education level filter - compare the actual enum values
-            const matchesEducation = !educationFilter || 
+            const matchesEducation = !educationFilter ||
                 this.translateEducationLevel(group.educationLevel) === educationFilter ||
                 group.educationLevel === educationFilter;
-            
+
             // Course filter - compare as numbers
             const groupCourse = parseInt(group.courseYear);
             const filterCourse = parseInt(courseFilter);
             const matchesCourse = !courseFilter || groupCourse === filterCourse;
-            
+
             return matchesSearch && matchesEducation && matchesCourse;
         });
-        
+
         // Re-render the filtered groups
         this.renderAvailableGroups(filteredGroups);
     }
@@ -4979,7 +4979,7 @@ class Dashboard {
     async addGroupToSubject(groupId) {
         const modal = document.getElementById('subject-groups-modal');
         const subjectId = modal?.dataset.subjectId;
-        
+
         if (!subjectId) {
             alert('Помилка: не вдалося визначити ID предмета');
             return;
@@ -5010,7 +5010,7 @@ class Dashboard {
 
         const modal = document.getElementById('subject-groups-modal');
         const subjectId = modal?.dataset.subjectId;
-        
+
         if (!subjectId) {
             alert('Помилка: не вдалося визначити ID предмета');
             return;
@@ -5045,16 +5045,16 @@ class Dashboard {
     async showSubjectTeachersModal(subjectId, subjectName) {
         const modal = document.getElementById('subject-teachers-modal');
         const title = document.getElementById('subject-teachers-modal-title');
-        
+
         if (!modal || !title) return;
-        
+
         title.textContent = `👨‍🏫 Управління викладачами: ${subjectName}`;
         modal.dataset.subjectId = subjectId;
         modal.style.display = 'block';
 
         // Setup modal tabs
         this.setupSubjectTeachersModalTabs();
-        
+
         // Load data for both tabs
         await this.loadAssignedTeachers(subjectId);
         await this.loadAvailableTeachers(subjectId);
@@ -5083,13 +5083,13 @@ class Dashboard {
         // Setup search inputs
         const assignedSearch = document.getElementById('assigned-teachers-search');
         const availableSearch = document.getElementById('available-teachers-search');
-        
+
         if (assignedSearch) {
             assignedSearch.addEventListener('input', this.debounce(() => {
                 this.filterAssignedTeachers();
             }, 300));
         }
-        
+
         if (availableSearch) {
             availableSearch.addEventListener('input', this.debounce(() => {
                 this.filterAvailableTeachers();
@@ -5177,16 +5177,16 @@ class Dashboard {
     filterAssignedTeachers() {
         const searchTerm = document.getElementById('assigned-teachers-search')?.value.toLowerCase() || '';
         const rows = document.querySelectorAll('#assigned-teachers-tbody tr');
-        
+
         rows.forEach(row => {
             if (row.children.length === 1) return; // Skip "no data" rows
-            
+
             const firstName = row.children[0]?.textContent.toLowerCase() || '';
             const lastName = row.children[1]?.textContent.toLowerCase() || '';
             const email = row.children[2]?.textContent.toLowerCase() || '';
-            
-            const matches = firstName.includes(searchTerm) || 
-                           lastName.includes(searchTerm) || 
+
+            const matches = firstName.includes(searchTerm) ||
+                           lastName.includes(searchTerm) ||
                            email.includes(searchTerm);
             row.style.display = matches ? '' : 'none';
         });
@@ -5195,16 +5195,16 @@ class Dashboard {
     filterAvailableTeachers() {
         const searchTerm = document.getElementById('available-teachers-search')?.value.toLowerCase() || '';
         const rows = document.querySelectorAll('#available-teachers-tbody tr');
-        
+
         rows.forEach(row => {
             if (row.children.length === 1) return; // Skip "no data" rows
-            
+
             const firstName = row.children[0]?.textContent.toLowerCase() || '';
             const lastName = row.children[1]?.textContent.toLowerCase() || '';
             const email = row.children[2]?.textContent.toLowerCase() || '';
-            
-            const matches = firstName.includes(searchTerm) || 
-                           lastName.includes(searchTerm) || 
+
+            const matches = firstName.includes(searchTerm) ||
+                           lastName.includes(searchTerm) ||
                            email.includes(searchTerm);
             row.style.display = matches ? '' : 'none';
         });
@@ -5213,7 +5213,7 @@ class Dashboard {
     async addTeacherToSubject(teacherId) {
         const modal = document.getElementById('subject-teachers-modal');
         const subjectId = modal?.dataset.subjectId;
-        
+
         if (!subjectId) {
             alert('Помилка: не вдалося визначити ID предмета');
             return;
@@ -5242,7 +5242,7 @@ class Dashboard {
 
         const modal = document.getElementById('subject-teachers-modal');
         const subjectId = modal?.dataset.subjectId;
-        
+
         if (!subjectId) {
             alert('Помилка: не вдалося визначити ID предмета');
             return;

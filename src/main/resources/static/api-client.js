@@ -35,7 +35,7 @@ class ApiClient {
             const response = await fetch(url, config);
             
             if (response.status === 401) {
-                this.logout();
+                await this.logout();
                 return { success: false, status: 401, error: 'Unauthorized' };
             }
 
@@ -527,12 +527,6 @@ class ApiClient {
     async addTeacherToSubject(subjectId, teacherId) {
         return await this.apiCall(`/api/subjects/${subjectId}/teachers/${teacherId}`, {
             method: 'POST'
-        });
-    }
-
-    async removeTeacherFromSubject(subjectId, teacherId) {
-        return await this.apiCall(`/api/subjects/${subjectId}/teachers/${teacherId}`, {
-            method: 'DELETE'
         });
     }
 
