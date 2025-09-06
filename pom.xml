@@ -13,7 +13,7 @@
 
   <groupId>com.kursova</groupId>
   <artifactId>electronic-department</artifactId>
-  <version>0.6.7</version>
+  <version>0.7.0</version>
   <packaging>jar</packaging>
 
   <name>Electronic Department System</name>
@@ -25,6 +25,16 @@
     <maven.compiler.target>17</maven.compiler.target>
     <java.version>17</java.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
+    
+    <!-- SonarQube properties -->
+    <sonar.host.url>http://localhost:9000</sonar.host.url>
+    <sonar.projectKey>electronic-department-system</sonar.projectKey>
+    <sonar.projectName>Electronic Department System</sonar.projectName>
+    <sonar.projectVersion>${project.version}</sonar.projectVersion>
+    <sonar.sources>src/main/java</sonar.sources>
+    <sonar.java.binaries>target/classes</sonar.java.binaries>
+    <!-- Исключим тесты пока что -->
+    <sonar.exclusions>src/test/**</sonar.exclusions>
   </properties>
 
   <dependencies>
@@ -56,15 +66,16 @@
     </dependency>
 
     <!-- Database -->
+    <!-- H2 Database - only for tests -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <scope>runtime</scope>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
       <version>8.0.33</version>
     </dependency>
@@ -184,6 +195,13 @@
             <version>8.0.33</version>
           </dependency>
         </dependencies>
+      </plugin>
+      
+      <!-- SonarQube Maven plugin -->
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.10.0.2594</version>
       </plugin>
     </plugins>
   </build>

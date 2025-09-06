@@ -34,6 +34,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    
+    @Mock
+    private com.kursova.dal.repositories.StudentRepository studentRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -103,7 +106,9 @@ class UserServiceTest {
     void findByUsername_ShouldReturnUser_WhenUserExists() {
         // Arrange
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
+        when(unitOfWork.getStudentRepository()).thenReturn(studentRepository);
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.empty()); // User is not a student
         when(userMapper.toDto(testUser)).thenReturn(testUserDto);
 
         // Act
@@ -163,11 +168,13 @@ class UserServiceTest {
     void create_ShouldReturnCreatedUser_WhenValidData() {
         // Arrange
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
+        when(unitOfWork.getStudentRepository()).thenReturn(studentRepository);
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
         when(userMapper.toEntity(testUserDto)).thenReturn(testUser);
         when(userRepository.save(testUser)).thenReturn(testUser);
         when(userMapper.toDto(testUser)).thenReturn(testUserDto);
+        when(studentRepository.findAll()).thenReturn(Arrays.asList()); // Empty list for student number generation
 
         // Act
         UserDto result = userService.create(testUserDto);
@@ -212,12 +219,14 @@ class UserServiceTest {
     void createWithPassword_ShouldReturnUser_WhenValidData() {
         // Arrange
         when(unitOfWork.getUserRepository()).thenReturn(userRepository);
+        when(unitOfWork.getStudentRepository()).thenReturn(studentRepository);
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
         when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashedpassword");
         when(userMapper.toEntity(testUserDto)).thenReturn(testUser);
         when(userRepository.save(testUser)).thenReturn(testUser);
         when(userMapper.toDto(testUser)).thenReturn(testUserDto);
+        when(studentRepository.findAll()).thenReturn(Arrays.asList()); // Empty list for student number generation
 
         // Act
         UserDto result = userService.createWithPassword(testUserDto, "password123");

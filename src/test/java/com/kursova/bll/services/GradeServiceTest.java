@@ -41,6 +41,18 @@ class GradeServiceTest {
 
     @Mock
     private GradeRepository gradeRepository;
+    
+    @Mock
+    private com.kursova.dal.repositories.StudentRepository studentRepository;
+    
+    @Mock
+    private com.kursova.dal.repositories.TeacherRepository teacherRepository;
+    
+    @Mock
+    private com.kursova.dal.repositories.SubjectRepository subjectRepository;
+    
+    @Mock
+    private com.kursova.dal.repositories.ArchivedGradeRepository archivedGradeRepository;
 
     @Mock
     private GradeMapper gradeMapper;
@@ -144,7 +156,7 @@ class GradeServiceTest {
         List<Grade> grades = Arrays.asList(testGrade);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
-        when(gradeRepository.findByTeacherIdOrderByGradeDateDesc(1L)).thenReturn(grades);
+        when(gradeRepository.findGradesByTeacherId(1L)).thenReturn(grades);
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);
 
         // Act
@@ -155,7 +167,7 @@ class GradeServiceTest {
             .isNotNull()
             .hasSize(1);
         assertThat(result.get(0).getTeacherId()).isEqualTo(1L);
-        verify(gradeRepository).findByTeacherIdOrderByGradeDateDesc(1L);
+        verify(gradeRepository).findGradesByTeacherId(1L);
     }
 
     @Test
@@ -163,8 +175,16 @@ class GradeServiceTest {
     void create_ShouldReturnCreatedGrade_WhenValidGradeProvided() {
         // Arrange
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
+        when(unitOfWork.getStudentRepository()).thenReturn(studentRepository);
+        when(unitOfWork.getTeacherRepository()).thenReturn(teacherRepository);
+        when(unitOfWork.getSubjectRepository()).thenReturn(subjectRepository);
+        
         when(gradeMapper.toEntity(testGradeDto)).thenReturn(testGrade);
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(testStudent));
+        when(teacherRepository.findById(1L)).thenReturn(Optional.of(testTeacher));
+        when(subjectRepository.findById(1L)).thenReturn(Optional.of(testSubject));
         when(gradeRepository.save(any(Grade.class))).thenReturn(testGrade);
+        when(gradeRepository.findByIdWithRelations(1L)).thenReturn(Optional.of(testGrade));
         when(gradeMapper.toDto(testGrade)).thenReturn(testGradeDto);
 
         // Act
@@ -187,8 +207,10 @@ class GradeServiceTest {
         updatedGradeDto.setGradeValue(90);
 
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
+        when(unitOfWork.getArchivedGradeRepository()).thenReturn(archivedGradeRepository);
         when(gradeRepository.findById(1L)).thenReturn(Optional.of(testGrade));
         when(gradeRepository.save(any(Grade.class))).thenReturn(testGrade);
+        when(archivedGradeRepository.save(any())).thenReturn(null); // We don't care about archived result
         when(gradeMapper.toDto(testGrade)).thenReturn(updatedGradeDto);
 
         // Act
@@ -199,6 +221,7 @@ class GradeServiceTest {
         assertThat(result.getGradeValue()).isEqualTo(90);
         verify(gradeRepository).findById(1L);
         verify(gradeRepository).save(any(Grade.class));
+        verify(archivedGradeRepository).save(any());
     }
 
     @Test
@@ -206,13 +229,16 @@ class GradeServiceTest {
     void delete_ShouldDeleteGrade_WhenGradeExists() {
         // Arrange
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
-        when(gradeRepository.existsById(1L)).thenReturn(true);
+        when(unitOfWork.getArchivedGradeRepository()).thenReturn(archivedGradeRepository);
+        when(gradeRepository.findById(1L)).thenReturn(Optional.of(testGrade));
+        when(archivedGradeRepository.save(any())).thenReturn(null); // We don't care about archived result
 
         // Act
         gradeService.delete(1L);
 
         // Assert
-        verify(gradeRepository).existsById(1L);
+        verify(gradeRepository).findById(1L);
+        verify(archivedGradeRepository).save(any());
         verify(gradeRepository).deleteById(1L);
     }
 
@@ -221,12 +247,15 @@ class GradeServiceTest {
     void delete_ShouldThrowException_WhenGradeNotExists() {
         // Arrange
         when(unitOfWork.getGradeRepository()).thenReturn(gradeRepository);
-        when(gradeRepository.existsById(999L)).thenReturn(false);
+        when(gradeRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThatThrownBy(() -> gradeService.delete(999L))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Grade not found with id: 999");
+        
+        verify(gradeRepository).findById(999L);
+        verify(gradeRepository, never()).deleteById(any());
     }
 
     @Test

@@ -37,6 +37,7 @@ public interface GradeMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "gradeDate", ignore = true)
+    @Mapping(target = "gradeCategory", ignore = true)
     @Mapping(target = "student", ignore = true)
     @Mapping(target = "teacher", ignore = true)
     @Mapping(target = "subject", ignore = true)
@@ -53,6 +54,7 @@ public interface GradeMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "gradeDate", ignore = true)
+    @Mapping(target = "gradeCategory", ignore = true)
     void updateEntityFromDto(GradeDto dto, @MappingTarget Grade entity);
 
     // Simple mapping without nested objects for lists

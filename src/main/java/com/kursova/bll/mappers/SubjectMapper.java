@@ -21,14 +21,18 @@ public interface SubjectMapper {
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "teachers", ignore = true) // Handle teachers separately to avoid circular dependency
+    @Mapping(target = "groupCount", expression = "java(entity.getGroups() != null ? entity.getGroups().size() : 0)")
     SubjectDto toDto(Subject entity);
 
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "teachers", ignore = true)
     @Mapping(target = "grades", ignore = true)
+    @Mapping(target = "groups", ignore = true)
     Subject toEntity(SubjectDto dto);
 
+    @Mapping(target = "teachers", ignore = true)
+    @Mapping(target = "groupCount", expression = "java(entity.getGroups() != null ? entity.getGroups().size() : 0)")
     List<SubjectDto> toDtoList(List<Subject> entities);
 
     List<Subject> toEntityList(List<SubjectDto> dtos);
@@ -38,6 +42,7 @@ public interface SubjectMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "teachers", ignore = true)
     @Mapping(target = "grades", ignore = true)
+    @Mapping(target = "groups", ignore = true)
     void updateEntityFromDto(SubjectDto dto, @MappingTarget Subject entity);
 
     // Simple mapping without nested objects for lists
@@ -45,5 +50,6 @@ public interface SubjectMapper {
     @Mapping(target = "teachers", ignore = true)
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "updatedAt", source = "updatedAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Mapping(target = "groupCount", expression = "java(entity.getGroups() != null ? entity.getGroups().size() : 0)")
     SubjectDto toDtoSimple(Subject entity);
 }

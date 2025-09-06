@@ -280,7 +280,6 @@ mysql -u dept_user -p electronic_department < backup.sql
 ### Включить логирование SQL запросов:
 ```properties
 # Для development
-logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
 
 # Для production (осторожно с размером логов)

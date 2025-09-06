@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public interface StudentGroupMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "students", ignore = true)
+    @Mapping(target = "subjects", ignore = true)
     StudentGroup toEntity(StudentGroupDto dto);
 
     @Mapping(target = "students", ignore = true)
@@ -38,6 +40,7 @@ public interface StudentGroupMapper {
     StudentGroupDto toDtoSimple(StudentGroup entity);
 
     @Named("toDtoList")
+    @IterableMapping(qualifiedByName = "toDtoSimple")
     List<StudentGroupDto> toDtoList(List<StudentGroup> entities);
 
     List<StudentGroup> toEntityList(List<StudentGroupDto> dtos);
@@ -46,5 +49,6 @@ public interface StudentGroupMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "students", ignore = true)
+    @Mapping(target = "subjects", ignore = true)
     void updateEntityFromDto(StudentGroupDto dto, @MappingTarget StudentGroup entity);
 }

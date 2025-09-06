@@ -19,7 +19,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
     transform: translateX(-100%);
     transition: transform 0.6s ease;
     pointer-events: none;
@@ -34,18 +34,18 @@
     font-size: 1.875rem;
     font-weight: 700;
     letter-spacing: -0.025em;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     padding: 0.75rem 1rem;
     border-radius: var(--radius-lg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Enhanced Modal Styles */
@@ -63,14 +63,14 @@
     max-height: 90vh;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--accent-primary) var(--gray-100);
+    scrollbar-color: var(--accent-primary) #f3f4f6;
 }
 
 /* Modal tabs */
 .modal-tabs {
     display: flex;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--gray-300);
+    border-bottom: 1px solid #d1d5db;
 }
 
 .modal-tab-btn {
@@ -86,13 +86,13 @@
 
 .modal-tab-btn:hover {
     color: var(--accent-primary);
-    background: var(--gray-50);
+    background: #f9fafb;
 }
 
 .modal-tab-btn.active {
     color: var(--accent-primary);
     border-bottom-color: var(--accent-primary);
-    background: var(--gray-50);
+    background: #f9fafb;
 }
 
 .modal-tab-content {
@@ -222,13 +222,13 @@
     .details-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .detail-row {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
     }
-    
+
     .detail-row span {
         text-align: left;
     }
@@ -559,8 +559,12 @@ mark {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Disabled button state */
@@ -597,22 +601,8 @@ mark {
 }
 
 /* Group actions styling */
-.students-actions {
-    display: flex;
-    gap: 10px;
-    margin: 15px 0;
-    flex-wrap: wrap;
-}
-
-.students-actions .btn {
-    flex-shrink: 0;
-}
 
 /* Students Actions */
-.students-actions {
-    margin: 1rem 0;
-    text-align: right;
-}
 
 /* Scrollable Table Container */
 .scrollable {
@@ -709,25 +699,21 @@ mark {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .info-row {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .modal-wide {
         width: 98%;
         margin: 1%;
     }
-    
+
     .modal-content {
         max-height: 95vh;
     }
-    
-    .students-actions {
-        text-align: center;
-    }
-    
+
     .modal-actions {
         flex-direction: column;
     }
@@ -1088,7 +1074,7 @@ mark {
     left: 50%;
     width: 0;
     height: 0;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: width 0.6s ease, height 0.6s ease;
@@ -1156,11 +1142,6 @@ mark {
 .btn-sm {
     padding: 0.5rem 0.875rem;
     font-size: 0.8125rem;
-}
-
-.btn-lg {
-    padding: 1rem 2rem;
-    font-size: 1.0625rem;
 }
 
 /* Table styles */
@@ -1237,15 +1218,19 @@ table tbody tr:last-child td {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     animation: fadeIn 0.3s ease;
     overflow-y: auto;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-content {
@@ -1315,11 +1300,11 @@ table tbody tr:last-child td {
 }
 
 @keyframes slideUp {
-    from { 
+    from {
         opacity: 0;
         transform: translateY(30px) scale(0.95);
     }
-    to { 
+    to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
@@ -1466,36 +1451,6 @@ table tbody tr:last-child td {
     letter-spacing: 0.05em;
 }
 
-.role-admin {
-    background: rgba(6, 182, 212, 0.1);
-    color: var(--info);
-    border: 1px solid rgba(6, 182, 212, 0.2);
-}
-
-.role-manager {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.role-teacher {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.role-student {
-    background: rgba(139, 92, 246, 0.1);
-    color: var(--accent-secondary);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-}
-
-.role-guest {
-    background: rgba(107, 114, 128, 0.1);
-    color: var(--text-muted);
-    border: 1px solid rgba(107, 114, 128, 0.2);
-}
-
 /* Group count badge */
 .group-count-badge {
     display: inline-flex;
@@ -1549,76 +1504,58 @@ table tbody tr:last-child td {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Empty states */
-.empty-state {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: var(--text-muted);
-}
-
-.empty-state svg {
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-.empty-state h3 {
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.empty-state p {
-    font-size: 0.875rem;
-}
 
 /* Responsive Design */
 @media (max-width: 1024px) {
     .header-content {
         padding: 1.25rem 1.5rem;
     }
-    
+
     .header-content h1 {
         font-size: 1.5rem;
     }
-    
+
     .main-nav {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
-    
+
     .nav-btn {
         padding: 0.875rem 1rem;
         font-size: 0.875rem;
     }
-    
+
     .dashboard-main {
         padding: 1.5rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
     }
-    
+
     .section-controls {
         flex-direction: column;
         align-items: stretch;
         gap: 1rem;
     }
-    
+
     .filters {
         justify-content: center;
     }
-    
+
     .table-container {
         overflow-x: auto;
     }
-    
+
     table {
         min-width: 600px;
     }
@@ -1631,80 +1568,80 @@ table tbody tr:last-child td {
         gap: 1rem;
         text-align: center;
     }
-    
+
     .header-content h1 {
         font-size: 1.375rem;
     }
-    
+
     .user-info {
         flex-direction: column;
         gap: 0.75rem;
         text-align: center;
     }
-    
+
     .main-nav {
         grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
         gap: 0;
     }
-    
+
     .nav-btn {
         padding: 0.75rem 0.5rem;
         font-size: 0.8125rem;
     }
-    
+
     .dashboard-main {
         padding: 1rem;
     }
-    
+
     .section h2 {
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .stat-card {
         padding: 1.5rem;
     }
-    
+
     .section-controls {
         padding: 1rem;
     }
-    
+
     .filters {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filters input {
         min-width: auto;
         max-width: none;
     }
-    
+
     .table-actions {
         flex-direction: column;
         gap: 0.25rem;
     }
-    
+
     .table-actions .btn {
         font-size: 0.8125rem;
         padding: 0.5rem 0.75rem;
     }
-    
+
     .modal-content {
         margin: 5% auto;
         width: 95%;
         padding: 1.5rem;
     }
-    
+
     .form-actions,
     .form-buttons {
         flex-direction: column;
     }
-    
+
     .form-actions .btn,
     .form-buttons .btn {
         width: 100%;
@@ -1715,65 +1652,65 @@ table tbody tr:last-child td {
     .header-content {
         padding: 0.75rem;
     }
-    
+
     .header-content h1 {
         font-size: 1.25rem;
     }
-    
+
     .main-nav {
         grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
     }
-    
+
     .nav-btn {
         padding: 0.625rem 0.375rem;
         font-size: 0.75rem;
     }
-    
+
     .dashboard-main {
         padding: 0.75rem;
     }
-    
+
     .section h2 {
         font-size: 1.25rem;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
+
     .section h2::before {
         width: 2rem;
         height: 3px;
     }
-    
+
     .stat-card {
         padding: 1.25rem;
     }
-    
+
     .stat-card h3 {
         font-size: 1rem;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
+
     .section-controls {
         padding: 0.75rem;
     }
-    
+
     .table-container {
         margin-top: 0.5rem;
     }
-    
+
     table th,
     table td {
         padding: 0.75rem 0.5rem;
         font-size: 0.8125rem;
     }
-    
+
     .modal-content {
         padding: 1rem;
     }
-    
+
     .close {
         right: 1rem;
         top: 1rem;
@@ -1791,29 +1728,29 @@ table tbody tr:last-child td {
     .table-actions {
         display: none !important;
     }
-    
+
     .section {
         display: block !important;
         opacity: 1 !important;
         transform: none !important;
     }
-    
+
     .modal {
         display: none !important;
     }
-    
+
     .header-content {
         background: #333 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .stat-card,
     .table-container {
         box-shadow: none !important;
         border: 1px solid #ddd !important;
     }
-    
+
     table {
         min-width: auto !important;
     }
@@ -1832,25 +1769,25 @@ table tbody tr:last-child td {
     .section {
         transition: none;
     }
-    
+
     .stat-card:hover {
         transform: none;
     }
-    
+
     .nav-btn,
     .btn,
     .table-actions .btn {
         transition: none;
     }
-    
+
     .loading::after {
         animation: none;
     }
-    
+
     .modal-content {
         animation: none;
     }
-    
+
     .modal {
         animation: none;
     }
@@ -1911,7 +1848,7 @@ table tbody tr:last-child td {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .archive-stat-item:last-child {
@@ -1999,18 +1936,18 @@ table tbody tr:last-child td {
     .archive-tabs {
         justify-content: space-between;
     }
-    
+
     .archive-tab-btn {
         flex: 1;
         text-align: center;
         padding: 0.5rem;
         font-size: 0.875rem;
     }
-    
+
     .archive-tab-content .table-container {
         overflow-x: auto;
     }
-    
+
     .archive-reason {
         max-width: 150px;
     }
@@ -2028,13 +1965,6 @@ table tbody tr:last-child td {
 }
 
 /* Hide sections by default until properly loaded */
-.main-section {
-    display: none;
-}
-
-.main-section.active {
-    display: block;
-}
 
 /* Loading overlay for navigation */
 .nav-loading {
@@ -2185,27 +2115,8 @@ table tbody tr:last-child td {
 }
 
 /* Dark theme for info-card */
-[data-bs-theme="dark"] .info-card {
-    background: var(--bs-dark);
-    border-color: var(--bs-border-color);
-    color: var(--bs-body-color);
-}
-
-.info-note {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: var(--bs-info-bg-subtle);
-    border: 1px solid var(--bs-info-border-subtle);
-    border-radius: var(--radius-sm);
-    border-left: 3px solid var(--bs-info);
-}
 
 /* Dark theme for info-note */
-[data-bs-theme="dark"] .info-note {
-    background: var(--bs-dark-bg-subtle);
-    border-color: var(--bs-border-color);
-    color: var(--bs-body-color);
-}
 
 .info-card h6 {
     color: var(--accent-primary);
@@ -2246,24 +2157,10 @@ table tbody tr:last-child td {
 }
 
 /* Dark theme for form-section */
-[data-bs-theme="dark"] .form-section,
-.modal[data-bs-theme="dark"] .form-section,
-body[data-bs-theme="dark"] .form-section {
-    background: #2c2c2c !important;
-    border-color: #444 !important;
-    color: #ffffff !important;
-}
 
 /* Extra specific selector for modal form sections in dark theme */
-[data-bs-theme="dark"] .modal .modal-body .form-section {
-    background: #2c2c2c !important;
-    border-color: #444 !important;
-}
 
 /* Override any Bootstrap defaults */
-[data-bs-theme="dark"] .form-section * {
-    color: inherit !important;
-}
 
 .form-section h6 {
     color: var(--text-primary);
@@ -2359,17 +2256,17 @@ body[data-bs-theme="dark"] .form-section {
         margin: 1rem;
         max-width: none;
     }
-    
+
     .info-row {
         grid-template-columns: 1fr;
     }
-    
+
     #editStudentModal .modal-header,
     #editStudentModal .modal-body,
     #editStudentModal .modal-footer {
         padding: 1rem;
     }
-    
+
     .form-section {
         padding: 1rem;
     }

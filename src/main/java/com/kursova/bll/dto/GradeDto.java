@@ -20,6 +20,7 @@ public class GradeDto {
     @NotNull(message = "Grade type is required")
     private GradeType gradeType;
 
+    private String gradeCategory;
     private String gradeDate;
     private String comments;
     private Boolean isFinal;
@@ -77,6 +78,14 @@ public class GradeDto {
 
     public void setGradeType(GradeType gradeType) {
         this.gradeType = gradeType;
+    }
+
+    public String getGradeCategory() {
+        return gradeCategory;
+    }
+
+    public void setGradeCategory(String gradeCategory) {
+        this.gradeCategory = gradeCategory;
     }
 
     public String getGradeDate() {
