@@ -27,8 +27,7 @@ import com.kursova.dal.entities.Grade;
 @Tag(name = "Grade Management", description = "Operations for managing student grades")
 public class GradeController {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GradeController.class);
-    
+
     private final GradeService gradeService;
     private final UnitOfWork unitOfWork;
 
@@ -41,25 +40,22 @@ public class GradeController {
      * Helper method to check if current user is a student and can access the given studentId
      */
     private boolean canStudentAccessStudentId(Long studentId, Authentication authentication) {
-        if (!authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_STUDENT"))) {
+        if (authentication.getAuthorities().stream()
+                .noneMatch(auth -> auth.getAuthority().equals("ROLE_STUDENT"))) {
             return false; // Not a student, let @PreAuthorize handle it
         }
         
         var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
         if (currentUser.isEmpty()) {
-            logger.debug("User not found for username: {}", authentication.getName());
             return true;
         }
         
         var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
         if (studentOpt.isEmpty()) {
-            logger.debug("Student not found for userId: {}", currentUser.get().getId());
             return true;
         }
         
         Long currentStudentId = studentOpt.get().getId();
-        logger.debug("Current student ID: {}, Requested student ID: {}", currentStudentId, studentId);
         return !currentStudentId.equals(studentId);
     }
 
@@ -88,7 +84,6 @@ public class GradeController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception ex) {
         // log internal error and return a minimal, non-sensitive response
-        logger.error("Error creating grade by ids", ex);
         java.util.Map<String, Object> err = java.util.Map.of(
             "error", "InternalServerError",
             "message", "Failed to create grade"
@@ -125,7 +120,6 @@ public class GradeController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception ex) {
             // log internal error and return a minimal, non-sensitive response
-            logger.error("Error creating grade by user ids", ex);
             java.util.Map<String, Object> err = java.util.Map.of(
                 "error", "InternalServerError",
                 "message", "Failed to create grade: " + ex.getMessage()
@@ -163,37 +157,26 @@ public class GradeController {
     @GetMapping("/my-grades")
     @Operation(summary = "Get my grades", description = "Retrieves grades for the current student")
     public ResponseEntity<List<GradeDto>> getMyGrades(Authentication authentication) {
-        
-        logger.debug("getMyGrades called");
-        logger.debug("Authentication: {}", authentication);
-        
+
         // Check if authentication is null first
         if (authentication == null) {
-            logger.debug("Authentication is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        
-        logger.debug("Authentication name: {}", authentication.getName());
-        logger.debug("Authentication authorities: {}", authentication.getAuthorities());
-        
+
         // Get current user's student ID
         var currentUser = unitOfWork.getUserRepository().findByUsername(authentication.getName());
         if (currentUser.isEmpty()) {
-            logger.debug("Current user not found");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
         var studentOpt = unitOfWork.getStudentRepository().findByUserId(currentUser.get().getId());
         if (studentOpt.isEmpty()) {
-            logger.debug("Student record not found for user ID: {}", currentUser.get().getId());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
         Long studentId = studentOpt.get().getId();
-        logger.debug("Found student ID: {}", studentId);
-        
+
         List<GradeDto> grades = gradeService.findByStudentId(studentId);
-        logger.debug("Found {} grades for student", grades.size());
         return ResponseEntity.ok(grades);
     }
 

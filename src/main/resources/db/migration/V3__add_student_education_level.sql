@@ -7,11 +7,7 @@ ADD COLUMN education_level VARCHAR(20);
 -- For now, we'll set all existing students to Bachelor level and calculate course year
 UPDATE students 
 SET education_level = 'BACHELOR',
-    course_year = CASE 
-        WHEN enrollment_year IS NOT NULL THEN 
-            LEAST(GREATEST(YEAR(NOW()) - enrollment_year + 1, 1), 5)
-        ELSE 1 
-    END;
+    course_year = IF(enrollment_year IS NOT NULL, LEAST(GREATEST(YEAR(NOW()) - enrollment_year + 1, 1), 5), 1);
 
 -- You can manually update specific students to different education levels if needed
 -- Example:

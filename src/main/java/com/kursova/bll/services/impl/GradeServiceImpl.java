@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,11 +27,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class GradeServiceImpl implements GradeService {
 
-    private static final Logger logger = LoggerFactory.getLogger(GradeServiceImpl.class);
-
     private final UnitOfWork unitOfWork;
     private final GradeMapper gradeMapper;
-    private static final Logger log = LoggerFactory.getLogger(GradeServiceImpl.class);
 
     @Autowired
     public GradeServiceImpl(UnitOfWork unitOfWork, GradeMapper gradeMapper) {
@@ -42,7 +37,6 @@ public class GradeServiceImpl implements GradeService {
     }
 
     private String getCurrentUserName() {
-        try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getName() != null) {
                 var userOpt = unitOfWork.getUserRepository().findByUsername(authentication.getName());
@@ -50,9 +44,6 @@ public class GradeServiceImpl implements GradeService {
                     return userOpt.get().getFullName();
                 }
             }
-        } catch (Exception e) {
-            logger.warn("Could not get current user name", e);
-        }
         return "SYSTEM";
     }
 
@@ -342,14 +333,9 @@ public class GradeServiceImpl implements GradeService {
         grade.setCreatedAt(LocalDateTime.now());
         grade.setUpdatedAt(LocalDateTime.now());
 
-    log.debug("Creating grade - studentId={}, teacherId={}, subjectId={}",
-        studentId, teacherId, subjectId);
-    log.debug("Before save - grade.getStudent()={}, grade.getTeacher()={}, grade.getSubject()={}",
-        grade.getStudent(), grade.getTeacher(), grade.getSubject());
 
     Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
-    log.debug("Saved grade id={}", savedGrade.getId());
-        return gradeMapper.toDto(savedGrade);
+          return gradeMapper.toDto(savedGrade);
     }
 
     @Override

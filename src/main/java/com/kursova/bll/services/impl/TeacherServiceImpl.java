@@ -134,7 +134,7 @@ public class TeacherServiceImpl implements TeacherService {
         List<Teacher> teachers = unitOfWork.getTeacherRepository().findAll()
                 .stream()
                 .filter(Teacher::getIsActive)
-                .collect(Collectors.toList());
+                .toList();
 
         return teachers.stream()
                 .map(this::mapTeacherWithSubjects)

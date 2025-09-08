@@ -168,7 +168,10 @@ public class StudentController {
         if (authentication != null) {
             System.out.println("DEBUG: Authentication name: " + authentication.getName());
         }
-        
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         String email = authentication.getName();
         StudentDto student = studentService.findByEmail(email);
         System.out.println("DEBUG: Found student: " + student.getId());

@@ -713,13 +713,13 @@ class Dashboard {
                 this.renderGradesTable(response.data);
                 // Load filter data based on role
                 if (this.currentUser?.role === 'STUDENT') {
-                    this.loadSubjectsForStudentFilter();
+                    await this.loadSubjectsForStudentFilter();
                 } else if (this.currentUser?.role === 'TEACHER') {
-                    this.loadSubjectsForTeacherFilter();
-                    this.loadGroupsForTeacherFilter();
+                    await this.loadSubjectsForTeacherFilter();
+                    await this.loadGroupsForTeacherFilter();
                 } else {
-                    this.loadSubjectsForFilter();
-                    this.loadGroupsForFilter();
+                    await this.loadSubjectsForFilter();
+                    await this.loadGroupsForFilter();
                 }
             } else {
                 tbody.innerHTML = `<tr><td colspan="${colCount}">Помилка завантаження оцінок</td></tr>`;
@@ -1180,7 +1180,7 @@ class Dashboard {
             if (response?.success && Array.isArray(response.data)) {
                 this.allStudents = response.data; // Store all students for filtering
                 this.renderStudentsTable(response.data);
-                this.loadGroupsForStudentFilter(); // Load groups for filter
+                await this.loadGroupsForStudentFilter(); // Load groups for filter
             } else {
                 tbody.innerHTML = '<tr><td colspan="8">Помилка завантаження студентів</td></tr>';
             }
@@ -2197,7 +2197,7 @@ class Dashboard {
             const response = await apiClient.createUserWithPassword(userData, password);
             if (response?.success) {
                 modal.style.display = 'none';
-                this.loadUsersData();
+                await this.loadUsersData();
                 alert('Користувача створено успішно!');
             } else {
                 const errorMessage = typeof response?.data === 'string' 
@@ -2307,7 +2307,7 @@ class Dashboard {
                 const response = await apiClient.createGradeByIds(studentId, subjectId, teacherId, gradeType, value, comments);
                 if (response && response.success && response.data && response.data.id) {
                     modal.style.display = 'none';
-                    this.loadGradesData();
+                    await this.loadGradesData();
                     alert('Оцінку додано успішно!');
                 } else {
                     throw new Error(response?.data?.message || response?.error || 'Невідома помилка');
@@ -2371,28 +2371,20 @@ class Dashboard {
             studentSelect.innerHTML = '<option value="">Спочатку оберіть групу...</option>';
             
             if (subjectId && this.currentUser?.teacherId) {
-                try {
-                    console.log('Loading groups for teacher:', this.currentUser.teacherId, 'and subject:', subjectId);
-                    
                     // Get groups that study this subject and are taught by current teacher
                     const response = await apiClient.getGroupsByTeacher(this.currentUser.teacherId);
-                    console.log('Teacher groups response:', response);
                     
                     if (response?.success && Array.isArray(response.data)) {
                         // Filter groups that have this subject
                         const subjectResponse = await apiClient.getSubjectById(subjectId);
-                        console.log('Subject details response:', subjectResponse);
                         
                         if (subjectResponse?.success) {
                             const subjectGroups = subjectResponse.data.groups || [];
-                            console.log('Subject groups:', subjectGroups);
-                            console.log('Teacher groups:', response.data);
                             
                             let teacherGroups;
                             
                             // If subject has no groups assigned, show all teacher's groups
                             if (subjectGroups.length === 0) {
-                                console.log('Subject has no groups assigned, showing all teacher groups');
                                 teacherGroups = response.data;
                             } else {
                                 // Filter groups that have this subject
@@ -2401,22 +2393,15 @@ class Dashboard {
                                 );
                             }
                             
-                            console.log('Filtered teacher groups for this subject:', teacherGroups);
-                            
                             teacherGroups.forEach(group => {
                                 const option = document.createElement('option');
                                 option.value = group.id;
                                 option.textContent = group.groupName || group.name;
                                 groupSelect.appendChild(option);
                             });
-                            
-                            console.log('Added', teacherGroups.length, 'groups to dropdown');
                         }
                     }
-                } catch (error) {
-                    console.error('Error loading groups for subject:', error);
                 }
-            }
         });
 
         // When group changes, load students from that group
@@ -2598,7 +2583,7 @@ class Dashboard {
             const response = await apiClient.updateGrade(grade.id, gradeData);
             if (response?.success) {
                 modal.style.display = 'none';
-                this.loadGradesData();
+                await this.loadGradesData();
                 alert('Оцінку оновлено успішно! Попередня оцінка збережена в архіві.');
             } else {
                 const errorMessage = typeof response?.data === 'string' 
@@ -2701,7 +2686,7 @@ class Dashboard {
                 const response = await apiClient.deleteGrade(gradeId);
                 if (response?.success) {
                     alert('Оцінку видалено успішно!');
-                    this.loadGradesData();
+                    await this.loadGradesData();
                 } else {
                     alert('Помилка видалення оцінки: ' + (response?.data || 'Невідома помилка'));
                 }
@@ -2716,7 +2701,7 @@ class Dashboard {
         const response = await apiClient[action](userId);
         
         if (response?.success) {
-            this.loadUsersData();
+            await this.loadUsersData();
             alert(`Користувача ${isActive ? 'деактивовано' : 'активовано'} успішно!`);
         } else {
             alert('Помилка зміни статусу користувача');
@@ -2727,7 +2712,7 @@ class Dashboard {
         if (confirm('Ви впевнені, що хочете видалити цього користувача?')) {
             const response = await apiClient.deleteUser(userId);
             if (response?.success) {
-                this.loadUsersData();
+                await this.loadUsersData();
                 alert('Користувача видалено успішно!');
             } else {
                 alert('Помилка видалення користувача');
@@ -2820,7 +2805,7 @@ class Dashboard {
                 this.renderUsersTable(response.data || []);
             }
         } else {
-            this.loadUsersData();
+            await this.loadUsersData();
         }
     }
 
@@ -2832,7 +2817,7 @@ class Dashboard {
                 this.renderTeachersTable(response.data || []);
             }
         } else {
-            this.loadTeachersData();
+            await this.loadTeachersData();
         }
     }
 
@@ -2844,7 +2829,7 @@ class Dashboard {
                 this.renderSubjectsTable(response.data || []);
             }
         } else {
-            this.loadSubjectsData();
+            await this.loadSubjectsData();
         }
     }
 
@@ -3333,7 +3318,7 @@ class Dashboard {
             const response = await apiClient.createSubject(subjectData);
             if (response.success) {
                 this.closeModal();
-                this.loadSubjectsData();
+                await this.loadSubjectsData();
                 this.showSuccessMessage('Дисципліна успішно створена!');
             } else {
                 this.showErrorMessage('Помилка при створенні дисципліни: ' + response.error);
@@ -3387,7 +3372,7 @@ class Dashboard {
             const response = await apiClient.updateSubject(subjectId, subjectData);
             if (response.success) {
                 this.closeModal();
-                this.loadSubjectsData();
+                await this.loadSubjectsData();
                 this.showSuccessMessage('Дисципліна успішно оновлена!');
             } else {
                 this.showErrorMessage('Помилка при оновленні дисципліни: ' + response.error);
@@ -3403,7 +3388,7 @@ class Dashboard {
             try {
                 const response = await apiClient.deleteSubject(subjectId);
                 if (response.success) {
-                    this.loadSubjectsData();
+                    await this.loadSubjectsData();
                     this.showSuccessMessage('Дисципліна успішно видалена!');
                 } else {
                     this.showErrorMessage('Помилка при видаленні дисципліни: ' + response.error);
@@ -3458,7 +3443,7 @@ class Dashboard {
                 }
                 
                 this.closeSubjectModal();
-                this.loadSubjectsData();
+                await this.loadSubjectsData();
                 alert(this.currentSubject ? 'Дисципліну оновлено!' : 'Дисципліну створено!');
             } else {
                 alert('Помилка при збереженні дисципліни');
@@ -3515,7 +3500,6 @@ class Dashboard {
     }
 
     async loadTeachersForSubject() {
-        try {
             const response = await apiClient.getPublicTeachers();
             const teachers = Array.isArray(response) ? response : (response?.data || []);
             
@@ -3536,11 +3520,6 @@ class Dashboard {
                 option.textContent = name;
                 teacherSelect.appendChild(option);
             });
-            
-            console.log(`Завантажено ${teachers.length} викладачів`);
-        } catch (error) {
-            console.error('Помилка завантаження викладачів:', error);
-        }
     }
 
     closeSubjectModal() {
@@ -4044,7 +4023,7 @@ class Dashboard {
 
             if (response?.success) {
                 document.getElementById('modal').style.display = 'none';
-                this.loadGroupsData();
+                await this.loadGroupsData();
             } else {
                 throw new Error(response?.data?.message || response?.error || 'Невідома помилка');
             }
@@ -4058,7 +4037,7 @@ class Dashboard {
         try {
             const response = await apiClient.getGroupById(groupId);
             if (response?.success) {
-                this.showGroupModal(response.data);
+                await this.showGroupModal(response.data);
             } else {
                 alert('Помилка завантаження групи');
             }
@@ -4125,7 +4104,7 @@ class Dashboard {
                 const response = await apiClient.deleteGroup(groupId);
                 if (response?.success || response?.status === 204) {
                     alert('Групу видалено успішно!');
-                    this.loadGroupsData();
+                    await this.loadGroupsData();
                     
                     // Close group students modal if it's open
                     const modal = document.getElementById('groupStudentsModal');
@@ -4670,7 +4649,7 @@ class Dashboard {
                     this.closeArchivedStudentGradesModal();
                 }
                 // Refresh archive tables
-                this.loadArchiveData();
+                await this.loadArchiveData();
             } else {
                 alert(response?.message || 'Помилка видалення');
             }
