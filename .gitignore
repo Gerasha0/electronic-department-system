@@ -72,3 +72,6 @@ spring.log
 # Application specific
 /logs/
 application-local.properties
+
+# Updates
+last update.txt

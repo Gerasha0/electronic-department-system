@@ -2,6 +2,7 @@ package com.kursova.bll.services.impl;
 
 import com.kursova.bll.dto.StudentDto;
 import com.kursova.bll.mappers.StudentMapper;
+import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.StudentService;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Grade;
@@ -27,11 +28,13 @@ public class StudentServiceImpl implements StudentService {
 
     private final UnitOfWork unitOfWork;
     private final StudentMapper studentMapper;
+    private final ArchiveService archiveService;
 
     @Autowired
-    public StudentServiceImpl(UnitOfWork unitOfWork, StudentMapper studentMapper) {
+    public StudentServiceImpl(UnitOfWork unitOfWork, StudentMapper studentMapper, ArchiveService archiveService) {
         this.unitOfWork = unitOfWork;
         this.studentMapper = studentMapper;
+        this.archiveService = archiveService;
     }
 
     @Override
@@ -83,7 +86,9 @@ public class StudentServiceImpl implements StudentService {
         if (!unitOfWork.getStudentRepository().existsById(id)) {
             throw new RuntimeException("Student not found with id: " + id);
         }
-        unitOfWork.getStudentRepository().deleteById(id);
+        
+        // Use archive service instead of direct deletion to handle foreign key constraints
+        archiveService.archiveStudent(id, "ADMIN", "Student deleted via admin interface");
     }
 
     @Override

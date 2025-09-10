@@ -1,43 +1,36 @@
 package com.kursova.dal.entities;
 
 /**
- * Enumeration for grade types
+ * Enumeration for specific grade work types
  */
 public enum GradeType {
-    // Legacy types (for backward compatibility)
-    CURRENT("Поточна"),
-    MODULE("Модульна"),
-    MIDTERM("Проміжна"),
-    FINAL("Підсумкова"),
-    RETAKE("Перездача"),
-    MAKEUP("Відпрацювання"),
-    
-    // Current control types
-    LABORATORY("Лабораторна робота"),
-    PRACTICAL("Практична робота"),
+    // Current control types (Поточний контроль)
+    LABORATORY_WORK("Лабораторна робота"),
+    PRACTICAL_WORK("Практична робота"),
     SEMINAR("Семінар"),
     CONTROL_WORK("Контрольна робота"),
     MODULE_WORK("Модульна робота"),
     HOMEWORK("Домашнє завдання"),
     INDIVIDUAL_WORK("Індивідуальне завдання"),
-    MAKEUP_WORK("Відпрацювання"),
+    CURRENT_MAKEUP("Відпрацювання"),
     
-    // Final control types
+    // Final control types (Підсумковий контроль)
     EXAM("Екзамен"),
     CREDIT("Залік"),
-    DIFF_CREDIT("Диференційований залік"),
-    COURSEWORK("Курсова робота"),
+    DIFFERENTIATED_CREDIT("Диференційований залік"),
+    COURSE_WORK("Курсова робота"),
     QUALIFICATION_WORK("Кваліфікаційна робота"),
     STATE_EXAM("Державний іспит"),
     ATTESTATION("Атестація"),
     
-    // Retake types
+    // Retake types (Перездача)
     RETAKE_EXAM("Перездача екзамену"),
     RETAKE_CREDIT("Перездача заліку"),
     RETAKE_WORK("Перездача роботи"),
     
-    // Makeup types
+    // Makeup types (Відпрацювання)
     MAKEUP_LESSON("Відпрацювання заняття"),
+    MAKEUP_WORK("Відпрацювання роботи"),
     ADDITIONAL_TASK("Додаткове завдання");
 
     private final String displayName;

@@ -19,9 +19,9 @@ class Dashboard {
     // Translate grade types to Ukrainian
     translateGradeCategory(category) {
         const translations = {
-            'CURRENT': '📝 Поточний контроль',
-            'FINAL': '🏆 Підсумковий контроль',
-            'RETAKE': '🔄 Перeздача',
+            'CURRENT_CONTROL': '📝 Поточний контроль',
+            'FINAL_CONTROL': '🏆 Підсумковий контроль',
+            'RETAKE': '🔄 Перездача',
             'MAKEUP': '📝 Відпрацювання'
         };
         return translations[category] || category;
@@ -29,10 +29,10 @@ class Dashboard {
 
     // Determine category based on grade type
     getCategoryByGradeType(gradeType) {
-        const currentTypes = ['LABORATORY', 'PRACTICAL', 'SEMINAR', 'CONTROL_WORK', 'MODULE_WORK', 'HOMEWORK', 'INDIVIDUAL_WORK', 'CURRENT'];
-        const finalTypes = ['EXAM', 'CREDIT', 'DIFF_CREDIT', 'COURSEWORK', 'QUALIFICATION_WORK', 'STATE_EXAM', 'ATTESTATION', 'FINAL'];
-        const retakeTypes = ['RETAKE_EXAM', 'RETAKE_CREDIT', 'RETAKE_WORK', 'RETAKE'];
-        const makeupTypes = ['MAKEUP_WORK', 'MAKEUP_LESSON', 'ADDITIONAL_TASK', 'MAKEUP'];
+        const currentTypes = ['LABORATORY_WORK', 'PRACTICAL_WORK', 'SEMINAR', 'CONTROL_WORK', 'MODULE_WORK', 'HOMEWORK', 'INDIVIDUAL_WORK', 'CURRENT_MAKEUP'];
+        const finalTypes = ['EXAM', 'CREDIT', 'DIFFERENTIATED_CREDIT', 'COURSE_WORK', 'QUALIFICATION_WORK', 'STATE_EXAM', 'ATTESTATION'];
+        const retakeTypes = ['RETAKE_EXAM', 'RETAKE_CREDIT', 'RETAKE_WORK'];
+        const makeupTypes = ['MAKEUP_LESSON', 'MAKEUP_WORK', 'ADDITIONAL_TASK'];
 
         if (currentTypes.includes(gradeType)) {
             return '📝 Поточний контроль';
@@ -70,20 +70,20 @@ class Dashboard {
     translateGradeType(gradeType) {
         const translations = {
             // Current control types
-            'LABORATORY': '🔬 Лабораторна робота',
-            'PRACTICAL': '�️ Практична робота',
+            'LABORATORY_WORK': '🔬 Лабораторна робота',
+            'PRACTICAL_WORK': '⚙️ Практична робота',
             'SEMINAR': '💬 Семінар',
-            'CONTROL_WORK': '� Контрольна робота',
+            'CONTROL_WORK': '📄 Контрольна робота',
             'MODULE_WORK': '📊 Модульна робота',
             'HOMEWORK': '📖 Домашнє завдання',
-            'INDIVIDUAL_WORK': '� Індивідуальне завдання',
-            'MAKEUP_WORK': '� Відпрацювання',
+            'INDIVIDUAL_WORK': '👤 Індивідуальне завдання',
+            'CURRENT_MAKEUP': '🔄 Відпрацювання',
             
             // Final control types
             'EXAM': '📝 Екзамен',
             'CREDIT': '✅ Залік',
-            'DIFF_CREDIT': '📊 Диференційований залік',
-            'COURSEWORK': '📚 Курсова робота',
+            'DIFFERENTIATED_CREDIT': '📊 Диференційований залік',
+            'COURSE_WORK': '📚 Курсова робота',
             'QUALIFICATION_WORK': '🎓 Кваліфікаційна робота',
             'STATE_EXAM': '🏛️ Державний іспит',
             'ATTESTATION': '📋 Атестація',
@@ -91,19 +91,12 @@ class Dashboard {
             // Retake types
             'RETAKE_EXAM': '🔄 Перездача екзамену',
             'RETAKE_CREDIT': '🔄 Перездача заліку',
-            'RETAKE_WORK': '� Перездача роботи',
+            'RETAKE_WORK': '🔄 Перездача роботи',
             
             // Makeup types
             'MAKEUP_LESSON': '📝 Відпрацювання заняття',
-            'ADDITIONAL_TASK': '➕ Додаткове завдання',
-            
-            // Legacy types (for backward compatibility)
-            'CURRENT': '� Поточна',
-            'MODULE': '📊 Модульна', 
-            'MIDTERM': '⚡ Проміжна',
-            'FINAL': '🏆 Підсумкова',
-            'RETAKE': '🔄 Перездача',
-            'MAKEUP': '📝 Відпрацювання'
+            'MAKEUP_WORK': '🔧 Відпрацювання роботи',
+            'ADDITIONAL_TASK': '➕ Додаткове завдання'
         };
         return translations[gradeType] || gradeType;
     }
@@ -1063,27 +1056,27 @@ class Dashboard {
 
         // Define grade types by category
         const gradeTypesByCategory = {
-            'CURRENT': [
-                { value: 'LABORATORY', text: '🧪 Лабораторна' },
-                { value: 'PRACTICAL', text: '⚙️ Практична' },
+            'CURRENT_CONTROL': [
+                { value: 'LABORATORY_WORK', text: '🧪 Лабораторна робота' },
+                { value: 'PRACTICAL_WORK', text: '⚙️ Практична робота' },
                 { value: 'SEMINAR', text: '💭 Семінар' },
                 { value: 'CONTROL_WORK', text: '📃 Контрольна робота' },
                 { value: 'MODULE_WORK', text: '📊 Модульна робота' },
                 { value: 'HOMEWORK', text: '🏠 Домашнє завдання' },
-                { value: 'INDIVIDUAL_WORK', text: '👤 Індивідуальна робота' },
-                { value: 'MAKEUP_WORK', text: '🛠️ Відпрацювання' }
+                { value: 'INDIVIDUAL_WORK', text: '👤 Індивідуальне завдання' },
+                { value: 'CURRENT_MAKEUP', text: '🛠️ Відпрацювання' }
             ],
-            'FINAL': [
-                { value: 'EXAM', text: '📚 Іспит' },
+            'FINAL_CONTROL': [
+                { value: 'EXAM', text: '📚 Екзамен' },
                 { value: 'CREDIT', text: '✅ Залік' },
-                { value: 'DIFF_CREDIT', text: '📈 Диференційований залік' },
-                { value: 'COURSEWORK', text: '📖 Курсова робота' },
+                { value: 'DIFFERENTIATED_CREDIT', text: '📈 Диференційований залік' },
+                { value: 'COURSE_WORK', text: '📖 Курсова робота' },
                 { value: 'QUALIFICATION_WORK', text: '🎓 Кваліфікаційна робота' },
                 { value: 'STATE_EXAM', text: '🏛️ Державний іспит' },
                 { value: 'ATTESTATION', text: '📄 Атестація' }
             ],
             'RETAKE': [
-                { value: 'RETAKE_EXAM', text: '🔄 Перездача іспиту' },
+                { value: 'RETAKE_EXAM', text: '🔄 Перездача екзамену' },
                 { value: 'RETAKE_CREDIT', text: '🔄 Перездача заліку' },
                 { value: 'RETAKE_WORK', text: '🔄 Перездача роботи' }
             ],
@@ -2240,8 +2233,8 @@ class Dashboard {
                     <label>Тип оцінки:</label>
                     <select name="gradeCategory" id="grade-category-select" required>
                         <option value="">Оберіть категорію...</option>
-                        <option value="CURRENT">Поточний контроль</option>
-                        <option value="FINAL">Підсумковий контроль</option>
+                        <option value="CURRENT_CONTROL">Поточний контроль</option>
+                        <option value="FINAL_CONTROL">Підсумковий контроль</option>
                         <option value="RETAKE">Перездача</option>
                         <option value="MAKEUP">Відпрацювання</option>
                     </select>
@@ -2437,21 +2430,21 @@ class Dashboard {
             typeSelect.innerHTML = '<option value="">Оберіть конкретний тип...</option>';
             
             const gradeTypes = {
-                'CURRENT': [
-                    { value: 'LABORATORY', text: 'Лабораторна робота' },
-                    { value: 'PRACTICAL', text: 'Практична робота' },
+                'CURRENT_CONTROL': [
+                    { value: 'LABORATORY_WORK', text: 'Лабораторна робота' },
+                    { value: 'PRACTICAL_WORK', text: 'Практична робота' },
                     { value: 'SEMINAR', text: 'Семінар' },
                     { value: 'CONTROL_WORK', text: 'Контрольна робота' },
                     { value: 'MODULE_WORK', text: 'Модульна робота' },
                     { value: 'HOMEWORK', text: 'Домашнє завдання' },
                     { value: 'INDIVIDUAL_WORK', text: 'Індивідуальне завдання' },
-                    { value: 'MAKEUP_WORK', text: 'Відпрацювання' }
+                    { value: 'CURRENT_MAKEUP', text: 'Відпрацювання' }
                 ],
-                'FINAL': [
+                'FINAL_CONTROL': [
                     { value: 'EXAM', text: 'Екзамен' },
                     { value: 'CREDIT', text: 'Залік' },
-                    { value: 'DIFF_CREDIT', text: 'Диференційований залік' },
-                    { value: 'COURSEWORK', text: 'Курсова робота' },
+                    { value: 'DIFFERENTIATED_CREDIT', text: 'Диференційований залік' },
+                    { value: 'COURSE_WORK', text: 'Курсова робота' },
                     { value: 'QUALIFICATION_WORK', text: 'Кваліфікаційна робота' },
                     { value: 'STATE_EXAM', text: 'Державний іспит' },
                     { value: 'ATTESTATION', text: 'Атестація' }
@@ -2481,31 +2474,26 @@ class Dashboard {
 
     getGradeTypeDisplayName(gradeType) {
         const gradeTypeNames = {
-            'CURRENT': '📝 Поточна',
-            'MODULE': '📊 Модульна',
-            'MIDTERM': '📋 Проміжна',
-            'FINAL': '🎯 Підсумкова',
-            'RETAKE': '🔄 Перездача',
-            'MAKEUP': '🛠️ Відпрацювання',
-            'LABORATORY': '🧪 Лабораторна',
-            'PRACTICAL': '⚙️ Практична',
+            'LABORATORY_WORK': '🧪 Лабораторна робота',
+            'PRACTICAL_WORK': '⚙️ Практична робота',
             'SEMINAR': '💭 Семінар',
             'CONTROL_WORK': '📃 Контрольна робота',
             'MODULE_WORK': '📊 Модульна робота',
             'HOMEWORK': '🏠 Домашнє завдання',
-            'INDIVIDUAL_WORK': '👤 Індивідуальна робота',
-            'MAKEUP_WORK': '🛠️ Відпрацювання',
-            'EXAM': '📚 Іспит',
+            'INDIVIDUAL_WORK': '👤 Індивідуальне завдання',
+            'CURRENT_MAKEUP': '🛠️ Відпрацювання',
+            'EXAM': '📚 Екзамен',
             'CREDIT': '✅ Залік',
-            'DIFF_CREDIT': '📈 Диференційований залік',
-            'COURSEWORK': '📖 Курсова робота',
+            'DIFFERENTIATED_CREDIT': '📈 Диференційований залік',
+            'COURSE_WORK': '📖 Курсова робота',
             'QUALIFICATION_WORK': '🎓 Кваліфікаційна робота',
             'STATE_EXAM': '🏛️ Державний іспит',
             'ATTESTATION': '📄 Атестація',
-            'RETAKE_EXAM': '🔄 Перездача іспиту',
+            'RETAKE_EXAM': '🔄 Перездача екзамену',
             'RETAKE_CREDIT': '🔄 Перездача заліку',
             'RETAKE_WORK': '🔄 Перездача роботи',
             'MAKEUP_LESSON': '🛠️ Відпрацювання заняття',
+            'MAKEUP_WORK': '🛠️ Відпрацювання роботи',
             'ADDITIONAL_TASK': '➕ Додаткове завдання'
         };
         return gradeTypeNames[gradeType] || gradeType;

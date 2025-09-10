@@ -21,7 +21,7 @@ public interface DateTimeMapper {
     }
 
     default LocalDateTime mapStringToLocalDateTime(String dateTimeString) {
-        if (dateTimeString == null || dateTimeString.isEmpty()) {
+        if (dateTimeString == null || dateTimeString.trim().isEmpty()) {
             return null;
         }
         return LocalDateTime.parse(dateTimeString, FORMATTER);

@@ -43,6 +43,7 @@ public interface StudentMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "grades", ignore = true)
+
     Student toEntity(StudentDto dto);
 
     @Named("studentToDtoSimple")
@@ -55,6 +56,7 @@ public interface StudentMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "grades", ignore = true)
+
     void updateEntityFromDto(StudentDto dto, @MappingTarget Student entity);
 
     // Simple mapping without nested objects for lists

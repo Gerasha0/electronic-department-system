@@ -77,14 +77,14 @@ class GradeControllerTest {
         sampleGrade.setId(1L);
         sampleGrade.setGradeValue(85);
         sampleGrade.setStudent(sampleStudent);
-        sampleGrade.setGradeType(GradeType.CURRENT);
+        sampleGrade.setGradeType(GradeType.HOMEWORK);
 
         // Sample GradeDto
         sampleGradeDto = new GradeDto();
         sampleGradeDto.setId(1L);
         sampleGradeDto.setGradeValue(85);
         sampleGradeDto.setStudentId(1L);
-        sampleGradeDto.setGradeType(GradeType.CURRENT);
+        sampleGradeDto.setGradeType(GradeType.HOMEWORK);
     }
 
     // ===============================
@@ -388,10 +388,10 @@ class GradeControllerTest {
     void getGradesByType_Success() {
         // Arrange
         List<GradeDto> grades = Collections.singletonList(sampleGradeDto);
-        when(gradeService.findByGradeType(GradeType.CURRENT)).thenReturn(grades);
+        when(gradeService.findByGradeType(GradeType.HOMEWORK)).thenReturn(grades);
 
         // Act
-        ResponseEntity<List<GradeDto>> response = gradeController.getGradesByType(GradeType.CURRENT);
+        ResponseEntity<List<GradeDto>> response = gradeController.getGradesByType(GradeType.HOMEWORK);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());

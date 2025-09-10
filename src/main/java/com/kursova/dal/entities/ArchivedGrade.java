@@ -32,8 +32,9 @@ public class ArchivedGrade {
     @Column(name = "subject_name")
     private String subjectName;
 
-    @Column(name = "grade_category")
-    private String gradeCategory;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grade_category_enum")
+    private GradeCategory gradeCategoryEnum;
 
     @Column(name = "grade_value")
     private Integer gradeValue;
@@ -84,9 +85,7 @@ public class ArchivedGrade {
             this.subjectName = originalGrade.getSubject().getSubjectName();
         }
         
-        this.gradeValue = originalGrade.getGradeValue();
-        this.gradeType = originalGrade.getGradeType();
-        this.gradeCategory = originalGrade.getGradeCategory();
+        this.gradeCategoryEnum = originalGrade.getGradeCategoryEnum();
         this.comments = originalGrade.getComments();
         
         if (originalGrade.getStudent().getGroup() != null) {
@@ -158,12 +157,31 @@ public class ArchivedGrade {
         this.subjectName = subjectName;
     }
 
-    public String getGradeCategory() {
-        return gradeCategory;
+    public GradeCategory getGradeCategoryEnum() {
+        return gradeCategoryEnum;
     }
 
+    public void setGradeCategoryEnum(GradeCategory gradeCategoryEnum) {
+        this.gradeCategoryEnum = gradeCategoryEnum;
+    }
+
+    // For backward compatibility
+    public String getGradeCategory() {
+        return gradeCategoryEnum != null ? gradeCategoryEnum.getDisplayName() : null;
+    }
+
+    // For backward compatibility
     public void setGradeCategory(String gradeCategory) {
-        this.gradeCategory = gradeCategory;
+        // Convert to enum for new system
+        if (gradeCategory != null) {
+            switch (gradeCategory) {
+                case "Поточний контроль" -> this.gradeCategoryEnum = GradeCategory.CURRENT_CONTROL;
+                case "Підсумковий контроль" -> this.gradeCategoryEnum = GradeCategory.FINAL_CONTROL;
+                case "Перездача" -> this.gradeCategoryEnum = GradeCategory.RETAKE;
+                case "Відпрацювання" -> this.gradeCategoryEnum = GradeCategory.MAKEUP;
+                default -> this.gradeCategoryEnum = GradeCategory.CURRENT_CONTROL;
+            }
+        }
     }
 
     public Integer getGradeValue() {

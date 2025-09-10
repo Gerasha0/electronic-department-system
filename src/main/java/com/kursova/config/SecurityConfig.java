@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import java.util.Arrays;
 
@@ -52,6 +53,7 @@ import java.util.Arrays;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     // Role constants to avoid duplication
@@ -67,7 +69,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, com.kursova.config.jwt.JwtUtils jwtUtils) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, com.kursova.config.jwt.JwtUtils jwtUtils, com.kursova.config.jwt.DbUserDetailsService userDetailsService) throws Exception {
         http
             // CSRF is disabled because:
             // 1. This is a stateless REST API using JWT tokens
@@ -125,7 +127,7 @@ public class SecurityConfig {
                 ));
 
         // Add JWT filter before username/password filter
-        http.addFilterBefore(new com.kursova.config.jwt.JwtAuthFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new com.kursova.config.jwt.JwtAuthFilter(jwtUtils, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

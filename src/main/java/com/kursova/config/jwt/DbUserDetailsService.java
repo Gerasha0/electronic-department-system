@@ -2,14 +2,10 @@ package com.kursova.config.jwt;
 
 import com.kursova.dal.entities.User;
 import com.kursova.dal.repositories.UserRepository;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 
 @Service
 public class DbUserDetailsService implements UserDetailsService {
@@ -22,16 +18,21 @@ public class DbUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Handle guest user specially - no database lookup needed
+        if ("guest".equals(username)) {
+            User guestUser = new User();
+            guestUser.setUsername("guest");
+            guestUser.setFirstName("Гість");
+            guestUser.setLastName("Система");
+            guestUser.setEmail("guest@example.com");
+            guestUser.setRole(com.kursova.dal.entities.UserRole.GUEST);
+            guestUser.setIsActive(true);
+            return new CustomUserDetails(guestUser);
+        }
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.getIsActive() != null && user.getIsActive(),
-                true, true, true,
-                Collections.singletonList(authority)
-        );
+        return new CustomUserDetails(user);
     }
 }

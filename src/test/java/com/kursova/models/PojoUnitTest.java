@@ -102,9 +102,9 @@ class PojoUnitTest {
         subject.setSubjectName("Physics");
         subject.setSubjectCode("PH-101");
 
-        Grade grade = new Grade(student, teacher, subject, 75, GradeType.MIDTERM);
+        Grade grade = new Grade(student, teacher, subject, 75, GradeType.CONTROL_WORK);
         assertEquals(75, grade.getGradeValue());
-        assertEquals(GradeType.MIDTERM, grade.getGradeType());
+        assertEquals(GradeType.CONTROL_WORK, grade.getGradeType());
         assertEquals(student, grade.getStudent());
         assertEquals(teacher, grade.getTeacher());
         assertEquals(subject, grade.getSubject());
@@ -113,7 +113,7 @@ class PojoUnitTest {
         assertEquals("Зараховано", grade.getGradeStatus());
         String info = grade.getDisplayInfo();
         assertTrue(info.contains("75"));
-        assertTrue(info.contains(GradeType.MIDTERM.getDisplayName()));
+        assertTrue(info.contains(GradeType.CONTROL_WORK.getDisplayName()));
     }
 
     // -------------------- Student tests --------------------

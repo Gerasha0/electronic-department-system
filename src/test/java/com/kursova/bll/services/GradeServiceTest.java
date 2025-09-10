@@ -80,7 +80,7 @@ class GradeServiceTest {
         testGrade = new Grade();
         testGrade.setId(1L);
         testGrade.setGradeValue(85);
-        testGrade.setGradeType(GradeType.MIDTERM);
+        testGrade.setGradeType(GradeType.CONTROL_WORK);
         testGrade.setStudent(testStudent);
         testGrade.setTeacher(testTeacher);
         testGrade.setSubject(testSubject);
@@ -89,7 +89,7 @@ class GradeServiceTest {
         testGradeDto = new GradeDto();
         testGradeDto.setId(1L);
         testGradeDto.setGradeValue(85);
-        testGradeDto.setGradeType(GradeType.MIDTERM);
+        testGradeDto.setGradeType(GradeType.CONTROL_WORK);
         testGradeDto.setStudentId(1L);
         testGradeDto.setTeacherId(1L);
         testGradeDto.setSubjectId(1L);

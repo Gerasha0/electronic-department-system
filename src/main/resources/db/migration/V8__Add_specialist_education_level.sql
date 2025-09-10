@@ -1,2 +1,2 @@
--- Add SPECIALIST to education_level enum
-ALTER TABLE students MODIFY education_level ENUM('BACHELOR', 'SPECIALIST', 'MASTER', 'PHD');
+-- Add SPECIALIST to education_level enum in students table (already included in V1)
+-- This migration is redundant but kept for sequence

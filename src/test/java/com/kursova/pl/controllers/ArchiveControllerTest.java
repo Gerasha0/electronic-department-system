@@ -74,7 +74,7 @@ class ArchiveControllerTest {
         testArchivedGrade.setId(1L);
         testArchivedGrade.setOriginalGradeId(301L);
         testArchivedGrade.setGradeValue(85);
-        testArchivedGrade.setGradeType(GradeType.FINAL);
+        testArchivedGrade.setGradeType(GradeType.EXAM);
         testArchivedGrade.setOriginalStudentId(201L);
         testArchivedGrade.setStudentName("Test Student");
         testArchivedGrade.setSubjectName("Mathematics");

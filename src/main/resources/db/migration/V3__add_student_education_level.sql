@@ -1,7 +1,10 @@
--- Add education level and course year fields to students table
+-- Add course_year and education_level to students table (already added in V1, but for compatibility)
+-- If not exists, add them
+-- Note: In updated V1, these are already present, so this migration is redundant but kept for sequence
+
 ALTER TABLE students 
-ADD COLUMN course_year INT,
-ADD COLUMN education_level VARCHAR(20);
+ADD COLUMN IF NOT EXISTS course_year INT,
+ADD COLUMN IF NOT EXISTS education_level VARCHAR(20);
 
 -- Update existing students with default values based on enrollment year
 -- For now, we'll set all existing students to Bachelor level and calculate course year

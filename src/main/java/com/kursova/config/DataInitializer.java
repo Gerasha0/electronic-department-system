@@ -222,22 +222,22 @@ public class DataInitializer implements CommandLineRunner {
         Subject progSubject = unitOfWork.getSubjectRepository().findBySubjectCode("PROG-301").orElse(null);
 
         if (student1 != null && teacher1 != null && progSubject != null) {
-            Grade grade1 = new Grade(student1, teacher1, progSubject, 85, GradeType.CURRENT);
+            Grade grade1 = new Grade(student1, teacher1, progSubject, 85, GradeType.HOMEWORK);
             grade1.setComments("Хороша робота на практичних заняттях");
             unitOfWork.getGradeRepository().save(grade1);
 
-            Grade grade2 = new Grade(student1, teacher1, progSubject, 90, GradeType.FINAL);
+            Grade grade2 = new Grade(student1, teacher1, progSubject, 90, GradeType.EXAM);
             grade2.setComments("Відмінний результат на екзамені");
             grade2.setIsFinal(true);
             unitOfWork.getGradeRepository().save(grade2);
         }
 
         if (student2 != null && teacher1 != null && progSubject != null) {
-            Grade grade3 = new Grade(student2, teacher1, progSubject, 78, GradeType.CURRENT);
+            Grade grade3 = new Grade(student2, teacher1, progSubject, 78, GradeType.HOMEWORK);
             grade3.setComments("Задовільна робота, потребує покращення");
             unitOfWork.getGradeRepository().save(grade3);
 
-            Grade grade4 = new Grade(student2, teacher1, progSubject, 82, GradeType.FINAL);
+            Grade grade4 = new Grade(student2, teacher1, progSubject, 82, GradeType.EXAM);
             grade4.setComments("Покращення результатів на екзамені");
             grade4.setIsFinal(true);
             unitOfWork.getGradeRepository().save(grade4);

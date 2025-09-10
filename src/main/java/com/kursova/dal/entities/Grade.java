@@ -23,8 +23,9 @@ public class Grade {
     @Column(name = "grade_type", nullable = false)
     private GradeType gradeType;
 
-    @Column(name = "grade_category")
-    private String gradeCategory;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grade_category_enum", nullable = false)
+    private GradeCategory gradeCategoryEnum;
 
     @Column(name = "grade_date", nullable = false)
     private LocalDateTime gradeDate;
@@ -64,6 +65,7 @@ public class Grade {
         this.subject = subject;
         this.gradeValue = gradeValue;
         this.gradeType = gradeType;
+        this.gradeCategoryEnum = getCategoryFromGradeType(gradeType); // Auto-set category
         this.gradeDate = LocalDateTime.now();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -76,6 +78,10 @@ public class Grade {
         updatedAt = LocalDateTime.now();
         if (gradeDate == null) {
             gradeDate = LocalDateTime.now();
+        }
+        // Auto-set category if not set
+        if (gradeCategoryEnum == null && gradeType != null) {
+            gradeCategoryEnum = getCategoryFromGradeType(gradeType);
         }
     }
 
@@ -109,12 +115,36 @@ public class Grade {
         this.gradeType = gradeType;
     }
 
-    public String getGradeCategory() {
-        return gradeCategory;
+    public GradeCategory getGradeCategoryEnum() {
+        return gradeCategoryEnum;
     }
 
+    public void setGradeCategoryEnum(GradeCategory gradeCategoryEnum) {
+        this.gradeCategoryEnum = gradeCategoryEnum;
+    }
+
+    // Backward compatibility method
+    public String getGradeCategory() {
+        return gradeCategoryEnum != null ? gradeCategoryEnum.getDisplayName() : null;
+    }
+
+    // Backward compatibility method
     public void setGradeCategory(String gradeCategory) {
-        this.gradeCategory = gradeCategory;
+        // This method can be used for migration purposes
+        if (gradeCategory != null) {
+            switch (gradeCategory) {
+                case "Поточний контроль" -> this.gradeCategoryEnum = GradeCategory.CURRENT_CONTROL;
+                case "Підсумковий контроль" -> this.gradeCategoryEnum = GradeCategory.FINAL_CONTROL;
+                case "Перездача" -> this.gradeCategoryEnum = GradeCategory.RETAKE;
+                case "Відпрацювання" -> this.gradeCategoryEnum = GradeCategory.MAKEUP;
+                default -> {
+                    // Try to determine category from grade type for backward compatibility
+                    if (this.gradeType != null) {
+                        this.gradeCategoryEnum = getCategoryFromGradeType(this.gradeType);
+                    }
+                }
+            }
+        }
     }
 
     public LocalDateTime getGradeDate() {
@@ -201,5 +231,28 @@ public class Grade {
             info.append(" - ").append(gradeType.getDisplayName());
         }
         return info.toString();
+    }
+
+    /**
+     * Helper method to determine grade category from grade type for backward compatibility
+     */
+    private GradeCategory getCategoryFromGradeType(GradeType gradeType) {
+        if (gradeType == null) return GradeCategory.CURRENT_CONTROL;
+        
+        return switch (gradeType) {
+            case LABORATORY_WORK, PRACTICAL_WORK, SEMINAR, CONTROL_WORK, 
+                 MODULE_WORK, HOMEWORK, INDIVIDUAL_WORK, CURRENT_MAKEUP -> 
+                 GradeCategory.CURRENT_CONTROL;
+            
+            case EXAM, CREDIT, DIFFERENTIATED_CREDIT, COURSE_WORK, 
+                 QUALIFICATION_WORK, STATE_EXAM, ATTESTATION -> 
+                 GradeCategory.FINAL_CONTROL;
+            
+            case RETAKE_EXAM, RETAKE_CREDIT, RETAKE_WORK -> 
+                 GradeCategory.RETAKE;
+            
+            case MAKEUP_LESSON, MAKEUP_WORK, ADDITIONAL_TASK -> 
+                 GradeCategory.MAKEUP;
+        };
     }
 }

@@ -22,7 +22,7 @@ public class StudentDto {
 
     private Integer enrollmentYear;
 
-    private Integer courseYear;
+    private Integer course;
     private EducationLevel educationLevel;
 
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
@@ -86,11 +86,11 @@ public class StudentDto {
     }
 
     public Integer getCourseYear() {
-        return courseYear;
+        return course;
     }
 
     public void setCourseYear(Integer courseYear) {
-        this.courseYear = courseYear;
+        this.course = courseYear;
     }
 
     public EducationLevel getEducationLevel() {
@@ -158,11 +158,11 @@ public class StudentDto {
     }
 
     public Integer getCourse() {
-        return courseYear;
+        return course;
     }
 
     public void setCourse(Integer course) {
-        this.courseYear = course;
+        this.course = course;
     }
 
     public Double getAverageGrade() {

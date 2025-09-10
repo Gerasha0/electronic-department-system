@@ -2,6 +2,7 @@ package com.kursova.bll.services.impl;
 
 import com.kursova.bll.dto.UserDto;
 import com.kursova.bll.mappers.UserMapper;
+import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.UserService;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.StudyForm;
@@ -27,12 +28,14 @@ public class UserServiceImpl implements UserService {
     private final UnitOfWork unitOfWork;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ArchiveService archiveService;
 
     @Autowired
-    public UserServiceImpl(UnitOfWork unitOfWork, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UnitOfWork unitOfWork, UserMapper userMapper, PasswordEncoder passwordEncoder, ArchiveService archiveService) {
         this.unitOfWork = unitOfWork;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.archiveService = archiveService;
     }
 
     @Override
@@ -216,7 +219,29 @@ public class UserServiceImpl implements UserService {
         if (!existsById(id)) {
             throw new IllegalArgumentException("User not found with id: " + id);
         }
-        unitOfWork.getUserRepository().deleteById(id);
+        
+        User user = unitOfWork.getUserRepository().findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        
+        // If user is a STUDENT, find and archive the student
+        if (user.getRole() == UserRole.STUDENT) {
+            // Find student by user_id to avoid lazy loading issues
+            unitOfWork.getStudentRepository().findByUserId(id)
+                    .ifPresent(student -> {
+                        archiveService.archiveStudent(student.getId(), "ADMIN", "User deleted via admin interface");
+                    });
+            
+            // If no student found, just deactivate the user
+            if (unitOfWork.getStudentRepository().findByUserId(id).isEmpty()) {
+                user.setIsActive(false);
+                unitOfWork.getUserRepository().save(user);
+            }
+        } else {
+            // For non-student users (TEACHER, ADMIN, MANAGER), we need to handle foreign key constraints
+            // For now, we'll deactivate instead of delete to avoid constraint violations
+            user.setIsActive(false);
+            unitOfWork.getUserRepository().save(user);
+        }
     }
 
     @Override

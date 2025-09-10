@@ -1,6 +1,7 @@
 package com.kursova.bll.dto;
 
 import com.kursova.dal.entities.GradeType;
+import com.kursova.dal.entities.GradeCategory;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,10 @@ public class GradeDto {
     @NotNull(message = "Grade type is required")
     private GradeType gradeType;
 
-    private String gradeCategory;
+    @NotNull(message = "Grade category is required")
+    private GradeCategory gradeCategoryEnum;
+
+    private String gradeCategory; // For backward compatibility
     private String gradeDate;
     private String comments;
     private Boolean isFinal;
@@ -80,12 +84,34 @@ public class GradeDto {
         this.gradeType = gradeType;
     }
 
-    public String getGradeCategory() {
-        return gradeCategory;
+    public GradeCategory getGradeCategoryEnum() {
+        return gradeCategoryEnum;
     }
 
+    public void setGradeCategoryEnum(GradeCategory gradeCategoryEnum) {
+        this.gradeCategoryEnum = gradeCategoryEnum;
+    }
+
+    // Backward compatibility method
+    public String getGradeCategory() {
+        return gradeCategoryEnum != null ? gradeCategoryEnum.getDisplayName() : gradeCategory;
+    }
+
+    // Backward compatibility method
     public void setGradeCategory(String gradeCategory) {
         this.gradeCategory = gradeCategory;
+                // Try to convert to enum for new system
+        if (gradeCategory != null) {
+            switch (gradeCategory) {
+                case "Поточний контроль" -> this.gradeCategoryEnum = GradeCategory.CURRENT_CONTROL;
+                case "Підсумковий контроль" -> this.gradeCategoryEnum = GradeCategory.FINAL_CONTROL;
+                case "Перездача" -> this.gradeCategoryEnum = GradeCategory.RETAKE;
+                case "Відпрацювання" -> this.gradeCategoryEnum = GradeCategory.MAKEUP;
+                default -> {
+                    // Keep existing string value for unknown categories
+                }
+            }
+        }
     }
 
     public String getGradeDate() {

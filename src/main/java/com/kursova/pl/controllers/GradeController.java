@@ -77,7 +77,34 @@ public class GradeController {
         Integer gradeValue = payload.get("gradeValue") == null ? null : Integer.valueOf(payload.get("gradeValue").toString());
         String gradeTypeStr = payload.get("gradeType") == null ? null : payload.get("gradeType").toString();
         String comments = payload.get("comments") == null ? null : payload.get("comments").toString();
-        com.kursova.dal.entities.GradeType gradeType = gradeTypeStr == null ? com.kursova.dal.entities.GradeType.CURRENT : com.kursova.dal.entities.GradeType.valueOf(gradeTypeStr);
+        
+        // Map old grade type values to new ones for backward compatibility
+        com.kursova.dal.entities.GradeType gradeType;
+        if (gradeTypeStr == null) {
+            gradeType = com.kursova.dal.entities.GradeType.HOMEWORK;
+        } else {
+            gradeType = switch (gradeTypeStr) {
+                case "CURRENT" -> com.kursova.dal.entities.GradeType.LABORATORY_WORK;
+                case "MODULE" -> com.kursova.dal.entities.GradeType.MODULE_WORK;
+                case "MIDTERM" -> com.kursova.dal.entities.GradeType.CONTROL_WORK;
+                case "FINAL" -> com.kursova.dal.entities.GradeType.EXAM;
+                case "RETAKE" -> com.kursova.dal.entities.GradeType.RETAKE_EXAM;
+                case "MAKEUP" -> com.kursova.dal.entities.GradeType.MAKEUP_WORK;
+                case "LABORATORY" -> com.kursova.dal.entities.GradeType.LABORATORY_WORK;
+                case "PRACTICAL" -> com.kursova.dal.entities.GradeType.PRACTICAL_WORK;
+                case "CREDIT" -> com.kursova.dal.entities.GradeType.CREDIT;
+                case "DIFF_CREDIT" -> com.kursova.dal.entities.GradeType.DIFFERENTIATED_CREDIT;
+                case "COURSEWORK" -> com.kursova.dal.entities.GradeType.COURSE_WORK;
+                default -> {
+                    try {
+                        yield com.kursova.dal.entities.GradeType.valueOf(gradeTypeStr);
+                    } catch (IllegalArgumentException e) {
+                        // If the enum value doesn't exist, default to HOMEWORK
+                        yield com.kursova.dal.entities.GradeType.HOMEWORK;
+                    }
+                }
+            };
+        }
 
         try {
             GradeDto result = gradeService.createGradeWithValidation(studentId, teacherId, subjectId, gradeValue, gradeType, comments);
@@ -102,7 +129,7 @@ public class GradeController {
         Integer gradeValue = payload.get("gradeValue") == null ? null : Integer.valueOf(payload.get("gradeValue").toString());
         String gradeTypeStr = payload.get("gradeType") == null ? null : payload.get("gradeType").toString();
         String comments = payload.get("comments") == null ? null : payload.get("comments").toString();
-        com.kursova.dal.entities.GradeType gradeType = gradeTypeStr == null ? com.kursova.dal.entities.GradeType.CURRENT : com.kursova.dal.entities.GradeType.valueOf(gradeTypeStr);
+        com.kursova.dal.entities.GradeType gradeType = gradeTypeStr == null ? com.kursova.dal.entities.GradeType.HOMEWORK : com.kursova.dal.entities.GradeType.valueOf(gradeTypeStr);
 
         try {
             // Find student by user ID

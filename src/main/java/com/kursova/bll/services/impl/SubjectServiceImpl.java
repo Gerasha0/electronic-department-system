@@ -156,7 +156,14 @@ public class SubjectServiceImpl implements SubjectService {
         if (!subjectRepository.existsById(id)) {
             throw new RuntimeException("Subject not found with id: " + id);
         }
-        subjectRepository.deleteById(id);
+        
+        // Soft delete - set isActive to false to avoid foreign key constraint issues
+        // This preserves historical data and gradebook records
+        Subject subject = subjectRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Subject not found with id: " + id));
+        
+        subject.setIsActive(false);
+        subjectRepository.save(subject);
     }
 
     @Override

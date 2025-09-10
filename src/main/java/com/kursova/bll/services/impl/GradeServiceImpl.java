@@ -6,6 +6,7 @@ import com.kursova.bll.services.GradeService;
 import com.kursova.dal.entities.Grade;
 import com.kursova.dal.entities.ArchivedGrade;
 import com.kursova.dal.entities.GradeType;
+import com.kursova.dal.entities.GradeCategory;
 import com.kursova.dal.entities.Student;
 import com.kursova.dal.entities.Subject;
 import com.kursova.dal.entities.Teacher;
@@ -47,23 +48,23 @@ public class GradeServiceImpl implements GradeService {
         return "SYSTEM";
     }
 
-    private String getGradeCategory(GradeType gradeType) {
-        if (gradeType == null) return "Інше";
+    private GradeCategory getGradeCategoryFromGradeType(GradeType gradeType) {
+        if (gradeType == null) return GradeCategory.CURRENT_CONTROL;
 
         return switch (gradeType) {
-            case CURRENT, HOMEWORK, INDIVIDUAL_WORK -> "Поточна робота";
-            case MODULE, MODULE_WORK, MIDTERM -> "Модульна робота";
-            case LABORATORY, PRACTICAL -> "Лабораторна робота";
-            case CONTROL_WORK, SEMINAR -> "Контрольна робота";
-            case EXAM, FINAL -> "Іспит";
-            case CREDIT, DIFF_CREDIT -> "Залік";
-            case COURSEWORK, QUALIFICATION_WORK -> "Курсова робота";
-            case STATE_EXAM -> "Державний іспит";
-            case RETAKE, RETAKE_EXAM, RETAKE_CREDIT, RETAKE_WORK -> "Перездача";
-            case MAKEUP, MAKEUP_WORK, MAKEUP_LESSON -> "Відпрацювання";
-            case ATTESTATION -> "Атестація";
-            case ADDITIONAL_TASK -> "Додаткове завдання";
-            default -> "Інше";
+            case LABORATORY_WORK, PRACTICAL_WORK, SEMINAR, CONTROL_WORK, 
+                 MODULE_WORK, HOMEWORK, INDIVIDUAL_WORK, CURRENT_MAKEUP -> 
+                 GradeCategory.CURRENT_CONTROL;
+            
+            case EXAM, CREDIT, DIFFERENTIATED_CREDIT, COURSE_WORK, 
+                 QUALIFICATION_WORK, STATE_EXAM, ATTESTATION -> 
+                 GradeCategory.FINAL_CONTROL;
+            
+            case RETAKE_EXAM, RETAKE_CREDIT, RETAKE_WORK -> 
+                 GradeCategory.RETAKE;
+            
+            case MAKEUP_LESSON, MAKEUP_WORK, ADDITIONAL_TASK -> 
+                 GradeCategory.MAKEUP;
         };
     }
 
@@ -126,7 +127,7 @@ public class GradeServiceImpl implements GradeService {
         grade.setSubject(subject);
         
         // Set grade category based on grade type
-        grade.setGradeCategory(getGradeCategory(grade.getGradeType()));
+        grade.setGradeCategoryEnum(getGradeCategoryFromGradeType(grade.getGradeType()));
 
         Grade savedGrade = unitOfWork.getGradeRepository().save(grade);
     // Reload saved grade with relations to ensure mapper can access nested user/subject fields
@@ -156,7 +157,7 @@ public class GradeServiceImpl implements GradeService {
         originalGradeForArchive.setTeacher(existingGrade.getTeacher());
         originalGradeForArchive.setGradeValue(existingGrade.getGradeValue());
         originalGradeForArchive.setGradeType(existingGrade.getGradeType());
-        originalGradeForArchive.setGradeCategory(existingGrade.getGradeCategory());
+        originalGradeForArchive.setGradeCategoryEnum(existingGrade.getGradeCategoryEnum());
         originalGradeForArchive.setComments(existingGrade.getComments());
         originalGradeForArchive.setCreatedAt(existingGrade.getCreatedAt());
         originalGradeForArchive.setUpdatedAt(existingGrade.getUpdatedAt());
@@ -326,7 +327,7 @@ public class GradeServiceImpl implements GradeService {
         grade.setSubject(subject);
         grade.setGradeValue(gradeValue);
         grade.setGradeType(gradeType);
-        grade.setGradeCategory(getGradeCategory(gradeType));
+        grade.setGradeCategoryEnum(getGradeCategoryFromGradeType(gradeType));
         grade.setComments(comments);
         grade.setIsFinal(false);
         grade.setGradeDate(LocalDateTime.now());
@@ -371,7 +372,7 @@ public class GradeServiceImpl implements GradeService {
         originalGradeForArchive.setTeacher(grade.getTeacher());
         originalGradeForArchive.setGradeValue(grade.getGradeValue());
         originalGradeForArchive.setGradeType(grade.getGradeType());
-        originalGradeForArchive.setGradeCategory(grade.getGradeCategory());
+        originalGradeForArchive.setGradeCategoryEnum(grade.getGradeCategoryEnum());
         originalGradeForArchive.setComments(grade.getComments());
         originalGradeForArchive.setCreatedAt(grade.getCreatedAt());
         originalGradeForArchive.setUpdatedAt(grade.getUpdatedAt());

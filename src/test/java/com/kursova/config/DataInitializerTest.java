@@ -331,26 +331,26 @@ class DataInitializerTest {
         // Assert
         verify(gradeRepository).save(argThat(grade ->
             grade.getGradeValue() == 85 &&
-            grade.getGradeType() == GradeType.CURRENT &&
+            grade.getGradeType() == GradeType.HOMEWORK &&
             grade.getComments().equals("Хороша робота на практичних заняттях")
         ));
 
         verify(gradeRepository).save(argThat(grade ->
             grade.getGradeValue() == 90 &&
-            grade.getGradeType() == GradeType.FINAL &&
+            grade.getGradeType() == GradeType.EXAM &&
             grade.getComments().equals("Відмінний результат на екзамені") &&
             grade.getIsFinal()
         ));
 
         verify(gradeRepository).save(argThat(grade ->
             grade.getGradeValue() == 78 &&
-            grade.getGradeType() == GradeType.CURRENT &&
+            grade.getGradeType() == GradeType.HOMEWORK &&
             grade.getComments().equals("Задовільна робота, потребує покращення")
         ));
 
         verify(gradeRepository).save(argThat(grade ->
             grade.getGradeValue() == 82 &&
-            grade.getGradeType() == GradeType.FINAL &&
+            grade.getGradeType() == GradeType.EXAM &&
             grade.getComments().equals("Покращення результатів на екзамені") &&
             grade.getIsFinal()
         ));
