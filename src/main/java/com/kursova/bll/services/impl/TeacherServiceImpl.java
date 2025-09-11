@@ -103,13 +103,20 @@ public class TeacherServiceImpl implements TeacherService {
             throw new RuntimeException("Teacher not found with id: " + id);
         }
         
-        // Soft delete - set isActive to false to preserve historical grades and assignments
-        // This avoids deleting all grades taught by this teacher
         Teacher teacher = unitOfWork.getTeacherRepository().findById(id)
             .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + id));
         
-        teacher.setIsActive(false);
+        // Clear subject assignments but keep the subjects in the system
+        teacher.getSubjects().clear();
         unitOfWork.getTeacherRepository().save(teacher);
+        
+        // Delete the teacher record - grades and subjects remain in system
+        unitOfWork.getTeacherRepository().deleteById(id);
+        
+        // Also delete the associated user if it exists
+        if (teacher.getUser() != null) {
+            unitOfWork.getUserRepository().deleteById(teacher.getUser().getId());
+        }
     }
 
     @Override

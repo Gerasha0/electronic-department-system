@@ -223,24 +223,48 @@ public class UserServiceImpl implements UserService {
         User user = unitOfWork.getUserRepository().findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
         
-        // If user is a STUDENT, find and archive the student
+        // If user is a STUDENT, archive the student (preserves historical data)
         if (user.getRole() == UserRole.STUDENT) {
-            // Find student by user_id to avoid lazy loading issues
-            unitOfWork.getStudentRepository().findByUserId(id)
-                    .ifPresent(student -> {
-                        archiveService.archiveStudent(student.getId(), "ADMIN", "User deleted via admin interface");
-                    });
+            boolean studentFound = unitOfWork.getStudentRepository().findByUserId(id).isPresent();
             
-            // If no student found, just deactivate the user
-            if (unitOfWork.getStudentRepository().findByUserId(id).isEmpty()) {
-                user.setIsActive(false);
-                unitOfWork.getUserRepository().save(user);
+            if (studentFound) {
+                try {
+                    unitOfWork.getStudentRepository().findByUserId(id)
+                            .ifPresent(student -> {
+                                // Archive the student - this will move student and their grades to archive tables
+                                archiveService.archiveStudent(student.getId(), "ADMIN", "User deleted via admin interface");
+                            });                   
+                    // After archiving, delete the user record from the main system
+                    unitOfWork.getUserRepository().deleteById(id);
+                 } catch (Exception e) {
+                    // If archiving fails, still try to delete the user directly
+                    unitOfWork.getUserRepository().deleteById(id);
+                }
+            } else {
+                // If no student found, just delete the user directly
+                unitOfWork.getUserRepository().deleteById(id);
             }
-        } else {
-            // For non-student users (TEACHER, ADMIN, MANAGER), we need to handle foreign key constraints
-            // For now, we'll deactivate instead of delete to avoid constraint violations
-            user.setIsActive(false);
-            unitOfWork.getUserRepository().save(user);
+        } 
+        else {
+            // For TEACHER, MANAGER, ADMIN - delete the user but keep their created data
+            // (grades they assigned, subjects they taught, groups they created, etc.)
+            
+            if (user.getRole() == UserRole.TEACHER) {
+                // Find and delete the teacher record, but keep grades and subjects
+                unitOfWork.getTeacherRepository().findByUserId(id)
+                        .ifPresent(teacher -> {
+                            // Clear the relationship with subjects but don't delete the subjects
+                            teacher.getSubjects().clear();
+                            unitOfWork.getTeacherRepository().save(teacher);
+                            
+                            // Delete the teacher record - grades will remain with teacher_id reference
+                            unitOfWork.getTeacherRepository().deleteById(teacher.getId());
+                        });
+            }
+            
+            // Delete the user record - all related data (grades, subjects, groups) will remain
+            // but without active user reference
+            unitOfWork.getUserRepository().deleteById(id);
         }
     }
 

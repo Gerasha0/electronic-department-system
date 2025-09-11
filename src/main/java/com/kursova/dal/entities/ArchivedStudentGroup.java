@@ -30,6 +30,10 @@ public class ArchivedStudentGroup {
     @Column(name = "study_form")
     private StudyForm studyForm;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "education_level")
+    private EducationLevel educationLevel;
+
     @Column(name = "enrollment_year")
     private Integer enrollmentYear;
 
@@ -57,6 +61,7 @@ public class ArchivedStudentGroup {
         this.groupName = originalGroup.getGroupName();
         this.courseYear = originalGroup.getCourseYear();
         this.studyForm = originalGroup.getStudyForm();
+        this.educationLevel = originalGroup.getEducationLevel();
         this.enrollmentYear = originalGroup.getEnrollmentYear();
         this.originalCreatedAt = originalGroup.getCreatedAt();
         this.originalUpdatedAt = originalGroup.getUpdatedAt();
@@ -112,6 +117,14 @@ public class ArchivedStudentGroup {
 
     public void setStudyForm(StudyForm studyForm) {
         this.studyForm = studyForm;
+    }
+
+    public EducationLevel getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setEducationLevel(EducationLevel educationLevel) {
+        this.educationLevel = educationLevel;
     }
 
     public Integer getEnrollmentYear() {

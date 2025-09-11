@@ -1684,7 +1684,7 @@ class Dashboard {
                 e.preventDefault();
                 const studentId = document.getElementById('selected-student-id').value;
                 if (studentId) {
-                    await this.addStudentToGroup(groupId, studentId);
+                    await this.performAddStudentToGroup(groupId, studentId);
                 }
             });
         }
@@ -1721,7 +1721,8 @@ class Dashboard {
             // Debounce search requests
             searchTimeout = setTimeout(async () => {
                 try {
-                    const response = await apiClient.searchStudentsForGroup(query, groupId);
+                    // Search only among students without groups
+                    const response = await apiClient.searchStudentsWithoutGroup(query);
                     const students = response?.success ? response.data : (Array.isArray(response) ? response : []);
                     allStudents = students;
                     this.showStudentSuggestions(students, query);
@@ -1767,23 +1768,16 @@ class Dashboard {
             const lastName = student.user?.lastName || student.lastName || '';
             const email = student.user?.email || student.email || '';
             const fullName = `${firstName} ${lastName}`.trim();
-
-            // Check if student is already in groups
-            const groupsText = student.groups && student.groups.length > 0 
-                ? `Групи: ${student.groups.map(g => g.groupName || g.name).join(', ')}`
-                : 'Без групи';
-            
-            const isInGroup = student.groups && student.groups.length > 0;
             
             return `
-                <div class="suggestion-item ${isInGroup ? 'has-groups' : ''}" 
-                     onclick="dashboard.selectStudent(${student.id}, '${fullName}', '${email}', '${groupsText}')">
+                <div class="suggestion-item" 
+                     onclick="dashboard.selectStudent(${student.id}, '${fullName}', '${email}', 'Без групи')">
                     <div class="student-main">
                         <div class="student-name">${highlightMatch(fullName, query)}</div>
                         <div class="student-email">${highlightMatch(email, query)}</div>
                     </div>
-                    <div class="student-groups-info ${isInGroup ? 'has-groups' : 'no-groups'}">
-                        ${isInGroup ? '👥 ' + groupsText : '📝 Без групи'}
+                    <div class="student-groups-info no-groups">
+                        📝 Без групи
                     </div>
                 </div>
             `;
@@ -1834,6 +1828,27 @@ class Dashboard {
         const modal = document.getElementById('addStudentModal');
         if (modal) {
             modal.remove();
+        }
+    }
+
+    async performAddStudentToGroup(groupId, studentId) {
+        try {
+            const response = await apiClient.addStudentToGroup(groupId, studentId);
+            if (response?.success) {
+                alert('Студента успішно додано до групи!');
+                
+                // Close the add student modal
+                this.closeAddStudentModal();
+                
+                // Refresh both the group students modal and the main groups table
+                await this.refreshGroupData(groupId);
+                
+            } else {
+                throw new Error(response?.error || 'Невідома помилка');
+            }
+        } catch (error) {
+            console.error('Error adding student to group:', error);
+            alert('Помилка додавання студента до групи: ' + error.message);
         }
     }
 
@@ -2169,7 +2184,6 @@ class Dashboard {
                         <option value="TEACHER">Викладач</option>
                         <option value="MANAGER">Менеджер</option>
                         <option value="ADMIN">Адміністратор</option>
-                        <option value="GUEST">Гість</option>
                     </select>
                 </div>
                 <div class="form-actions">
@@ -2364,29 +2378,23 @@ class Dashboard {
             studentSelect.innerHTML = '<option value="">Спочатку оберіть групу...</option>';
             
             if (subjectId && this.currentUser?.teacherId) {
-                    // Get groups that study this subject and are taught by current teacher
-                    const response = await apiClient.getGroupsByTeacher(this.currentUser.teacherId);
+                try {
+                    // Get groups that study this specific subject
+                    const response = await apiClient.getSubjectGroups(subjectId);
                     
                     if (response?.success && Array.isArray(response.data)) {
-                        // Filter groups that have this subject
-                        const subjectResponse = await apiClient.getSubjectById(subjectId);
+                        // For each group that studies this subject, check if current teacher teaches it
+                        const teacherGroupsResponse = await apiClient.getGroupsByTeacher(this.currentUser.teacherId);
                         
-                        if (subjectResponse?.success) {
-                            const subjectGroups = subjectResponse.data.groups || [];
+                        if (teacherGroupsResponse?.success && Array.isArray(teacherGroupsResponse.data)) {
+                            const teacherGroupIds = teacherGroupsResponse.data.map(tg => tg.id);
                             
-                            let teacherGroups;
+                            // Filter groups that both study this subject AND are taught by current teacher
+                            const validGroups = response.data.filter(group => 
+                                teacherGroupIds.includes(group.id)
+                            );
                             
-                            // If subject has no groups assigned, show all teacher's groups
-                            if (subjectGroups.length === 0) {
-                                teacherGroups = response.data;
-                            } else {
-                                // Filter groups that have this subject
-                                teacherGroups = response.data.filter(group => 
-                                    subjectGroups.some(sg => sg.id === group.id)
-                                );
-                            }
-                            
-                            teacherGroups.forEach(group => {
+                            validGroups.forEach(group => {
                                 const option = document.createElement('option');
                                 option.value = group.id;
                                 option.textContent = group.groupName || group.name;
@@ -2394,7 +2402,10 @@ class Dashboard {
                             });
                         }
                     }
+                } catch (error) {
+                    console.error('Error loading groups for subject:', error);
                 }
+            }
         });
 
         // When group changes, load students from that group
@@ -2560,23 +2571,36 @@ class Dashboard {
             }
 
             const gradeData = {
-                studentId: grade.studentId,
-                subjectId: grade.subjectId,
-                gradeType: grade.gradeType,
                 gradeValue: newValue,
-                comments: formData.get('comment') || null,
-                originalGradeId: grade.id // For archiving the old grade
+                gradeType: grade.gradeType || grade.type,
+                gradeCategoryEnum: grade.gradeCategoryEnum || grade.category,
+                comments: formData.get('comment') || null
             };
 
-            const response = await apiClient.updateGrade(grade.id, gradeData);
-            if (response?.success) {
-                modal.style.display = 'none';
-                await this.loadGradesData();
-                alert('Оцінку оновлено успішно! Попередня оцінка збережена в архіві.');
-            } else {
-                const errorMessage = typeof response?.data === 'string' 
-                    ? response.data 
-                    : (response?.data?.message || response?.error || 'Невідома помилка');
+            try {
+                const response = await apiClient.updateGrade(grade.id, gradeData);
+                
+                if (response?.success) {
+                    modal.style.display = 'none';
+                    await this.loadGradesData();
+                    alert('Оцінку оновлено успішно! Попередня оцінка збережена в архіві.');
+                } else {
+                    alert('Помилка оновлення оцінки: ' + (response?.data?.message || response?.error || 'Невідома помилка'));
+                }
+            } catch (error) {
+                let errorMessage = error.message;
+                
+                // Try to extract more detailed error information
+                if (error.response) {
+                    try {
+                        const errorData = await error.response.text();
+                        console.error('Server error response:', errorData);
+                        errorMessage += ' (Server: ' + errorData + ')';
+                    } catch (e) {
+                        console.error('Could not parse error response:', e);
+                    }
+                }
+                
                 alert('Помилка оновлення оцінки: ' + errorMessage);
             }
         });
@@ -3163,6 +3187,7 @@ class Dashboard {
                                                 <select class="form-select" id="editStudyForm" required>
                                                     <option value="FULL_TIME" ${student.studyForm === 'FULL_TIME' ? 'selected' : ''}>Денна</option>
                                                     <option value="PART_TIME" ${student.studyForm === 'PART_TIME' ? 'selected' : ''}>Заочна</option>
+                                                    <option value="EVENING" ${student.studyForm === 'EVENING' ? 'selected' : ''}>Вечірня</option>
                                                     <option value="DISTANCE" ${student.studyForm === 'DISTANCE' ? 'selected' : ''}>Дистанційна</option>
                                                 </select>
                                             </div>
@@ -3254,12 +3279,41 @@ class Dashboard {
                 if (response.status === 403) {
                     alert('Помилка доступу: У вас недостатньо прав для редагування студента. Перевірте чи ви увійшли як MANAGER або ADMIN.');
                 } else {
-                    alert('Помилка при оновленні даних студента: ' + (response?.message || response?.data || 'Невідома помилка'));
+                    // Try to extract meaningful error message
+                    let errorMessage = 'Невідома помилка';
+                    if (typeof response?.message === 'string') {
+                        errorMessage = response.message;
+                    } else if (typeof response?.data === 'string') {
+                        errorMessage = response.data;
+                    } else if (typeof response?.error === 'string') {
+                        errorMessage = response.error;
+                    } else if (response?.data && typeof response.data === 'object') {
+                        errorMessage = response.data.message || response.data.error || 'Невідома помилка';
+                    }
+                    alert('Помилка при оновленні даних студента: ' + errorMessage);
                 }
             }
         } catch (error) {
             console.error('Error updating student:', error);
-            alert('Помилка при оновленні даних студента: ' + error.message);
+            // Try to extract error message from response
+            let errorMessage = error.message;
+            if (error.response && error.response.text) {
+                try {
+                    const errorText = await error.response.text();
+                    if (errorText && errorText.includes('RuntimeException')) {
+                        // Extract message after "RuntimeException: "
+                        const match = errorText.match(/RuntimeException: (.+?)(?:\n|$|<)/);
+                        if (match) {
+                            errorMessage = match[1];
+                        }
+                    } else if (errorText) {
+                        errorMessage = errorText;
+                    }
+                } catch (e) {
+                    // If parsing fails, use original error message
+                }
+            }
+            alert('Помилка при оновленні даних студента: ' + errorMessage);
         }
     }
 
@@ -3556,14 +3610,14 @@ class Dashboard {
         // Filter by education level
         if (educationLevelFilter) {
             filteredStudents = filteredStudents.filter(student => 
-                student.group && student.group.educationLevel === educationLevelFilter
+                student.educationLevel === educationLevelFilter
             );
         }
 
         // Filter by study form
         if (studyFormFilter) {
             filteredStudents = filteredStudents.filter(student => 
-                student.group && student.group.studyForm === studyFormFilter
+                student.studyForm === studyFormFilter
             );
         }
 
@@ -3703,7 +3757,7 @@ class Dashboard {
     // === GROUP MODAL METHODS ===
     showAddGroupModal() {
         const role = this.currentUser?.role;
-        if (role !== 'MANAGER') {
+        if (role !== 'MANAGER' && role !== 'ADMIN') {
             alert('У вас немає прав для створення груп');
             return;
         }
@@ -4344,7 +4398,6 @@ class Dashboard {
                 <td class="archive-reason" title="${group.archiveReason || ''}">${group.archiveReason || 'N/A'}</td>
                 <td>
                     <div class="archive-actions">
-                        <button class="btn btn-sm btn-info" onclick="dashboard.viewArchivedGroupStudents(${group.originalGroupId})">👥 Студенти</button>
                         <button class="btn btn-sm btn-danger-outline" onclick="dashboard.deleteArchivedGroup(${group.id})">🗑️ Видалити</button>
                     </div>
                 </td>
@@ -4449,95 +4502,9 @@ class Dashboard {
         }
     }
 
-    async viewArchivedGroupStudents(originalGroupId) {
-        try {
-            const response = await apiClient.getArchivedStudentsByGroup(originalGroupId);
-            const students = response?.success ? response.data : (Array.isArray(response) ? response : []);
-            
-            this.showArchivedGroupStudentsModal(students, originalGroupId);
-        } catch (error) {
-            console.error('Error loading archived students by group:', error);
-            alert('Помилка завантаження студентів групи');
-        }
-    }
+    // === ARCHIVE UTILITIES ===
 
-    showArchivedGroupStudentsModal(students, originalGroupId) {
-        // Remove existing modal if any
-        const existingModal = document.getElementById('archivedGroupStudentsModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        // Create modal HTML
-        const modalHtml = `
-            <div id="archivedGroupStudentsModal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="dashboard.closeArchivedGroupStudentsModal()">&times;</span>
-                    <h2>🎓 Архівні студенти групи</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>🎓 Номер студента</th>
-                                    <th>👥 Група</th>
-                                    <th>🎓 Рівень освіти</th>
-                                    <th>📖 Рік вступу</th>
-                                    <th>📚 Форма навчання</th>
-                                    <th>📅 Дата архівації</th>
-                                    <th>👤 Ким архівовано</th>
-                                    <th>📄 Причина</th>
-                                    <th>⚙️ Дії</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${students.length ? students.map(student => `
-                                    <tr>
-                                        <td>${student.studentNumber || 'N/A'}</td>
-                                        <td>${student.groupName || 'N/A'}</td>
-                                        <td>${this.translateEducationLevel(student.educationLevel) || 'N/A'}</td>
-                                        <td>${student.enrollmentYear || 'N/A'}</td>
-                                        <td>${this.translateStudyForm(student.studyForm) || 'N/A'}</td>
-                                        <td>${student.archivedAt ? new Date(student.archivedAt).toLocaleString('uk-UA') : 'N/A'}</td>
-                                        <td>${student.archivedBy || 'N/A'}</td>
-                                        <td title="${student.archiveReason || ''}">${student.archiveReason || 'N/A'}</td>
-                                        <td>
-                                            <div class="archive-actions">
-                                                <button class="btn btn-sm btn-info" onclick="dashboard.viewArchivedStudentGrades(${student.originalStudentId})">📝 Оцінки</button>
-                                                <button class="btn btn-sm btn-danger-outline" onclick="dashboard.deleteArchivedStudent(${student.id})">🗑️ Видалити</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `).join('') : `
-                                    <tr><td colspan="9"><div class="archive-empty"><div class="archive-empty-icon">📭</div><p>Архівних студентів не знайдено</p></div></td></tr>
-                                `}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Add to DOM
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-        // Show modal
-        const modal = document.getElementById('archivedGroupStudentsModal');
-        modal.style.display = 'block';
-
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.closeArchivedGroupStudentsModal();
-            }
-        });
-    }
-
-    closeArchivedGroupStudentsModal() {
-        const modal = document.getElementById('archivedGroupStudentsModal');
-        if (modal) {
-            modal.remove();
-        }
-    }
+    // === ARCHIVE UTILITIES ===
 
     async viewArchivedStudentGrades(originalStudentId) {
         try {

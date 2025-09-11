@@ -199,12 +199,15 @@ class SubjectServiceTest {
     void shouldDeleteSubjectSuccessfully() {
         // Given
         when(subjectRepository.existsById(1L)).thenReturn(true);
+        when(subjectRepository.findById(1L)).thenReturn(Optional.of(subject));
 
         // When
         subjectService.delete(1L);
 
         // Then
-        verify(subjectRepository).deleteById(1L);
+        verify(subjectRepository).findById(1L);
+        verify(subjectRepository).save(subject);
+        assertThat(subject.getIsActive()).isFalse();
     }
 
     @Test

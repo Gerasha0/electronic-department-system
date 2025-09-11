@@ -55,7 +55,7 @@ public class StudentGroup {
     private LocalDateTime updatedAt;
 
     // Relationships
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private Set<Student> students = new HashSet<>();
 
     @ManyToMany(mappedBy = "groups", fetch = FetchType.LAZY)

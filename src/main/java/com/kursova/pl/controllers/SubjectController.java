@@ -107,10 +107,10 @@ public class SubjectController {
         return ResponseEntity.ok(subjects);
     }
 
-    // Subject Groups Management (Admin/Manager only)
+    // Subject Groups Management
     @GetMapping("/{subjectId}/groups")
     @Operation(summary = "Get groups assigned to subject", description = "Retrieve all groups assigned to a specific subject")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<Object>> getSubjectGroups(@PathVariable Long subjectId) {
         List<Object> groups = subjectService.getAssignedGroups(subjectId);
         return ResponseEntity.ok(groups);

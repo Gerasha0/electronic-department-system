@@ -275,7 +275,7 @@ public class GradeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'TEACHER')")
     @Operation(summary = "Delete grade", description = "Deletes a grade")
     public ResponseEntity<Void> deleteGrade(
             @PathVariable @Parameter(description = "Grade ID") Long id) {

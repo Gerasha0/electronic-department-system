@@ -51,6 +51,9 @@ class StudentServiceTest {
     @Mock
     private StudentMapper studentMapper;
 
+    @Mock
+    private ArchiveService archiveService;
+
     @InjectMocks
     private StudentServiceImpl studentService;
 
@@ -213,7 +216,7 @@ class StudentServiceTest {
         studentService.delete(1L);
 
         // Then
-        verify(studentRepository).deleteById(1L);
+        verify(archiveService).archiveStudent(1L, "ADMIN", "Student deleted via admin interface");
     }
 
     @Test

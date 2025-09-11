@@ -55,6 +55,9 @@ class TeacherServiceTest {
     private StudentRepository studentRepository;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private StudentService studentService;
 
     @Mock
@@ -333,14 +336,18 @@ class TeacherServiceTest {
     void shouldDeleteTeacher() {
         // Given
         when(unitOfWork.getTeacherRepository()).thenReturn(teacherRepository);
+        when(unitOfWork.getUserRepository()).thenReturn(userRepository);
         when(teacherRepository.existsById(1L)).thenReturn(true);
-
+        when(teacherRepository.findById(1L)).thenReturn(Optional.of(teacher));
+        
         // When
         teacherService.delete(1L);
 
         // Then
-        verify(unitOfWork, times(2)).getTeacherRepository();
+        verify(unitOfWork, atLeastOnce()).getTeacherRepository();
         verify(teacherRepository).existsById(1L);
+        verify(teacherRepository).findById(1L);
+        verify(teacherRepository).save(teacher);
         verify(teacherRepository).deleteById(1L);
     }
 

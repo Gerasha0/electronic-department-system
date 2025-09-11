@@ -5,6 +5,9 @@ import com.kursova.bll.mappers.StudentMapper;
 import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.StudentService;
 import com.kursova.dal.entities.Student;
+import com.kursova.dal.entities.StudentGroup;
+import com.kursova.dal.entities.EducationLevel;
+import com.kursova.dal.entities.StudyForm;
 import com.kursova.dal.entities.Grade;
 import com.kursova.dal.entities.User;
 import com.kursova.dal.uow.UnitOfWork;
@@ -75,9 +78,53 @@ public class StudentServiceImpl implements StudentService {
         Student existingStudent = unitOfWork.getStudentRepository().findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
 
+        // Check for conflicts if student is in a group
+        if (existingStudent.getGroup() != null) {
+            StudentGroup group = existingStudent.getGroup();
+            
+            // Check if trying to change education level, study form, or course year
+            if (studentDto.getEducationLevel() != null && 
+                !studentDto.getEducationLevel().equals(group.getEducationLevel())) {
+                throw new RuntimeException("Неможливо змінити рівень освіти студента. " +
+                    "Студент знаходиться у групі з рівнем освіти: " + 
+                    translateEducationLevel(group.getEducationLevel()));
+            }
+            
+            if (studentDto.getStudyForm() != null && 
+                !studentDto.getStudyForm().equals(group.getStudyForm())) {
+                throw new RuntimeException("Неможливо змінити форму навчання студента. " +
+                    "Студент знаходиться у групі з формою навчання: " + 
+                    translateStudyForm(group.getStudyForm()));
+            }
+            
+            if (studentDto.getCourseYear() != null && 
+                !studentDto.getCourseYear().equals(group.getCourseYear())) {
+                throw new RuntimeException("Неможливо змінити курс студента. " +
+                    "Студент знаходиться у групі " + group.getCourseYear() + " курсу.");
+            }
+        }
+
         studentMapper.updateEntityFromDto(studentDto, existingStudent);
         Student updatedStudent = unitOfWork.getStudentRepository().save(existingStudent);
         return studentMapper.toDto(updatedStudent);
+    }
+    
+    private String translateEducationLevel(EducationLevel level) {
+        return switch (level) {
+            case BACHELOR -> "Бакалавр";
+            case SPECIALIST -> "Спеціаліст";
+            case MASTER -> "Магістр";
+            case PHD -> "Аспірант";
+        };
+    }
+    
+    private String translateStudyForm(StudyForm form) {
+        return switch (form) {
+            case FULL_TIME -> "Денна";
+            case EVENING -> "Вечірня";
+            case PART_TIME -> "Заочна";
+            case DISTANCE -> "Дистанційна";
+        };
     }
 
     @Override
@@ -249,7 +296,11 @@ public class StudentServiceImpl implements StudentService {
         var group = unitOfWork.getStudentGroupRepository().findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found with id: " + groupId));
         
+        // Update student properties to match the group
         student.setGroup(group);
+        student.setEducationLevel(group.getEducationLevel());
+        student.setStudyForm(group.getStudyForm());
+        student.setCourseYear(group.getCourseYear());
         student.setUpdatedAt(LocalDateTime.now());
         
         Student updatedStudent = unitOfWork.getStudentRepository().save(student);

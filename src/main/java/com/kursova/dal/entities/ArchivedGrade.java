@@ -86,6 +86,8 @@ public class ArchivedGrade {
         }
         
         this.gradeCategoryEnum = originalGrade.getGradeCategoryEnum();
+        this.gradeValue = originalGrade.getGradeValue();
+        this.gradeType = originalGrade.getGradeType();
         this.comments = originalGrade.getComments();
         
         if (originalGrade.getStudent().getGroup() != null) {

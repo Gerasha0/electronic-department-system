@@ -5,6 +5,9 @@ import com.kursova.bll.mappers.StudentGroupMapper;
 import com.kursova.bll.services.ArchiveService;
 import com.kursova.bll.services.StudentGroupService;
 import com.kursova.dal.entities.StudentGroup;
+import com.kursova.dal.entities.Student;
+import com.kursova.dal.entities.EducationLevel;
+import com.kursova.dal.entities.StudyForm;
 import com.kursova.dal.uow.UnitOfWork;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +68,7 @@ public class StudentGroupServiceImpl implements StudentGroupService {
     }
 
     @Override
+    @Transactional
     public StudentGroupDto update(Long id, StudentGroupDto groupDto) {
         StudentGroup existingGroup = unitOfWork.getStudentGroupRepository().findById(id)
                 .orElseThrow(() -> new RuntimeException("StudentGroup not found with id: " + id));
@@ -75,18 +79,40 @@ public class StudentGroupServiceImpl implements StudentGroupService {
             throw new RuntimeException("Group code already exists: " + groupDto.getGroupCode());
         }
 
+        // Store original values to check if education level, study form, or course year changed
+        EducationLevel originalEducationLevel = existingGroup.getEducationLevel();
+        StudyForm originalStudyForm = existingGroup.getStudyForm();
+        Integer originalCourseYear = existingGroup.getCourseYear();
+
         groupMapper.updateEntityFromDto(groupDto, existingGroup);
         existingGroup.setUpdatedAt(LocalDateTime.now());
 
         StudentGroup updatedGroup = unitOfWork.getStudentGroupRepository().save(existingGroup);
+        
+        // If education level, study form, or course year changed, update all students in the group
+        if ((originalEducationLevel != updatedGroup.getEducationLevel()) || 
+            (originalStudyForm != updatedGroup.getStudyForm()) ||
+            (!originalCourseYear.equals(updatedGroup.getCourseYear()))) {
+            
+            for (Student student : updatedGroup.getStudents()) {
+                student.setEducationLevel(updatedGroup.getEducationLevel());
+                student.setStudyForm(updatedGroup.getStudyForm());
+                student.setCourseYear(updatedGroup.getCourseYear());
+                student.setUpdatedAt(LocalDateTime.now());
+                unitOfWork.getStudentRepository().save(student);
+            }
+        }
+        
         return groupMapper.toDto(updatedGroup);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
+        System.out.println("=== StudentGroupService.delete() called for group ID: " + id + " ===");
         // Archive the group and all related data instead of just deleting
         archiveService.archiveStudentGroup(id, "SYSTEM", "Group deleted by user");
+        System.out.println("=== StudentGroupService.delete() completed for group ID: " + id + " ===");
     }
 
     @Override

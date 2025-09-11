@@ -43,17 +43,26 @@ public class ArchiveServiceImpl implements ArchiveService {
     @Override
     @Transactional
     public void archiveStudentGroup(Long groupId, String archivedBy, String reason) {
+        System.out.println("=== ARCHIVING GROUP " + groupId + " ===");
+        
         // Get the group to archive
         StudentGroup group = unitOfWork.getStudentGroupRepository().findById(groupId)
                 .orElseThrow(() -> new RuntimeException("StudentGroup not found with id: " + groupId));
 
         // Get all students in this group
         List<Student> studentsInGroup = unitOfWork.getStudentRepository().findByGroupId(groupId);
+        System.out.println("Found " + studentsInGroup.size() + " students in group " + groupId);
 
-        // Archive all students and their grades
+        // Remove students from group (unassign them) instead of archiving them
         for (Student student : studentsInGroup) {
-            archiveStudentInternal(student, archivedBy, reason + " (group deletion)");
+            System.out.println("Unassigning student " + student.getId() + " (user: " + student.getUser().getFirstName() + " " + student.getUser().getLastName() + ") from group");
+            student.setGroup(null);
+            student.setUpdatedAt(LocalDateTime.now());
+            Student savedStudent = unitOfWork.getStudentRepository().save(student);
+            System.out.println("Student " + savedStudent.getId() + " saved with group: " + savedStudent.getGroup());
         }
+
+        System.out.println("All students unassigned from group " + groupId);
 
         // Archive the group itself
         ArchivedStudentGroup archivedGroup = new ArchivedStudentGroup(group, archivedBy, reason);
@@ -61,6 +70,7 @@ public class ArchiveServiceImpl implements ArchiveService {
 
         // Remove the original group
         unitOfWork.getStudentGroupRepository().delete(group);
+        System.out.println("Group " + groupId + " archived and deleted");
     }
 
     @Override
